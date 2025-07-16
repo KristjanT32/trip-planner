@@ -4,6 +4,6 @@ module krisapps.tripplanner.tripplanner {
 
     requires org.kordamp.ikonli.javafx;
 
-    opens krisapps.tripplanner.tripplanner to javafx.fxml;
-    exports krisapps.tripplanner.tripplanner;
+    opens krisapps.tripplanner to javafx.fxml;
+    exports krisapps.tripplanner;
 }
