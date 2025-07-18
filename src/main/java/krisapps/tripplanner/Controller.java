@@ -5,4 +5,8 @@ import javafx.scene.control.Label;
 
 public class Controller {
 
+    public static void initialize() {
+
+    }
+
 }
