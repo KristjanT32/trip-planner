@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.PieChart?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ChoiceBox?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
@@ -13,6 +15,7 @@
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
@@ -36,72 +39,6 @@
                <children>
                   <TabPane fx:id="newTripWizard" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="710.0" prefWidth="926.0" tabClosingPolicy="UNAVAILABLE">
                     <tabs>
-                      <Tab text="Create new trip">
-                        <content>
-                          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="354.0" prefWidth="680.0">
-                                 <children>
-                                    <Label alignment="CENTER" layoutX="14.0" layoutY="14.0" prefHeight="55.0" prefWidth="896.0" text="Create new trip plan">
-                                       <font>
-                                          <Font name="Segoe UI" size="30.0" />
-                                       </font>
-                                    </Label>
-                                    <VBox alignment="TOP_CENTER" layoutX="43.0" layoutY="69.0" prefHeight="581.0" prefWidth="839.0">
-                                       <children>
-                                          <Label text="What would you like to call your trip?">
-                                             <font>
-                                                <Font name="Segoe UI Bold" size="20.0" />
-                                             </font>
-                                             <VBox.margin>
-                                                <Insets bottom="10.0" />
-                                             </VBox.margin>
-                                          </Label>
-                                          <TextField fx:id="tripNameBox" alignment="CENTER" prefHeight="43.0" prefWidth="725.0">
-                                             <font>
-                                                <Font name="Segoe UI Light" size="20.0" />
-                                             </font>
-                                          </TextField>
-                                          <Separator orientation="VERTICAL" prefHeight="20.0" visible="false" />
-                                          <Label text="Where are you going?">
-                                             <font>
-                                                <Font name="Segoe UI Bold" size="20.0" />
-                                             </font>
-                                             <VBox.margin>
-                                                <Insets bottom="10.0" />
-                                             </VBox.margin>
-                                          </Label>
-                                          <TextField fx:id="tripDestinationBox" alignment="CENTER" prefHeight="43.0" prefWidth="725.0">
-                                             <font>
-                                                <Font name="Segoe UI Light" size="20.0" />
-                                             </font>
-                                          </TextField>
-                                          <Separator orientation="VERTICAL" prefHeight="20.0" visible="false" />
-                                          <Label text="What's your budget?">
-                                             <font>
-                                                <Font name="Segoe UI Bold" size="20.0" />
-                                             </font>
-                                             <VBox.margin>
-                                                <Insets bottom="10.0" />
-                                             </VBox.margin>
-                                          </Label>
-                                          <TextField fx:id="tripBudgetBox" alignment="CENTER" prefHeight="43.0" prefWidth="725.0">
-                                             <font>
-                                                <Font name="Segoe UI Light" size="20.0" />
-                                             </font>
-                                          </TextField>
-                                          <Separator maxHeight="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" orientation="VERTICAL" prefHeight="150.0" visible="false" />
-                                          <Button fx:id="initPlannerButton" mnemonicParsing="false" prefHeight="90.0" prefWidth="425.0" text="Start planning!">
-                                             <font>
-                                                <Font name="Segoe UI Bold" size="25.0" />
-                                             </font>
-                                          </Button>
-                                       </children>
-                                       <padding>
-                                          <Insets bottom="20.0" left="10.0" right="10.0" top="20.0" />
-                                       </padding>
-                                    </VBox>
-                                 </children></AnchorPane>
-                        </content>
-                      </Tab>
                       <Tab text="Add trip details">
                         <content>
                           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
@@ -218,18 +155,281 @@
                         </Tab>
                         <Tab text="Plan expenses">
                            <content>
-                              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                 <children>
+                                    <Label alignment="CENTER" layoutX="14.0" layoutY="14.0" prefHeight="55.0" prefWidth="896.0" text="Plan your expenses">
+                                       <font>
+                                          <Font name="Segoe UI" size="30.0" />
+                                       </font>
+                                    </Label>
+                                    <VBox alignment="TOP_CENTER" layoutX="54.0" layoutY="79.0" prefHeight="581.0" prefWidth="839.0">
+                                       <padding>
+                                          <Insets bottom="20.0" left="10.0" right="10.0" top="20.0" />
+                                       </padding>
+                                       <children>
+                                          <VBox alignment="CENTER" spacing="10.0" VBox.vgrow="NEVER">
+                                             <children>
+                                                <HBox alignment="CENTER" prefHeight="48.0" prefWidth="819.0" spacing="20.0">
+                                                   <children>
+                                                      <TextField fx:id="expenseAmountBox" maxHeight="1.7976931348623157E308" promptText="Expense" HBox.hgrow="SOMETIMES">
+                                                         <font>
+                                                            <Font name="Segoe UI Light" size="20.0" />
+                                                         </font>
+                                                      </TextField>
+                                                      <Label text="for">
+                                                         <font>
+                                                            <Font name="Segoe UI Bold" size="20.0" />
+                                                         </font>
+                                                      </Label>
+                                                      <TextField fx:id="expenseValueBox" maxHeight="1.7976931348623157E308" promptText="Expense source">
+                                                         <font>
+                                                            <Font name="Segoe UI Light" size="20.0" />
+                                                         </font>
+                                                      </TextField>
+                                                      <Button fx:id="addExpenseButton" maxHeight="1.7976931348623157E308" mnemonicParsing="false" text="Plan expense" HBox.hgrow="SOMETIMES" />
+                                                   </children>
+                                                </HBox>
+                                                <HBox alignment="CENTER" prefHeight="48.0" prefWidth="819.0" spacing="20.0">
+                                                   <children>
+                                                      <HBox alignment="CENTER_LEFT" maxWidth="-Infinity" prefHeight="44.0" prefWidth="406.0" HBox.hgrow="NEVER">
+                                                         <children>
+                                                            <Label maxWidth="1.7976931348623157E308" prefHeight="24.0" text="Expense category: " HBox.hgrow="SOMETIMES">
+                                                               <font>
+                                                                  <Font name="Segoe UI Bold" size="20.0" />
+                                                               </font>
+                                                            </Label>
+                                                            <ChoiceBox fx:id="expenseTypeSelector" maxWidth="1.7976931348623157E308" minWidth="225.0" prefHeight="32.0" />
+                                                         </children>
+                                                      </HBox>
+                                                      <HBox fx:id="expenseDayPanel" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
+                                                         <children>
+                                                            <Label prefHeight="24.0" text="Planned for Day #">
+                                                               <font>
+                                                                  <Font name="Segoe UI Bold" size="20.0" />
+                                                               </font>
+                                                               <HBox.margin>
+                                                                  <Insets right="10.0" />
+                                                               </HBox.margin>
+                                                            </Label>
+                                                            <Spinner fx:id="expenseDayBox" editable="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
+                                                         </children>
+                                                      </HBox>
+                                                   </children>
+                                                </HBox>
+                                             </children>
+                                          </VBox>
+                                          <Separator orientation="VERTICAL" prefHeight="60.0" visible="false" />
+                                          <Label alignment="CENTER" prefHeight="55.0" prefWidth="896.0" text="Planned expenses">
+                                             <font>
+                                                <Font name="Segoe UI Bold" size="20.0" />
+                                             </font>
+                                          </Label>
+                                          <ListView fx:id="itineraryListView1" prefHeight="391.0" prefWidth="819.0" VBox.vgrow="ALWAYS" />
+                                          <HBox alignment="CENTER_RIGHT" prefHeight="48.0" prefWidth="819.0">
+                                             <children>
+                                                <Label text="Expense description">
+                                                   <font>
+                                                      <Font name="Segoe UI Bold" size="20.0" />
+                                                   </font>
+                                                </Label>
+                                                <Separator prefWidth="200.0" visible="false" HBox.hgrow="ALWAYS" />
+                                                <Button fx:id="deleteActivityButton1" mnemonicParsing="false" prefHeight="33.0" prefWidth="138.0" text="Delete expense" />
+                                             </children>
+                                             <VBox.margin>
+                                                <Insets top="10.0" />
+                                             </VBox.margin>
+                                          </HBox>
+                                       </children>
+                                    </VBox>
+                                 </children></AnchorPane>
                            </content>
                         </Tab>
                         <Tab text="Set reminders">
                            <content>
-                              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                 <children>
+                                    <Label alignment="CENTER" layoutX="14.0" layoutY="14.0" prefHeight="55.0" prefWidth="896.0" text="Set reminders for your trip">
+                                       <font>
+                                          <Font name="Segoe UI" size="30.0" />
+                                       </font>
+                                    </Label>
+                                    <VBox alignment="TOP_CENTER" layoutX="54.0" layoutY="79.0" prefHeight="581.0" prefWidth="839.0">
+                                       <children>
+                                          <VBox fx:id="countdown" alignment="CENTER_LEFT">
+                                             <children>
+                                                <HBox alignment="CENTER_LEFT">
+                                                   <children>
+                                                      <Label maxWidth="1.7976931348623157E308" text="Trip countdown" HBox.hgrow="SOMETIMES">
+                                                         <font>
+                                                            <Font name="Segoe UI Bold" size="20.0" />
+                                                         </font>
+                                                      </Label>
+                                                      <ToggleButton fx:id="countdownToggle" maxHeight="1.7976931348623157E308" maxWidth="-Infinity" mnemonicParsing="false" prefHeight="35.0" prefWidth="159.0" text="Enable" HBox.hgrow="NEVER">
+                                                         <font>
+                                                            <Font name="Segoe UI Semibold" size="16.0" />
+                                                         </font>
+                                                      </ToggleButton>
+                                                   </children>
+                                                   <VBox.margin>
+                                                      <Insets bottom="5.0" />
+                                                   </VBox.margin>
+                                                </HBox>
+                                                <Label maxWidth="1.7976931348623157E308" text="Would you like a countdown to be shown next to the trip under &quot;Upcoming trips&quot;?">
+                                                   <font>
+                                                      <Font name="Segoe UI" size="16.0" />
+                                                   </font>
+                                                   <VBox.margin>
+                                                      <Insets bottom="10.0" />
+                                                   </VBox.margin>
+                                                </Label>
+                                                <VBox fx:id="countdownOptionsPanel" alignment="TOP_CENTER" VBox.vgrow="SOMETIMES">
+                                                   <VBox.margin>
+                                                      <Insets top="10.0" />
+                                                   </VBox.margin>
+                                                   <children>
+                                                      <HBox alignment="CENTER" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" prefHeight="25.0">
+                                                         <children>
+                                                            <Label maxHeight="1.7976931348623157E308" text="Countdown format:">
+                                                               <font>
+                                                                  <Font name="Segoe UI" size="16.0" />
+                                                               </font>
+                                                               <HBox.margin>
+                                                                  <Insets right="10.0" />
+                                                               </HBox.margin>
+                                                            </Label>
+                                                            <ChoiceBox fx:id="countdownFormatSelector" maxHeight="1.7976931348623157E308" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="340.0" HBox.hgrow="SOMETIMES" />
+                                                            <Separator maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefWidth="100.0" visible="false" HBox.hgrow="SOMETIMES" />
+                                                            <Label fx:id="countdownFormatPreview" alignment="CENTER_RIGHT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="00:00:00:00" HBox.hgrow="SOMETIMES">
+                                                               <font>
+                                                                  <Font name="Segoe UI Bold" size="16.0" />
+                                                               </font>
+                                                            </Label>
+                                                         </children>
+                                                      </HBox>
+                                                   </children>
+                                                </VBox>
+                                             </children>
+                                          </VBox>
+                                          <Separator orientation="VERTICAL" prefHeight="50.0" visible="false" />
+                                          <VBox fx:id="countdown1" alignment="CENTER_LEFT">
+                                             <children>
+                                                <HBox alignment="CENTER_LEFT">
+                                                   <children>
+                                                      <Label maxWidth="1.7976931348623157E308" text="Calendar integration" HBox.hgrow="SOMETIMES">
+                                                         <font>
+                                                            <Font name="Segoe UI Bold" size="20.0" />
+                                                         </font>
+                                                      </Label>
+                                                      <ToggleButton fx:id="calendarIntegrationToggle" maxHeight="1.7976931348623157E308" maxWidth="-Infinity" mnemonicParsing="false" prefHeight="35.0" prefWidth="159.0" text="Enable" HBox.hgrow="NEVER">
+                                                         <font>
+                                                            <Font name="Segoe UI Semibold" size="16.0" />
+                                                         </font>
+                                                      </ToggleButton>
+                                                   </children>
+                                                   <VBox.margin>
+                                                      <Insets bottom="5.0" />
+                                                   </VBox.margin>
+                                                </HBox>
+                                                <Label maxWidth="1.7976931348623157E308" text="Would you like Trip Planner to automatically create and add events for this trip?">
+                                                   <font>
+                                                      <Font name="Segoe UI" size="16.0" />
+                                                   </font>
+                                                   <VBox.margin>
+                                                      <Insets bottom="10.0" />
+                                                   </VBox.margin>
+                                                </Label>
+                                                <VBox fx:id="calendarIntegrationOptions" alignment="TOP_CENTER" VBox.vgrow="SOMETIMES">
+                                                   <VBox.margin>
+                                                      <Insets top="10.0" />
+                                                   </VBox.margin>
+                                                </VBox>
+                                             </children>
+                                          </VBox>
+                                       </children>
+                                       <padding>
+                                          <Insets bottom="20.0" left="10.0" right="10.0" top="20.0" />
+                                       </padding>
+                                    </VBox>
+                                 </children></AnchorPane>
                            </content>
                         </Tab>
-                        <Tab text="Calendar integration">
-                           <content>
-                              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
-                           </content>
+                        <Tab text="Trip overview">
+                          <content>
+                            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                 <children>
+                                    <VBox alignment="TOP_CENTER" layoutX="15.0" layoutY="14.0" prefHeight="654.0" prefWidth="896.0">
+                                       <children>
+                                          <VBox fx:id="costOverviewPanel">
+                                             <children>
+                                                <Label maxWidth="1.7976931348623157E308" text="Cost summary">
+                                                   <font>
+                                                      <Font name="Segoe UI Semibold" size="20.0" />
+                                                   </font>
+                                                </Label>
+                                                <HBox>
+                                                   <children>
+                                                      <VBox maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS">
+                                                         <children>
+                                                            <HBox fillHeight="false">
+                                                               <children>
+                                                                  <Label maxWidth="1.7976931348623157E308" text="Total costs:" HBox.hgrow="ALWAYS">
+                                                                     <font>
+                                                                        <Font name="Segoe UI Bold" size="16.0" />
+                                                                     </font>
+                                                                  </Label>
+                                                                  <Label fx:id="totalCostsLabel" maxWidth="1.7976931348623157E308" text="0.00" HBox.hgrow="SOMETIMES">
+                                                                     <font>
+                                                                        <Font name="Segoe UI Bold" size="16.0" />
+                                                                     </font>
+                                                                  </Label>
+                                                               </children>
+                                                            </HBox>
+                                                            <HBox fillHeight="false">
+                                                               <children>
+                                                                  <Label maxWidth="1.7976931348623157E308" text="Daily average:" HBox.hgrow="ALWAYS">
+                                                                     <font>
+                                                                        <Font name="Segoe UI Bold" size="16.0" />
+                                                                     </font>
+                                                                  </Label>
+                                                                  <Label fx:id="dailyAverageLabel" maxWidth="1.7976931348623157E308" text="0.00" HBox.hgrow="SOMETIMES">
+                                                                     <font>
+                                                                        <Font name="Segoe UI Bold" size="16.0" />
+                                                                     </font>
+                                                                  </Label>
+                                                               </children>
+                                                            </HBox>
+                                                            <HBox fillHeight="false">
+                                                               <children>
+                                                                  <Label maxWidth="1.7976931348623157E308" text="Per day:" HBox.hgrow="ALWAYS">
+                                                                     <font>
+                                                                        <Font name="Segoe UI Bold" size="16.0" />
+                                                                     </font>
+                                                                  </Label>
+                                                                  <Label fx:id="perDayLabel" maxWidth="1.7976931348623157E308" text="0.00" HBox.hgrow="SOMETIMES">
+                                                                     <font>
+                                                                        <Font name="Segoe UI Bold" size="16.0" />
+                                                                     </font>
+                                                                  </Label>
+                                                               </children>
+                                                            </HBox>
+                                                         </children>
+                                                         <padding>
+                                                            <Insets bottom="10.0" left="5.0" right="5.0" top="10.0" />
+                                                         </padding>
+                                                      </VBox>
+                                                      <PieChart fx:id="costPie" legendVisible="false" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="300.0" prefWidth="300.0" title="Cost distribution" titleSide="BOTTOM" />
+                                                   </children>
+                                                </HBox>
+                                             </children>
+                                          </VBox>
+                                       </children>
+                                       <padding>
+                                          <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                                       </padding>
+                                    </VBox>
+                                 </children>
+                              </AnchorPane>
+                          </content>
                         </Tab>
                     </tabs>
                   </TabPane>
@@ -253,6 +453,69 @@
                         <Insets bottom="20.0" left="15.0" right="15.0" />
                      </padding>
                   </VBox>
+                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="354.0" prefWidth="680.0" visible="false">
+                     <children>
+                        <Label alignment="CENTER" layoutX="14.0" layoutY="14.0" prefHeight="55.0" prefWidth="896.0" text="Create new trip plan">
+                           <font>
+                              <Font name="Segoe UI" size="30.0" />
+                           </font>
+                        </Label>
+                        <VBox alignment="TOP_CENTER" layoutX="43.0" layoutY="69.0" prefHeight="581.0" prefWidth="839.0">
+                           <children>
+                              <Label text="What would you like to call your trip?">
+                                 <font>
+                                    <Font name="Segoe UI Bold" size="20.0" />
+                                 </font>
+                                 <VBox.margin>
+                                    <Insets bottom="10.0" />
+                                 </VBox.margin>
+                              </Label>
+                              <TextField fx:id="tripNameBox" alignment="CENTER" prefHeight="43.0" prefWidth="725.0">
+                                 <font>
+                                    <Font name="Segoe UI Light" size="20.0" />
+                                 </font>
+                              </TextField>
+                              <Separator orientation="VERTICAL" prefHeight="20.0" visible="false" />
+                              <Label text="Where are you going?">
+                                 <font>
+                                    <Font name="Segoe UI Bold" size="20.0" />
+                                 </font>
+                                 <VBox.margin>
+                                    <Insets bottom="10.0" />
+                                 </VBox.margin>
+                              </Label>
+                              <TextField fx:id="tripDestinationBox" alignment="CENTER" prefHeight="43.0" prefWidth="725.0">
+                                 <font>
+                                    <Font name="Segoe UI Light" size="20.0" />
+                                 </font>
+                              </TextField>
+                              <Separator orientation="VERTICAL" prefHeight="20.0" visible="false" />
+                              <Label text="What's your budget?">
+                                 <font>
+                                    <Font name="Segoe UI Bold" size="20.0" />
+                                 </font>
+                                 <VBox.margin>
+                                    <Insets bottom="10.0" />
+                                 </VBox.margin>
+                              </Label>
+                              <TextField fx:id="tripBudgetBox" alignment="CENTER" prefHeight="43.0" prefWidth="725.0">
+                                 <font>
+                                    <Font name="Segoe UI Light" size="20.0" />
+                                 </font>
+                              </TextField>
+                              <Separator maxHeight="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" orientation="VERTICAL" prefHeight="150.0" visible="false" />
+                              <Button fx:id="initPlannerButton" mnemonicParsing="false" prefHeight="90.0" prefWidth="425.0" text="Start planning!">
+                                 <font>
+                                    <Font name="Segoe UI Bold" size="25.0" />
+                                 </font>
+                              </Button>
+                           </children>
+                           <padding>
+                              <Insets bottom="20.0" left="10.0" right="10.0" top="20.0" />
+                           </padding>
+                        </VBox>
+                     </children>
+                  </AnchorPane>
                </children>
             </StackPane>
          </children>
