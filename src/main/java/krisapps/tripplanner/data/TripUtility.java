@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.ToNumberPolicy;
 import com.google.gson.stream.JsonReader;
+import krisapps.tripplanner.data.trip.Trip;
 import krisapps.tripplanner.misc.LocalDateTypeAdapter;
 
 import java.io.*;
@@ -14,7 +15,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
 
 public class TripUtility {
 
@@ -23,7 +25,7 @@ public class TripUtility {
             .setObjectToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE)
             .registerTypeAdapter(LocalDate.class, new LocalDateTypeAdapter())
             .create();
-    private final File dataFile = new File(System.getProperty("user.home") + File.separator + "AppData" + File.separator + "Local" + File.separator + "IncomeUtility Data" + File.separator + "data.json");
+    private final File dataFile = new File(System.getProperty("user.home") + File.separator + "AppData" + File.separator + "Local" + File.separator + "TripPlanner Data" + File.separator + "data.json");
 
     private boolean initialized = false;
 
@@ -33,6 +35,14 @@ public class TripUtility {
         // Init tasks
         initialized = true;
     }
+
+    public ArrayList<Trip> getTrips() {
+        Data d = getData();
+        return d.getTrips();
+    }
+
+
+
 
     public void saveData(Data data) {
 
@@ -49,7 +59,6 @@ public class TripUtility {
             log("Data saving failed - " + e.getMessage());
         }
     }
-
     private Data getData() {
 
         if (!dataFile.exists()) {
@@ -93,8 +102,8 @@ public class TripUtility {
         log("No files found, initializing first-time setup.");
 
         try {
-            System.out.println("Creating a data directory at: " + Path.of(System.getProperty("user.home") + File.separator + "AppData" + File.separator + "Local" + File.separator + "IncomeUtility Data"));
-            Files.createDirectory(Path.of(System.getProperty("user.home") + File.separator + "AppData" + File.separator + "Local" + File.separator + "IncomeUtility Data"));
+            log("Creating a data directory at: " + Path.of(System.getProperty("user.home") + File.separator + "AppData" + File.separator + "Local" + File.separator + "TripPlanner Data"));
+            Files.createDirectory(Path.of(System.getProperty("user.home") + File.separator + "AppData" + File.separator + "Local" + File.separator + "TripPlanner Data"));
         } catch (IOException e) {
             log("Failed to create data directory: " + e.getMessage());
         }
@@ -202,9 +211,9 @@ public class TripUtility {
 
     public static void log(String msg) {
         if (msg.toLowerCase().contains("failed") || msg.toLowerCase().contains("error") || msg.toLowerCase().contains("fail") || msg.toLowerCase().contains("couldn't") || msg.toLowerCase().contains("could not")) {
-            System.out.println(String.format("[%s IncomeUtility/ERROR]: ", Formatting.formatDate(Date.from(Instant.now()), true)) + msg);
+            System.out.println(String.format("[%s TripPlanner/ERROR]: ", Formatting.formatDate(Date.from(Instant.now()), true)) + msg);
         } else {
-            System.out.println(String.format("[%s IncomeUtility/INFO]: ", Formatting.formatDate(Date.from(Instant.now()), true)) + msg);
+            System.out.println(String.format("[%s TripPlanner/INFO]: ", Formatting.formatDate(Date.from(Instant.now()), true)) + msg);
         }
     }
 }

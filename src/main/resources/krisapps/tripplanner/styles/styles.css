@@ -1,0 +1,143 @@
+* {
+    -fx-effect: null;
+    -fx-background-insets: 0;
+}
+
+.button {
+    -fx-background-color: #c8c8c8;
+    -fx-background-radius: 20px;
+
+    -fx-border-radius: 20px;
+    -fx-border-color: #c8c8c8;
+    -fx-border-width: 1px;
+    -fx-border-style: solid;
+}
+
+.text-field, .text-area {
+    -fx-background-color: #c8c8c8;
+    -fx-background-radius: 20px;
+
+    -fx-border-radius: 20px;
+    -fx-border-color: #c8c8c8;
+    -fx-border-width: 1px;
+    -fx-border-style: solid;
+}
+
+.text-field, .text-area {
+    -fx-prompt-text-fill: #3a3a3a;
+}
+
+.button:hover, .text-area:hover, .text-field:hover {
+    -fx-background-color: #bcbcbc;
+}
+
+.button:pressed {
+    -fx-background-color: #787878;
+}
+
+/*<editor-fold desc="Date Picker and Spinner">*/
+.date-picker > .text-field, .spinner > .text-field {
+    -fx-border-radius: 20 0 0 20;
+    -fx-background-radius: 20 0 0 20;
+}
+
+.date-picker, .spinner {
+    -fx-background-radius: 20 0 0 20;
+}
+
+
+.date-picker > .arrow-button {
+    -fx-background-color: #c8c8c8;
+    -fx-border-width: 0 0 0 1px;
+    -fx-border-style: solid;
+    -fx-border-color: #9c9c9c;
+}
+
+.date-picker > .arrow-button:hover {
+    -fx-background-color: #bcbcbc;
+}
+
+.date-picker > .arrow-button:pressed {
+    -fx-background-color: #787878;
+}
+
+.spinner > .increment-arrow-button, .spinner > .decrement-arrow-button {
+    -fx-background-color: #c8c8c8;
+    -fx-border-width: 0 0 0 1px;
+    -fx-border-style: solid;
+    -fx-border-color: #9c9c9c;
+}
+
+.spinner > .increment-arrow-button:hover, .spinner > .decrement-arrow-button:hover {
+    -fx-background-color: #bcbcbc;
+}
+
+.spinner > .increment-arrow-button:pressed, .spinner > .decrement-arrow-button:pressed {
+    -fx-background-color: #787878;
+}
+/*</editor-fold>*/
+
+.list-view {
+    -fx-border-color: #787878;
+    -fx-background-radius: 20px;
+    -fx-border-radius: 20px;
+}
+
+.choice-box {
+    -fx-background-color: #c8c8c8;
+}
+
+.toggle-button:selected {
+    -fx-background-color: #02bd00;
+}
+
+.toggle-button {
+    -fx-background-radius: 20px;
+
+    -fx-border-radius: 20px;
+    -fx-border-color: #c8c8c8;
+    -fx-border-width: 1px;
+    -fx-border-style: solid;
+    -fx-background-color: #ff2828;
+
+    -fx-text-fill: white;
+}
+
+/*<editor-fold desc=Tab Pane>*/
+.tab-pane .tab {
+    -fx-background-color: #c8c8c8;
+    -fx-focus-color: transparent;
+}
+
+.tab-pane .tab-header-area {
+    -fx-alignment: center;
+}
+
+.tab-pane .tab:selected {
+    -fx-background-color: #34ed4d;
+}
+
+.tab:selected {
+    -fx-font-weight: bold;
+}
+
+.tab .tab-label {
+    -fx-alignment: center;
+    -fx-text-fill: #3c3c3c;
+    -fx-font-size: 14px;
+}
+
+.tab-pane > .tab-header-area {
+    -fx-padding: 5px 5px 5px 5px;
+}
+
+/*</editor-fold>*/
+
+
+.people-count-picker {
+    -fx-font-size: 20px;
+}
+
+.day-picker {
+    -fx-font-size: 20px;
+}

@@ -23,5 +23,37 @@ public class Trip {
         this.itinerary = new Itinerary();
     }
 
+    public String getTripName() {
+        return tripName;
+    }
+
+    public String getTripDestination() {
+        return tripDestination;
+    }
+
+    public short getPartySize() {
+        return partySize;
+    }
+
+    public Date getTripStartDate() {
+        return tripStartDate;
+    }
+
+    public Date getTripEndDate() {
+        return tripEndDate;
+    }
+
+    public ExpenseData getExpenses() {
+        return expenses;
+    }
+
+    public Itinerary getItinerary() {
+        return itinerary;
+    }
+
+    public void setBudget(double budget) {
+        this.expenses.budget = budget;
+    }
+
 
 }
