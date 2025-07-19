@@ -1,14 +1,14 @@
 package krisapps.tripplanner.data.trip;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 public class Trip {
     private String tripName;
     private String tripDestination;
     private short partySize;
 
-    private Date tripStartDate;
-    private Date tripEndDate;
+    private LocalDate tripStartDate;
+    private LocalDate tripEndDate;
 
     private final ExpenseData expenses;
     private final Itinerary itinerary;
@@ -35,11 +35,11 @@ public class Trip {
         return partySize;
     }
 
-    public Date getTripStartDate() {
+    public LocalDate getTripStartDate() {
         return tripStartDate;
     }
 
-    public Date getTripEndDate() {
+    public LocalDate getTripEndDate() {
         return tripEndDate;
     }
 
@@ -55,5 +55,15 @@ public class Trip {
         this.expenses.budget = budget;
     }
 
+    public void setPartySize(short partySize) {
+        this.partySize = partySize;
+    }
 
+    public void setTripStartDate(LocalDate tripStartDate) {
+        this.tripStartDate = tripStartDate;
+    }
+
+    public void setTripEndDate(LocalDate tripEndDate) {
+        this.tripEndDate = tripEndDate;
+    }
 }
