@@ -1,14 +1,14 @@
 package krisapps.tripplanner.data.trip;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class Trip {
     private String tripName;
     private String tripDestination;
     private short partySize;
 
-    private LocalDate tripStartDate;
-    private LocalDate tripEndDate;
+    private LocalDateTime tripStartDate;
+    private LocalDateTime tripEndDate;
 
     private final ExpenseData expenses;
     private final Itinerary itinerary;
@@ -20,7 +20,7 @@ public class Trip {
         this.tripEndDate = null;
         this.partySize = 1;
         this.expenses = new ExpenseData();
-        this.itinerary = new Itinerary();
+        this.itinerary = new Itinerary(this);
     }
 
     public String getTripName() {
@@ -35,11 +35,11 @@ public class Trip {
         return partySize;
     }
 
-    public LocalDate getTripStartDate() {
+    public LocalDateTime getTripStartDate() {
         return tripStartDate;
     }
 
-    public LocalDate getTripEndDate() {
+    public LocalDateTime getTripEndDate() {
         return tripEndDate;
     }
 
@@ -59,11 +59,15 @@ public class Trip {
         this.partySize = partySize;
     }
 
-    public void setTripStartDate(LocalDate tripStartDate) {
+    public void setTripStartDate(LocalDateTime tripStartDate) {
         this.tripStartDate = tripStartDate;
     }
 
-    public void setTripEndDate(LocalDate tripEndDate) {
+    public void setTripEndDate(LocalDateTime tripEndDate) {
         this.tripEndDate = tripEndDate;
+    }
+
+    public boolean tripDatesSupplied() {
+        return this.tripStartDate != null && this.tripEndDate != null;
     }
 }
