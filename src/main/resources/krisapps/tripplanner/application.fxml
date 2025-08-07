@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.net.URL?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.chart.PieChart?>
 <?import javafx.scene.control.Button?>
@@ -21,7 +22,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="860.0" prefWidth="1015.0" stylesheets="@styles/styles.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="krisapps.tripplanner.Controller">
+<VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="860.0" prefWidth="1015.0" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="krisapps.tripplanner.Controller">
    <children>
       <VBox alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS">
          <children>
@@ -54,9 +55,9 @@
             </MenuBar>
             <StackPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS">
                <children>
-                  <TabPane fx:id="tripWizard" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" tabClosingPolicy="UNAVAILABLE" StackPane.alignment="CENTER">
+                  <TabPane fx:id="tripWizard" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" tabClosingPolicy="UNAVAILABLE">
                      <tabs>
-                        <Tab text="Add trip details">
+                        <Tab id="0" text="Add trip details">
                            <content>
                               <VBox alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
                                  <children>
@@ -75,7 +76,7 @@
                                                 <Insets bottom="10.0" />
                                              </padding>
                                           </Label>
-                                          <HBox alignment="CENTER" prefHeight="67.0" prefWidth="819.0">
+                                          <HBox alignment="CENTER" prefHeight="67.0" prefWidth="819.0" styleClass="optionPanel">
                                              <children>
                                                 <Label alignment="CENTER" maxWidth="1.7976931348623157E308" text="Leaving: " HBox.hgrow="ALWAYS">
                                                    <font>
@@ -123,7 +124,7 @@
                               </VBox>
                            </content>
                         </Tab>
-                        <Tab text="Create your itinerary">
+                        <Tab id="1" text="Create your itinerary">
                            <content>
                               <VBox alignment="TOP_CENTER" fillWidth="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
                                  <children>
@@ -137,7 +138,7 @@
                                           <Insets bottom="20.0" left="10.0" right="10.0" top="20.0" />
                                        </padding>
                                        <children>
-                                          <HBox alignment="CENTER" prefHeight="48.0" prefWidth="819.0" spacing="20.0" VBox.vgrow="NEVER">
+                                          <HBox alignment="CENTER" prefHeight="48.0" prefWidth="819.0" spacing="20.0" styleClass="optionPanel" VBox.vgrow="NEVER">
                                              <children>
                                                 <TextField fx:id="activityDescriptionBox" maxHeight="1.7976931348623157E308" promptText="Activity description" HBox.hgrow="SOMETIMES">
                                                    <font>
@@ -153,8 +154,12 @@
                                                 <Button fx:id="addActivityButton" maxHeight="1.7976931348623157E308" mnemonicParsing="false" text="Add to itinerary" HBox.hgrow="SOMETIMES">
                                                    <font>
                                                       <Font name="Segoe UI Bold" size="12.0" />
-                                                   </font></Button>
+                                                   </font>
+                                                </Button>
                                              </children>
+                                             <padding>
+                                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                             </padding>
                                           </HBox>
                                           <Separator maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" orientation="VERTICAL" prefHeight="50.0" visible="false" VBox.vgrow="SOMETIMES" />
                                           <Label alignment="CENTER" prefHeight="55.0" prefWidth="896.0" text="Itinerary">
@@ -162,7 +167,7 @@
                                                 <Font name="Segoe UI Bold" size="20.0" />
                                              </font>
                                           </Label>
-                                          <ListView fx:id="itineraryListView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS" />
+                                          <ListView fx:id="itineraryListView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="itinerary-listview" VBox.vgrow="ALWAYS" />
                                           <HBox alignment="CENTER_RIGHT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="SOMETIMES">
                                              <children>
                                                 <Label text="Day 1 - Activity description">
@@ -186,7 +191,7 @@
                               </VBox>
                            </content>
                         </Tab>
-                        <Tab text="Plan expenses">
+                        <Tab id="2" text="Plan expenses">
                            <content>
                               <VBox alignment="TOP_CENTER" fillWidth="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
                                  <children>
@@ -202,7 +207,7 @@
                                        <children>
                                           <VBox alignment="CENTER" maxWidth="1.7976931348623157E308" spacing="10.0" VBox.vgrow="NEVER">
                                              <children>
-                                                <HBox alignment="CENTER" prefHeight="48.0" prefWidth="819.0" spacing="20.0">
+                                                <HBox alignment="CENTER" prefHeight="48.0" prefWidth="819.0" spacing="20.0" styleClass="optionPanel">
                                                    <children>
                                                       <TextField fx:id="expenseAmountBox" maxHeight="1.7976931348623157E308" promptText="Expense" HBox.hgrow="SOMETIMES">
                                                          <font>
@@ -221,22 +226,28 @@
                                                       </TextField>
                                                       <Button fx:id="addExpenseButton" maxHeight="1.7976931348623157E308" mnemonicParsing="false" text="Plan expense" HBox.hgrow="SOMETIMES" />
                                                    </children>
+                                                   <padding>
+                                                      <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                                   </padding>
                                                 </HBox>
-                                                <HBox alignment="CENTER" prefHeight="48.0" prefWidth="819.0" spacing="20.0">
+                                                <HBox alignment="CENTER" prefHeight="48.0" prefWidth="819.0" spacing="20.0" styleClass="optionPanel">
                                                    <children>
                                                       <HBox alignment="CENTER_LEFT" maxWidth="-Infinity" prefHeight="44.0" prefWidth="406.0" HBox.hgrow="NEVER">
                                                          <children>
-                                                            <Label maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="24.0" text="Expense category: " HBox.hgrow="SOMETIMES">
+                                                            <Label maxHeight="1.7976931348623157E308" prefHeight="24.0" text="Category:" HBox.hgrow="SOMETIMES">
                                                                <font>
                                                                   <Font name="Segoe UI Bold" size="20.0" />
                                                                </font>
+                                                               <HBox.margin>
+                                                                  <Insets right="10.0" />
+                                                               </HBox.margin>
                                                             </Label>
-                                                            <ChoiceBox fx:id="expenseTypeSelector" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="225.0" prefHeight="32.0" />
+                                                            <ChoiceBox fx:id="expenseTypeSelector" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="225.0" prefHeight="32.0" HBox.hgrow="SOMETIMES" />
                                                          </children>
                                                       </HBox>
                                                       <HBox fx:id="expenseDayPanel" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
                                                          <children>
-                                                            <Label maxHeight="1.7976931348623157E308" prefHeight="24.0" text="Planned for Day #">
+                                                            <Label maxHeight="1.7976931348623157E308" prefHeight="24.0" text="Day: ">
                                                                <font>
                                                                   <Font name="Segoe UI Bold" size="20.0" />
                                                                </font>
@@ -248,6 +259,9 @@
                                                          </children>
                                                       </HBox>
                                                    </children>
+                                                   <padding>
+                                                      <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                                   </padding>
                                                 </HBox>
                                              </children>
                                           </VBox>
@@ -281,7 +295,7 @@
                               </VBox>
                            </content>
                         </Tab>
-                        <Tab text="Set reminders">
+                        <Tab id="3" text="Set reminders">
                            <content>
                               <VBox alignment="TOP_CENTER" fillWidth="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
                                  <children>
@@ -292,7 +306,7 @@
                                     </Label>
                                     <VBox alignment="TOP_CENTER" layoutX="54.0" layoutY="79.0" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS">
                                        <children>
-                                          <VBox fx:id="countdown" alignment="CENTER_LEFT">
+                                          <VBox fx:id="countdown" alignment="CENTER_LEFT" styleClass="optionPanel">
                                              <children>
                                                 <HBox alignment="CENTER_LEFT">
                                                    <children>
@@ -346,9 +360,12 @@
                                                    </children>
                                                 </VBox>
                                              </children>
+                                             <padding>
+                                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                             </padding>
                                           </VBox>
                                           <Separator orientation="VERTICAL" prefHeight="50.0" visible="false" />
-                                          <VBox fx:id="countdown1" alignment="CENTER_LEFT">
+                                          <VBox fx:id="countdown1" alignment="CENTER_LEFT" styleClass="optionPanel">
                                              <children>
                                                 <HBox alignment="CENTER_LEFT">
                                                    <children>
@@ -381,6 +398,9 @@
                                                    </VBox.margin>
                                                 </VBox>
                                              </children>
+                                             <padding>
+                                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                             </padding>
                                           </VBox>
                                        </children>
                                        <padding>
@@ -394,13 +414,13 @@
                               </VBox>
                            </content>
                         </Tab>
-                        <Tab onSelectionChanged="#refreshTripOverview" text="Trip overview">
+                        <Tab id="4" disable="true" onSelectionChanged="#refreshTripOverview" text="Trip overview">
                            <content>
                               <VBox alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
                                  <children>
                                     <VBox alignment="TOP_CENTER" layoutX="15.0" layoutY="14.0" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS">
                                        <children>
-                                          <VBox prefHeight="200.0" prefWidth="100.0">
+                                          <VBox prefHeight="200.0" prefWidth="100.0" styleClass="optionPanel">
                                              <children>
                                                 <Label maxWidth="1.7976931348623157E308" text="Trip summary">
                                                    <font>
@@ -443,8 +463,15 @@
                                                    </padding>
                                                 </VBox>
                                              </children>
+                                             <VBox.margin>
+                                                <Insets />
+                                             </VBox.margin>
+                                             <padding>
+                                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                             </padding>
                                           </VBox>
-                                          <VBox fx:id="costOverviewPanel">
+                                          <Separator orientation="VERTICAL" prefHeight="20.0" visible="false" VBox.vgrow="NEVER" />
+                                          <VBox fx:id="costOverviewPanel" styleClass="optionPanel">
                                              <children>
                                                 <Label maxWidth="1.7976931348623157E308" text="Cost summary">
                                                    <font>
@@ -506,6 +533,12 @@
                                                    </children>
                                                 </HBox>
                                              </children>
+                                             <VBox.margin>
+                                                <Insets />
+                                             </VBox.margin>
+                                             <padding>
+                                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                             </padding>
                                           </VBox>
                                        </children>
                                        <padding>
@@ -612,4 +645,8 @@
          </children>
       </VBox>
    </children>
+   <stylesheets>
+      <URL value="@styles/styles.css" />
+      <URL value="@styles/listview.css" />
+   </stylesheets>
 </VBox>

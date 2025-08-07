@@ -6,20 +6,14 @@ import java.util.UUID;
 public class Itinerary {
 
     public static class ItineraryItem {
-        private final Trip trip;
         private String itemDescription;
         private int associatedDay;
         private final LinkedList<UUID> associatedExpenses;
 
-        public ItineraryItem(Trip trip, String itemDescription, int associatedDay) {
-            this.trip = trip;
+        public ItineraryItem(String itemDescription, int associatedDay) {
             this.itemDescription = itemDescription;
             this.associatedDay = associatedDay;
             this.associatedExpenses = new LinkedList<>();
-        }
-
-        public Trip getTrip() {
-            return trip;
         }
 
         public String getItemDescription() {

@@ -5,11 +5,17 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import krisapps.tripplanner.data.TripUtility;
+import krisapps.tripplanner.data.listview.itinerary.ItineraryCellFactory;
+import krisapps.tripplanner.data.prompts.LinkExpensesDialog;
+import krisapps.tripplanner.data.trip.Itinerary;
 import krisapps.tripplanner.data.trip.Trip;
 
 import java.time.Duration;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class Controller {
 
@@ -52,6 +58,9 @@ public class Controller {
 
     @FXML
     private TextField activityDescriptionBox;
+
+    @FXML
+    private ListView<Itinerary.ItineraryItem> itineraryListView;
     //</editor-fold>
 
     //<editor-fold desc="Trip overview">
@@ -62,9 +71,11 @@ public class Controller {
     private Label peopleInvolvedLabel;
     //</editor-fold>
 
-    public static TripUtility trips = new TripUtility();
-    Trip currentPlan = null;
-    public static boolean launchedInReadOnly = false;
+    TripUtility trips = TripUtility.getInstance();
+    private Trip currentPlan = null;
+    private boolean launchedInReadOnly = false;
+
+    static ScheduledExecutorService scheduler = new ScheduledThreadPoolExecutor(2);
 
     @FXML
     public void initialize() {
@@ -82,6 +93,10 @@ public class Controller {
         }
         registerListeners();
         setupSpinners();
+        setupListViews();
+        launchDataChecker();
+        LinkExpensesDialog dlg = new LinkExpensesDialog();
+        dlg.showAndWait();
     }
 
     public void setupSpinners() {
@@ -89,17 +104,31 @@ public class Controller {
         tripPartySizeBox.setValueFactory(valueFactory);
     }
 
+    public void setupListViews() {
+        itineraryListView.setCellFactory(new ItineraryCellFactory());
+        itineraryListView.getItems().add(new Itinerary.ItineraryItem("test-1", 1));
+        itineraryListView.getItems().add(new Itinerary.ItineraryItem("test-2", -1));
+    }
+
     public void registerListeners() {
         // Setup menu
         tripStartBox.valueProperty().addListener((observable, oldValue, newValue) -> {
             if (currentPlan == null) return;
             if (launchedInReadOnly) return;
-            currentPlan.setTripStartDate(newValue.atStartOfDay());
+            if (newValue == null) {
+                currentPlan.setTripStartDate(null);
+            } else {
+                currentPlan.setTripStartDate(newValue.atStartOfDay());
+            }
         });
         tripEndBox.valueProperty().addListener((observable, oldValue, newValue) -> {
             if (currentPlan == null) return;
             if (launchedInReadOnly) return;
-            currentPlan.setTripEndDate(newValue.atStartOfDay());
+            if (newValue == null) {
+                currentPlan.setTripEndDate(null);
+            } else {
+                currentPlan.setTripEndDate(newValue.atStartOfDay());
+            }
         });
         tripPartySizeBox.valueProperty().addListener((observable, oldValue, newValue) -> {
             if (currentPlan == null) return;
@@ -110,6 +139,17 @@ public class Controller {
         refreshItinerary();
     }
 
+    public void launchDataChecker() {
+        scheduler.scheduleAtFixedRate(() -> {
+            if (currentPlan == null) return;
+            if (!currentPlan.tripDatesSupplied()) {
+                tripWizard.getTabs().get(4).setDisable(true);
+                return;
+            }
+            tripWizard.getTabs().get(4).setDisable(false);
+        }, 0L, 200L, TimeUnit.MILLISECONDS);
+    }
+
     public void refreshItinerary() {
         if (currentPlan == null) return;
         if (currentPlan.tripDatesSupplied()) {
@@ -118,6 +158,7 @@ public class Controller {
         } else {
             activityDayBox.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, Short.MAX_VALUE, 1));
         }
+
     }
 
     public void refreshExpensePlanner() {
@@ -177,6 +218,23 @@ public class Controller {
     public void resetPlanner() {
         currentPlan = null;
         refreshWindowTitle("KrisApps Trip Planner");
+    }
+
+    public void promptLinkActivityExpenses(String activityName) {
+
+    }
+
+
+
+
+    public void addItineraryEntry() {
+        if (activityDescriptionBox.getText().isEmpty()) {
+            return;
+        }
+        String activityDesc =  activityDescriptionBox.getText();
+        int activityDay = activityDayBox.getValue() != null ? activityDayBox.getValue() : -1;
+        currentPlan.getItinerary().addItem(new Itinerary.ItineraryItem(activityDesc, activityDay));
+        refreshItinerary();
     }
 
     public void refreshWindowTitle(String title) {

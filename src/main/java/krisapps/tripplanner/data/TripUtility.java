@@ -29,6 +29,18 @@ public class TripUtility {
 
     private boolean initialized = false;
 
+    private static TripUtility instance;
+
+    private TripUtility() {
+        
+    }
+
+    public static TripUtility getInstance() {
+        if (instance == null) {
+            instance = new TripUtility();
+        }
+        return instance;
+    }
 
     public void init() {
         if (initialized) return;
@@ -40,9 +52,6 @@ public class TripUtility {
         Data d = getData();
         return d.getTrips();
     }
-
-
-
 
     public void saveData(Data data) {
 
