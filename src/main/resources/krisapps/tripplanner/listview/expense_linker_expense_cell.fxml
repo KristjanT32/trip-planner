@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<HBox alignment="CENTER_LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="50.0" styleClass="expense-linker-cell" stylesheets="@../styles/listview.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <VBox alignment="CENTER_LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS">
+         <children>
+            <HBox alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308">
+               <children>
+                  <Label fx:id="expenseDesc" maxWidth="1.7976931348623157E308" text="Expense description" HBox.hgrow="ALWAYS">
+                     <font>
+                        <Font name="Segoe UI" size="12.0" />
+                     </font>
+                     <HBox.margin>
+                        <Insets right="5.0" />
+                     </HBox.margin>
+                  </Label>
+                  <Label fx:id="expenseVal" alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308" text="0.00" HBox.hgrow="SOMETIMES">
+                     <font>
+                        <Font name="Segoe UI Bold" size="12.0" />
+                     </font>
+                  </Label>
+               </children>
+            </HBox>
+            <Label fx:id="expenseType" maxWidth="1.7976931348623157E308" text="#UNCATEGORIZED">
+               <font>
+                  <Font name="Segoe UI Italic" size="10.0" />
+               </font>
+            </Label>
+         </children>
+      </VBox>
+   </children>
+   <padding>
+      <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+   </padding>
+</HBox>

@@ -1,8 +1,4 @@
-.list-cell:selected {
-    -fx-text-fill: black !important;
-}
-
-.itinerary-listview {
+.itinerary-listview, .expense-linker-listview {
     -fx-padding: 10px;
     -fx-background-color: white;
     -fx-background-radius: 20px;
@@ -17,12 +13,20 @@
     -fx-text-fill: black;
 }
 
-.list-cell:selected {
+.expense-linker-cell, .expense-linker-listview .list-cell {
+    -fx-padding: 5px;
+    -fx-background-color: #cccccc;
+    -fx-background-radius: 20px;
+    -fx-border-radius: 20px;
+    -fx-text-fill: black;
+}
+
+.itinerary-listview .list-cell:selected, .expense-linker-listview .list-cell:selected {
     -fx-border-color: #000000;
 }
 
-.list-cell:empty {
-    -fx-background-color: #707070;
+.itinerary-listview .list-cell:empty, .expense-linker-listview .list-cell:empty {
+    -fx-background-color: #f3f3f3;
 }
 
 .itinerary-listview .list-cell:odd, .itinerary-listview .list-cell:even {

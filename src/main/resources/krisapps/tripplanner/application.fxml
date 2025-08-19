@@ -191,7 +191,7 @@
                               </VBox>
                            </content>
                         </Tab>
-                        <Tab id="2" text="Plan expenses">
+                        <Tab id="2" onSelectionChanged="#refreshExpensePlanner" text="Plan expenses">
                            <content>
                               <VBox alignment="TOP_CENTER" fillWidth="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
                                  <children>
@@ -219,7 +219,7 @@
                                                             <Font name="Segoe UI Bold" size="20.0" />
                                                          </font>
                                                       </Label>
-                                                      <TextField fx:id="expenseValueBox" maxHeight="1.7976931348623157E308" promptText="Expense source">
+                                                      <TextField fx:id="expenseNameBox" maxHeight="1.7976931348623157E308" promptText="Expense source">
                                                          <font>
                                                             <Font name="Segoe UI Light" size="20.0" />
                                                          </font>
@@ -271,7 +271,7 @@
                                                 <Font name="Segoe UI Bold" size="20.0" />
                                              </font>
                                           </Label>
-                                          <ListView fx:id="itineraryListView1" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS" />
+                                          <ListView fx:id="expenseList" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS" />
                                           <HBox alignment="CENTER_RIGHT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="SOMETIMES">
                                              <children>
                                                 <Label text="Expense description">

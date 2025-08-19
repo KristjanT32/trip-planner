@@ -9,6 +9,7 @@ module krisapps.tripplanner {
 
     opens krisapps.tripplanner to javafx.fxml;
     opens krisapps.tripplanner.data.listview.itinerary to javafx.fxml;
+    opens krisapps.tripplanner.data.listview.expense_linker to javafx.fxml;
     opens krisapps.tripplanner.data.prompts to javafx.fxml;
     exports krisapps.tripplanner;
 }

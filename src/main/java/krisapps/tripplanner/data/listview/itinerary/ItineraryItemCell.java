@@ -7,6 +7,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.layout.VBox;
 import krisapps.tripplanner.Application;
+import krisapps.tripplanner.data.TripUtility;
 import krisapps.tripplanner.data.trip.Itinerary;
 
 import java.io.IOException;
@@ -28,6 +29,8 @@ public class ItineraryItemCell extends ListCell<Itinerary.ItineraryItem> {
     @FXML
     private Button linkExpensesButton;
 
+    final TripUtility util = TripUtility.getInstance();
+
     public ItineraryItemCell() {
         loadFXML();
     }
@@ -45,11 +48,16 @@ public class ItineraryItemCell extends ListCell<Itinerary.ItineraryItem> {
         descriptionLabel.setStyle("-fx-text-fill: black");
         dayLabel.setStyle("-fx-text-fill: black");
         expenseSummaryLabel.setStyle("-fx-text-fill: black");
+
+        expenseSummaryLabel.setText("Not implemented yet");
     }
 
     @Override
     protected void updateItem(Itinerary.ItineraryItem item, boolean empty) {
         super.updateItem(item, empty);
+        linkExpensesButton.setOnAction((_event) -> {
+            util.promptLinkExpenses(item);
+        });
 
         if (empty || item == null) {
             setText(null);
@@ -57,7 +65,6 @@ public class ItineraryItemCell extends ListCell<Itinerary.ItineraryItem> {
         } else {
             descriptionLabel.setText(item.getItemDescription());
             dayLabel.setText(item.getAssociatedDay() == -1 ? "" : "Planned for Day " + item.getAssociatedDay());
-            expenseSummaryLabel.setText("Not implemented yet");
             setText(null);
             setGraphic(rootPane);
         }

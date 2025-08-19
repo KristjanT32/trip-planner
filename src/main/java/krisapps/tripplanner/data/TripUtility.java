@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.ToNumberPolicy;
 import com.google.gson.stream.JsonReader;
+import krisapps.tripplanner.data.prompts.LinkExpensesDialog;
+import krisapps.tripplanner.data.trip.Itinerary;
 import krisapps.tripplanner.data.trip.Trip;
 import krisapps.tripplanner.misc.LocalDateTypeAdapter;
 
@@ -89,6 +91,12 @@ public class TripUtility {
         }
     }
 
+
+    public void promptLinkExpenses(Itinerary.ItineraryItem item) {
+        LinkExpensesDialog dlg = new LinkExpensesDialog();
+        dlg.setActivityName(item.getItemDescription());
+        dlg.showAndWait();
+    }
 
     // Saving values
     public void setValue(String key, Object val) {

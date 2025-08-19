@@ -1,5 +1,6 @@
 package krisapps.tripplanner.data.trip;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 
 public class Trip {
@@ -41,6 +42,16 @@ public class Trip {
 
     public LocalDateTime getTripEndDate() {
         return tripEndDate;
+    }
+
+    public Duration getTripDuration() {
+        if (tripStartDate == null) {
+            throw new IllegalStateException("Cannot get trip duration. The start date for this trip has not been initialized.");
+        }
+        if (tripEndDate == null) {
+            throw new IllegalStateException("Cannot get trip duration. The end date for this trip has not been initialized.");
+        }
+        return Duration.between(tripStartDate, tripEndDate);
     }
 
     public ExpenseData getExpenses() {

@@ -1,17 +1,20 @@
 package krisapps.tripplanner;
 
 import javafx.application.Platform;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import krisapps.tripplanner.data.TripUtility;
 import krisapps.tripplanner.data.listview.itinerary.ItineraryCellFactory;
 import krisapps.tripplanner.data.prompts.LinkExpensesDialog;
+import krisapps.tripplanner.data.trip.ExpenseCategory;
 import krisapps.tripplanner.data.trip.Itinerary;
 import krisapps.tripplanner.data.trip.Trip;
 
 import java.time.Duration;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -71,6 +74,20 @@ public class Controller {
     private Label peopleInvolvedLabel;
     //</editor-fold>
 
+    //<editor-fold desc="Expense planner">
+    @FXML
+    private ChoiceBox<String> expenseTypeSelector;
+
+    @FXML
+    private TextField expenseAmountBox;
+
+    @FXML
+    private TextField expenseNameBox;
+
+    @FXML
+    private Spinner<Integer> expenseDayBox;
+    //</editor-fold>
+
     TripUtility trips = TripUtility.getInstance();
     private Trip currentPlan = null;
     private boolean launchedInReadOnly = false;
@@ -91,23 +108,48 @@ public class Controller {
             tripSetupPanel.setVisible(false);
             upcomingTripsPanel.setVisible(true);
         }
-        registerListeners();
-        setupSpinners();
-        setupListViews();
+        initUI();
         launchDataChecker();
         LinkExpensesDialog dlg = new LinkExpensesDialog();
         dlg.showAndWait();
     }
 
+    public void initUI() {
+        setupSpinners();
+        setupListViews();
+        setupDropdowns();
+        registerListeners();
+    }
+
     public void setupSpinners() {
-        SpinnerValueFactory<Integer> valueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(1, Short.MAX_VALUE, 1);
-        tripPartySizeBox.setValueFactory(valueFactory);
+        SpinnerValueFactory<Integer> partySizeValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(1, Short.MAX_VALUE, 1);
+        tripPartySizeBox.setValueFactory(partySizeValueFactory);
+
+        SpinnerValueFactory<Integer> expenseDayValueFactory;
+        try {
+            expenseDayValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(-1, (int) currentPlan.getTripDuration().toDays(), -1);
+        } catch (IllegalStateException | NullPointerException e) {
+            expenseDayValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(-1, Integer.MAX_VALUE, -1);
+        }
+        expenseDayBox.setValueFactory(expenseDayValueFactory);
+    }
+
+    public void setupDropdowns() {
+        ObservableList<String> items = expenseTypeSelector.getItems();
+        items.addAll(Arrays.stream(ExpenseCategory.values()).map(ExpenseCategory::name).toList());
     }
 
     public void setupListViews() {
         itineraryListView.setCellFactory(new ItineraryCellFactory());
-        itineraryListView.getItems().add(new Itinerary.ItineraryItem("test-1", 1));
-        itineraryListView.getItems().add(new Itinerary.ItineraryItem("test-2", -1));
+
+        final Itinerary.ItineraryItem[] testItems = {
+          new Itinerary.ItineraryItem("test-1", 1),
+          new Itinerary.ItineraryItem("test-2", -1)
+        };
+
+        for (Itinerary.ItineraryItem item : testItems) {
+            itineraryListView.getItems().add(item);
+        }
     }
 
     public void registerListeners() {
@@ -162,7 +204,8 @@ public class Controller {
     }
 
     public void refreshExpensePlanner() {
-
+        // Reinitialize the spinners to apply limit changes for current trip plan (e.g. limit day picker to trip duration)
+        setupSpinners();
     }
 
     public void refreshTripOverview() {
@@ -213,6 +256,9 @@ public class Controller {
         refreshWindowTitle("KrisApps Trip Planner - planning " + currentPlan.getTripName());
         tripSetupPanel.setVisible(false);
         tripWizard.setVisible(true);
+
+        // Reinitialize the spinners to apply limit changes for current trip plan (e.g. limit day picker to trip duration)
+        setupSpinners();
     }
 
     public void resetPlanner() {
