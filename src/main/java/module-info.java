@@ -11,5 +11,10 @@ module krisapps.tripplanner {
     opens krisapps.tripplanner.data.listview.itinerary to javafx.fxml;
     opens krisapps.tripplanner.data.listview.expense_linker to javafx.fxml;
     opens krisapps.tripplanner.data.prompts to javafx.fxml;
+    opens krisapps.tripplanner.data.listview.upcoming_trips to javafx.fxml;
+
+    opens krisapps.tripplanner.data to com.google.gson;
+    opens krisapps.tripplanner.data.trip to com.google.gson;
+
     exports krisapps.tripplanner;
 }

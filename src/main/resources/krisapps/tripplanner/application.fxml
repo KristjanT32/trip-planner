@@ -31,6 +31,7 @@
                   <Menu mnemonicParsing="false" text="Trip Planner">
                      <items>
                         <MenuItem mnemonicParsing="false" onAction="#showTripSetup" text="New trip" />
+                        <MenuItem mnemonicParsing="false" onAction="#showUpcomingTrips" text="Trip list" />
                      </items>
                   </Menu>
                   <Menu mnemonicParsing="false" text="Planning">
@@ -55,7 +56,7 @@
             </MenuBar>
             <StackPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS">
                <children>
-                  <TabPane fx:id="tripWizard" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" tabClosingPolicy="UNAVAILABLE">
+                  <TabPane fx:id="tripWizard" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" tabClosingPolicy="UNAVAILABLE" visible="false">
                      <tabs>
                         <Tab id="0" text="Add trip details">
                            <content>
@@ -76,7 +77,7 @@
                                                 <Insets bottom="10.0" />
                                              </padding>
                                           </Label>
-                                          <HBox alignment="CENTER" prefHeight="67.0" prefWidth="819.0" styleClass="optionPanel">
+                                          <HBox alignment="CENTER" prefHeight="67.0" prefWidth="819.0" styleClass="options-panel">
                                              <children>
                                                 <Label alignment="CENTER" maxWidth="1.7976931348623157E308" text="Leaving: " HBox.hgrow="ALWAYS">
                                                    <font>
@@ -138,7 +139,7 @@
                                           <Insets bottom="20.0" left="10.0" right="10.0" top="20.0" />
                                        </padding>
                                        <children>
-                                          <HBox alignment="CENTER" prefHeight="48.0" prefWidth="819.0" spacing="20.0" styleClass="optionPanel" VBox.vgrow="NEVER">
+                                          <HBox alignment="CENTER" prefHeight="48.0" prefWidth="819.0" spacing="20.0" styleClass="options-panel" VBox.vgrow="NEVER">
                                              <children>
                                                 <TextField fx:id="activityDescriptionBox" maxHeight="1.7976931348623157E308" promptText="Activity description" HBox.hgrow="SOMETIMES">
                                                    <font>
@@ -207,7 +208,7 @@
                                        <children>
                                           <VBox alignment="CENTER" maxWidth="1.7976931348623157E308" spacing="10.0" VBox.vgrow="NEVER">
                                              <children>
-                                                <HBox alignment="CENTER" prefHeight="48.0" prefWidth="819.0" spacing="20.0" styleClass="optionPanel">
+                                                <HBox alignment="CENTER" prefHeight="48.0" prefWidth="819.0" spacing="20.0" styleClass="options-panel">
                                                    <children>
                                                       <TextField fx:id="expenseAmountBox" maxHeight="1.7976931348623157E308" promptText="Expense" HBox.hgrow="SOMETIMES">
                                                          <font>
@@ -224,13 +225,13 @@
                                                             <Font name="Segoe UI Light" size="20.0" />
                                                          </font>
                                                       </TextField>
-                                                      <Button fx:id="addExpenseButton" maxHeight="1.7976931348623157E308" mnemonicParsing="false" text="Plan expense" HBox.hgrow="SOMETIMES" />
+                                                      <Button fx:id="addExpenseButton" maxHeight="1.7976931348623157E308" mnemonicParsing="false" onAction="#addExpenseEntry" text="Plan expense" HBox.hgrow="SOMETIMES" />
                                                    </children>
                                                    <padding>
                                                       <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                                                    </padding>
                                                 </HBox>
-                                                <HBox alignment="CENTER" prefHeight="48.0" prefWidth="819.0" spacing="20.0" styleClass="optionPanel">
+                                                <HBox alignment="CENTER" prefHeight="48.0" prefWidth="819.0" spacing="20.0" styleClass="options-panel">
                                                    <children>
                                                       <HBox alignment="CENTER_LEFT" maxWidth="-Infinity" prefHeight="44.0" prefWidth="406.0" HBox.hgrow="NEVER">
                                                          <children>
@@ -263,6 +264,14 @@
                                                       <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                                                    </padding>
                                                 </HBox>
+                                                <Label text="Leave day on -1 if you do not wish to assign a specific day to this expense">
+                                                   <font>
+                                                      <Font name="Segoe UI" size="16.0" />
+                                                   </font>
+                                                   <VBox.margin>
+                                                      <Insets top="5.0" />
+                                                   </VBox.margin>
+                                                </Label>
                                              </children>
                                           </VBox>
                                           <Separator maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" orientation="VERTICAL" prefHeight="60.0" visible="false" VBox.vgrow="SOMETIMES" />
@@ -271,7 +280,7 @@
                                                 <Font name="Segoe UI Bold" size="20.0" />
                                              </font>
                                           </Label>
-                                          <ListView fx:id="expenseList" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS" />
+                                          <ListView fx:id="expenseList" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="expense-listview" VBox.vgrow="ALWAYS" />
                                           <HBox alignment="CENTER_RIGHT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="SOMETIMES">
                                              <children>
                                                 <Label text="Expense description">
@@ -306,7 +315,7 @@
                                     </Label>
                                     <VBox alignment="TOP_CENTER" layoutX="54.0" layoutY="79.0" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS">
                                        <children>
-                                          <VBox fx:id="countdown" alignment="CENTER_LEFT" styleClass="optionPanel">
+                                          <VBox fx:id="countdown" alignment="CENTER_LEFT" styleClass="options-panel">
                                              <children>
                                                 <HBox alignment="CENTER_LEFT">
                                                    <children>
@@ -365,7 +374,7 @@
                                              </padding>
                                           </VBox>
                                           <Separator orientation="VERTICAL" prefHeight="50.0" visible="false" />
-                                          <VBox fx:id="countdown1" alignment="CENTER_LEFT" styleClass="optionPanel">
+                                          <VBox fx:id="countdown1" alignment="CENTER_LEFT" styleClass="options-panel">
                                              <children>
                                                 <HBox alignment="CENTER_LEFT">
                                                    <children>
@@ -420,7 +429,7 @@
                                  <children>
                                     <VBox alignment="TOP_CENTER" layoutX="15.0" layoutY="14.0" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS">
                                        <children>
-                                          <VBox prefHeight="200.0" prefWidth="100.0" styleClass="optionPanel">
+                                          <VBox prefHeight="200.0" prefWidth="100.0" styleClass="options-panel">
                                              <children>
                                                 <Label maxWidth="1.7976931348623157E308" text="Trip summary">
                                                    <font>
@@ -471,7 +480,7 @@
                                              </padding>
                                           </VBox>
                                           <Separator orientation="VERTICAL" prefHeight="20.0" visible="false" VBox.vgrow="NEVER" />
-                                          <VBox fx:id="costOverviewPanel" styleClass="optionPanel">
+                                          <VBox fx:id="costOverviewPanel" styleClass="options-panel">
                                              <children>
                                                 <Label maxWidth="1.7976931348623157E308" text="Cost summary">
                                                    <font>
@@ -554,14 +563,14 @@
                         </Tab>
                      </tabs>
                   </TabPane>
-                  <VBox fx:id="upcomingTripsPanel" alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" visible="false" StackPane.alignment="CENTER">
+                  <VBox fx:id="upcomingTripsPanel" alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" StackPane.alignment="CENTER">
                      <children>
                         <Label maxWidth="1.7976931348623157E308" text="Upcoming trips" VBox.vgrow="ALWAYS">
                            <font>
                               <Font name="Segoe UI Bold" size="30.0" />
                            </font>
                         </Label>
-                        <ListView prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
+                        <ListView fx:id="upcomingTripsList" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
                            <VBox.margin>
                               <Insets top="10.0" />
                            </VBox.margin>

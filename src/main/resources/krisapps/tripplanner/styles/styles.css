@@ -142,8 +142,21 @@
     -fx-font-size: 20px;
 }
 
-.optionPanel {
+.options-panel {
     -fx-background-color: #dadada;
     -fx-background-radius: 20px;
     -fx-border-radius: 20px;
 }
+
+.upcoming-trip-pb .bar {
+    -fx-background-color: #00e400;
+    -fx-border-radius: 10px;
+    -fx-background-radius: 10px;
+}
+
+.upcoming-trip-pb .track {
+    -fx-background-color: #bababa;
+    -fx-border-radius: 10px;
+    -fx-background-radius: 10px;
+}
+

@@ -6,7 +6,9 @@ import com.google.gson.ToNumberPolicy;
 import com.google.gson.stream.JsonReader;
 import krisapps.tripplanner.data.prompts.LinkExpensesDialog;
 import krisapps.tripplanner.data.trip.Itinerary;
+import krisapps.tripplanner.data.trip.PlannedExpense;
 import krisapps.tripplanner.data.trip.Trip;
+import krisapps.tripplanner.misc.LocalDateTimeTypeAdapter;
 import krisapps.tripplanner.misc.LocalDateTypeAdapter;
 
 import java.io.*;
@@ -19,13 +21,14 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.UUID;
 
 public class TripUtility {
 
     private static final Gson gson = new GsonBuilder()
-            .setDateFormat("EEE MMM dd HH:mm:ss zzz yyyy")
             .setObjectToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE)
             .registerTypeAdapter(LocalDate.class, new LocalDateTypeAdapter())
+            .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeTypeAdapter())
             .create();
     private final File dataFile = new File(System.getProperty("user.home") + File.separator + "AppData" + File.separator + "Local" + File.separator + "TripPlanner Data" + File.separator + "data.json");
 
@@ -53,6 +56,28 @@ public class TripUtility {
     public ArrayList<Trip> getTrips() {
         Data d = getData();
         return d.getTrips();
+    }
+
+    public void updateTrip(Trip trip) {
+        Data data = getData();
+        ArrayList<Trip> trips = data.getTrips();
+
+        trips.removeIf(t -> t.getUniqueID() == trip.getUniqueID());
+        trips.add(trip);
+
+        data.setTrips(trips);
+        saveData(data);
+        System.out.println("Updated trip '" + trip.getTripName() + "' (" + trip.getUniqueID() + ")");
+    }
+
+    public void addExpense(Trip trip, PlannedExpense expense) {
+        trip.getExpenses().plannedExpenses.add(expense);
+        updateTrip(trip);
+    }
+
+    public void removeExpense(Trip trip, UUID expenseID) {
+        trip.getExpenses().plannedExpenses.removeIf(exp -> exp.getExpenseID() == expenseID);
+        updateTrip(trip);
     }
 
     public void saveData(Data data) {

@@ -18,6 +18,11 @@ public class Data {
     public HashMap<String, Object> getSavedValues() {
         return this.values;
     }
+
+    public void setTrips(ArrayList<Trip> trips) {
+        this.trips = trips;
+    }
+
     public ArrayList<Trip> getTrips() {
         return this.trips;
     }

@@ -1,4 +1,4 @@
-.itinerary-listview, .expense-linker-listview {
+.itinerary-listview, .expense-linker-listview, .expense-listview {
     -fx-padding: 10px;
     -fx-background-color: white;
     -fx-background-radius: 20px;
@@ -13,7 +13,7 @@
     -fx-text-fill: black;
 }
 
-.expense-linker-cell, .expense-linker-listview .list-cell {
+.expense-linker-cell, .expense-linker-listview .list-cell, expense-listview .list-cell {
     -fx-padding: 5px;
     -fx-background-color: #cccccc;
     -fx-background-radius: 20px;
@@ -21,11 +21,11 @@
     -fx-text-fill: black;
 }
 
-.itinerary-listview .list-cell:selected, .expense-linker-listview .list-cell:selected {
+.itinerary-listview .list-cell:selected, .expense-linker-listview .list-cell:selected, .expense-listview .list-cell:selected {
     -fx-border-color: #000000;
 }
 
-.itinerary-listview .list-cell:empty, .expense-linker-listview .list-cell:empty {
+.itinerary-listview .list-cell:empty, .expense-linker-listview .list-cell:empty, .expense-listview .list-cell:empty {
     -fx-background-color: #f3f3f3;
 }
 
@@ -35,6 +35,12 @@
 
 .itinerary-listview .list-cell {
     -fx-background-color: #dadada;
+    -fx-background-radius: 20px;
+    -fx-border-radius: 20px;
+}
+
+.expense-listview .list-cell {
+    -fx-background-color: #cccccc;
     -fx-background-radius: 20px;
     -fx-border-radius: 20px;
 }

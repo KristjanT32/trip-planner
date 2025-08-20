@@ -2,6 +2,7 @@ package krisapps.tripplanner.data.trip;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 public class Trip {
     private String tripName;
@@ -14,6 +15,8 @@ public class Trip {
     private final ExpenseData expenses;
     private final Itinerary itinerary;
 
+    public final UUID uniqueID;
+
     public Trip(String tripName, String tripDestination) {
         this.tripName = tripName;
         this.tripDestination = tripDestination;
@@ -21,7 +24,8 @@ public class Trip {
         this.tripEndDate = null;
         this.partySize = 1;
         this.expenses = new ExpenseData();
-        this.itinerary = new Itinerary(this);
+        this.itinerary = new Itinerary();
+        this.uniqueID = UUID.randomUUID();
     }
 
     public String getTripName() {
@@ -60,6 +64,10 @@ public class Trip {
 
     public Itinerary getItinerary() {
         return itinerary;
+    }
+
+    public UUID getUniqueID() {
+        return uniqueID;
     }
 
     public void setBudget(double budget) {

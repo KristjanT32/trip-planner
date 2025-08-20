@@ -5,11 +5,14 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
+import krisapps.tripplanner.data.PopupManager;
 import krisapps.tripplanner.data.TripUtility;
+import krisapps.tripplanner.data.listview.expense_linker.ExpenseLinkerCellFactory;
 import krisapps.tripplanner.data.listview.itinerary.ItineraryCellFactory;
-import krisapps.tripplanner.data.prompts.LinkExpensesDialog;
+import krisapps.tripplanner.data.listview.upcoming_trips.UpcomingTripsCellFactory;
 import krisapps.tripplanner.data.trip.ExpenseCategory;
 import krisapps.tripplanner.data.trip.Itinerary;
+import krisapps.tripplanner.data.trip.PlannedExpense;
 import krisapps.tripplanner.data.trip.Trip;
 
 import java.time.Duration;
@@ -19,6 +22,7 @@ import java.util.Optional;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.function.UnaryOperator;
 
 public class Controller {
 
@@ -86,11 +90,34 @@ public class Controller {
 
     @FXML
     private Spinner<Integer> expenseDayBox;
+
+    @FXML
+    private ListView<PlannedExpense> expenseList;
+    //</editor-fold>
+
+    //<editor-fold desc="Upcoming trips">
+
+    @FXML
+    private ListView<Trip> upcomingTripsList;
+
     //</editor-fold>
 
     TripUtility trips = TripUtility.getInstance();
     private Trip currentPlan = null;
     private boolean launchedInReadOnly = false;
+
+    UnaryOperator<TextFormatter.Change> numbersOnlyFormatter = (change) -> {
+        if (change.getControlNewText().isEmpty()) {
+            return change;
+        }
+
+        try {
+            Double.parseDouble(change.getControlNewText());
+            return change;
+        } catch (NumberFormatException ignored) {}
+
+        return null;
+    };
 
     static ScheduledExecutorService scheduler = new ScheduledThreadPoolExecutor(2);
 
@@ -110,8 +137,6 @@ public class Controller {
         }
         initUI();
         launchDataChecker();
-        LinkExpensesDialog dlg = new LinkExpensesDialog();
-        dlg.showAndWait();
     }
 
     public void initUI() {
@@ -119,6 +144,8 @@ public class Controller {
         setupListViews();
         setupDropdowns();
         registerListeners();
+
+        expenseAmountBox.setTextFormatter(new TextFormatter<>(numbersOnlyFormatter));
     }
 
     public void setupSpinners() {
@@ -137,6 +164,7 @@ public class Controller {
     public void setupDropdowns() {
         ObservableList<String> items = expenseTypeSelector.getItems();
         items.addAll(Arrays.stream(ExpenseCategory.values()).map(ExpenseCategory::name).toList());
+        expenseTypeSelector.getSelectionModel().select(ExpenseCategory.UNCATEGORIZED.name());
     }
 
     public void setupListViews() {
@@ -150,6 +178,11 @@ public class Controller {
         for (Itinerary.ItineraryItem item : testItems) {
             itineraryListView.getItems().add(item);
         }
+
+        expenseList.setCellFactory(new ExpenseLinkerCellFactory());
+        upcomingTripsList.setCellFactory(new UpcomingTripsCellFactory());
+        refreshUpcomingTrips();
+        refreshExpensePlanner();
     }
 
     public void registerListeners() {
@@ -206,6 +239,13 @@ public class Controller {
     public void refreshExpensePlanner() {
         // Reinitialize the spinners to apply limit changes for current trip plan (e.g. limit day picker to trip duration)
         setupSpinners();
+
+        expenseList.getItems().clear();
+        if (currentPlan != null) {
+            for (PlannedExpense exp: currentPlan.getExpenses().plannedExpenses) {
+                expenseList.getItems().add(exp);
+            }
+        }
     }
 
     public void refreshTripOverview() {
@@ -216,6 +256,13 @@ public class Controller {
                 + " (duration: " + tripDuration + (tripDuration == 1 ? " day" : " days") + ")"
         );
         peopleInvolvedLabel.setText(String.valueOf(currentPlan.getPartySize()));
+    }
+
+    public void refreshUpcomingTrips() {
+        upcomingTripsList.getItems().clear();
+        for (Trip t: trips.getTrips()) {
+            upcomingTripsList.getItems().add(t);
+        }
     }
 
     public void showTripSetup() {
@@ -242,6 +289,13 @@ public class Controller {
         }
     }
 
+    public void showUpcomingTrips() {
+        refreshUpcomingTrips();
+        tripWizard.setVisible(false);
+        tripSetupPanel.setVisible(false);
+        upcomingTripsPanel.setVisible(true);
+    }
+
     public void startWizard() {
         currentPlan = new Trip(
                 tripNameBox.getText(),
@@ -266,9 +320,7 @@ public class Controller {
         refreshWindowTitle("KrisApps Trip Planner");
     }
 
-    public void promptLinkActivityExpenses(String activityName) {
 
-    }
 
 
 
@@ -281,6 +333,26 @@ public class Controller {
         int activityDay = activityDayBox.getValue() != null ? activityDayBox.getValue() : -1;
         currentPlan.getItinerary().addItem(new Itinerary.ItineraryItem(activityDesc, activityDay));
         refreshItinerary();
+    }
+
+    public void addExpenseEntry() {
+        if (expenseNameBox.getText().isEmpty()) {
+            PopupManager.showPredefinedPopup(PopupManager.PopupType.EXPENSE_NAME_MISSING);
+            return;
+        }
+        if (expenseAmountBox.getText().isEmpty()) {
+            PopupManager.showPredefinedPopup(PopupManager.PopupType.EXPENSE_AMOUNT_MISSING);
+            return;
+        }
+        PlannedExpense expense = new PlannedExpense(Double.parseDouble(expenseAmountBox.getText()), expenseNameBox.getText(), ExpenseCategory.valueOf(expenseTypeSelector.getValue()));
+        expense.setDay(expenseDayBox.getValue());
+        trips.addExpense(currentPlan, expense);
+
+        expenseAmountBox.setText("");
+        expenseNameBox.setText("");
+        expenseTypeSelector.setValue(ExpenseCategory.UNCATEGORIZED.name());
+        expenseDayBox.getValueFactory().setValue(-1);
+        refreshExpensePlanner();
     }
 
     public void refreshWindowTitle(String title) {

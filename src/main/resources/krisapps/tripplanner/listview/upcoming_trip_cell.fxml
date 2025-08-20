@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.URL?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+
+<HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="90.0" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="122.0" prefWidth="658.0" HBox.hgrow="ALWAYS">
+         <children>
+            <HBox>
+               <children>
+                  <VBox alignment="CENTER_LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" HBox.hgrow="SOMETIMES">
+                     <children>
+                        <HBox alignment="CENTER_LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
+                           <children>
+                              <Label fx:id="tripNameLabel" text="Trip name">
+                                 <font>
+                                    <Font name="Segoe UI Italic" size="20.0" />
+                                 </font>
+                                 <HBox.margin>
+                                    <Insets right="5.0" />
+                                 </HBox.margin>
+                              </Label>
+                              <Label text="on">
+                                 <font>
+                                    <Font name="Segoe UI" size="20.0" />
+                                 </font>
+                                 <HBox.margin>
+                                    <Insets right="5.0" />
+                                 </HBox.margin>
+                              </Label>
+                              <Label fx:id="tripDateLabel" text="Neveruary 26th">
+                                 <font>
+                                    <Font name="Segoe UI Bold" size="20.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                        </HBox>
+                        <HBox alignment="CENTER_LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
+                           <children>
+                              <Label text="Destination:">
+                                 <font>
+                                    <Font name="Segoe UI" size="20.0" />
+                                 </font>
+                                 <HBox.margin>
+                                    <Insets right="5.0" />
+                                 </HBox.margin>
+                              </Label>
+                              <Label fx:id="tripDestinationLabel" text="Destinadia">
+                                 <font>
+                                    <Font name="Segoe UI" size="20.0" />
+                                 </font>
+                                 <HBox.margin>
+                                    <Insets right="5.0" />
+                                 </HBox.margin>
+                              </Label>
+                           </children>
+                        </HBox>
+                     </children>
+                  </VBox>
+                  <Label fx:id="countdownLabel" alignment="CENTER_RIGHT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="00:00:00" HBox.hgrow="ALWAYS">
+                     <font>
+                        <Font name="Segoe UI Bold" size="36.0" />
+                     </font>
+                  </Label>
+               </children>
+            </HBox>
+            <VBox alignment="BOTTOM_LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="31.0" prefWidth="638.0" VBox.vgrow="ALWAYS">
+               <children>
+                  <ProgressBar fx:id="countdownProgressbar" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="10.0" progress="0.25" styleClass="upcoming-trip-pb" VBox.vgrow="NEVER" />
+               </children>
+            </VBox>
+         </children>
+         <HBox.margin>
+            <Insets />
+         </HBox.margin>
+         <padding>
+            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+         </padding>
+      </VBox>
+   </children>
+   <stylesheets>
+      <URL value="@../styles/listview.css" />
+      <URL value="@../styles/styles.css" />
+   </stylesheets>
+</HBox>

@@ -52,11 +52,8 @@ public class Itinerary {
         // public double getTotalCost() { }
     }
 
-    public Trip trip;
     public LinkedList<ItineraryItem> items;
-
-    public Itinerary(Trip trip) {
-        this.trip = trip;
+    public Itinerary() {
         this.items = new  LinkedList<ItineraryItem>();
     }
 
