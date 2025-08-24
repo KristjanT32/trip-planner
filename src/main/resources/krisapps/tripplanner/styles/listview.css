@@ -1,4 +1,5 @@
-.itinerary-listview, .expense-linker-listview, .expense-listview {
+/* <editor-fold desc="Itinerary"> */
+.itinerary-listview {
     -fx-padding: 10px;
     -fx-background-color: white;
     -fx-background-radius: 20px;
@@ -13,7 +14,23 @@
     -fx-text-fill: black;
 }
 
-.expense-linker-cell, .expense-linker-listview .list-cell, expense-listview .list-cell {
+.itinerary-listview .list-cell {
+    -fx-padding: 10px;
+    -fx-background-color: #dadada;
+    -fx-background-radius: 20px;
+    -fx-border-radius: 20px;
+}
+/* </editor-fold> */
+
+/* <editor-fold desc="Expense Linker"> */
+.expense-linker-listview {
+    -fx-padding: 10px;
+    -fx-background-color: white;
+    -fx-background-radius: 20px;
+    -fx-border-radius: 20px;
+}
+
+.expense-linker-cell {
     -fx-padding: 5px;
     -fx-background-color: #cccccc;
     -fx-background-radius: 20px;
@@ -21,26 +38,62 @@
     -fx-text-fill: black;
 }
 
-.itinerary-listview .list-cell:selected, .expense-linker-listview .list-cell:selected, .expense-listview .list-cell:selected {
-    -fx-border-color: #000000;
+.expense-linker-listview .list-cell {
+    -fx-padding: 5px;
+    -fx-background-color: #cccccc;
+    -fx-background-radius: 20px;
+    -fx-border-radius: 20px;
+    -fx-text-fill: black;
 }
+/* </editor-fold> */
 
-.itinerary-listview .list-cell:empty, .expense-linker-listview .list-cell:empty, .expense-listview .list-cell:empty {
-    -fx-background-color: #f3f3f3;
-}
-
-.itinerary-listview .list-cell:odd, .itinerary-listview .list-cell:even {
-    -fx-background-color: #dadada;
-}
-
-.itinerary-listview .list-cell {
-    -fx-background-color: #dadada;
+/* <editor-fold desc="Expense List"> */
+.expense-listview {
+    -fx-padding: 10px;
+    -fx-background-color: white;
     -fx-background-radius: 20px;
     -fx-border-radius: 20px;
 }
 
 .expense-listview .list-cell {
+    -fx-padding: 5px;
     -fx-background-color: #cccccc;
     -fx-background-radius: 20px;
     -fx-border-radius: 20px;
+    -fx-text-fill: black;
 }
+/* </editor-fold> */
+
+/* <editor-fold desc="Upcoming Trips List"> */
+.upcoming-trips-listview {
+    -fx-padding: 10px;
+    -fx-background-color: white;
+    -fx-background-radius: 20px;
+    -fx-border-radius: 20px;
+}
+
+.upcoming-trip-cell {
+    -fx-background-color: #e8e8e8;
+    -fx-background-radius: 20px;
+    -fx-border-radius: 20px;
+}
+
+.upcoming-trips-listview .list-cell {
+    -fx-padding: 5px 10px 5px 10px;
+    -fx-background-color: #e8e8e8;
+    -fx-background-radius: 20px;
+    -fx-border-radius: 20px;
+}
+/* </editor-fold> */
+
+/* <editor-fold desc="Shared"> */
+
+.list-cell:selected {
+    -fx-border-color: black;
+}
+
+.list-cell:empty {
+    -fx-background-color: white !important;
+}
+
+/* </editor-fold> */

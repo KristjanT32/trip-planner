@@ -7,7 +7,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.layout.VBox;
 import krisapps.tripplanner.Application;
-import krisapps.tripplanner.data.TripUtility;
+import krisapps.tripplanner.data.TripManager;
 import krisapps.tripplanner.data.trip.Itinerary;
 
 import java.io.IOException;
@@ -29,7 +29,7 @@ public class ItineraryItemCell extends ListCell<Itinerary.ItineraryItem> {
     @FXML
     private Button linkExpensesButton;
 
-    final TripUtility util = TripUtility.getInstance();
+    final TripManager util = TripManager.getInstance();
 
     public ItineraryItemCell() {
         loadFXML();

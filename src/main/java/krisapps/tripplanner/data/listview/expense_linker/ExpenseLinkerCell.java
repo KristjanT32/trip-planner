@@ -6,7 +6,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.layout.HBox;
 import krisapps.tripplanner.Application;
-import krisapps.tripplanner.data.TripUtility;
+import krisapps.tripplanner.data.TripManager;
 import krisapps.tripplanner.data.trip.PlannedExpense;
 
 import java.io.IOException;
@@ -25,7 +25,7 @@ public class ExpenseLinkerCell extends ListCell<PlannedExpense> {
     @FXML
     private Label expenseType;
 
-    final TripUtility util = TripUtility.getInstance();
+    final TripManager util = TripManager.getInstance();
 
     public ExpenseLinkerCell() {
         loadFXML();
@@ -55,7 +55,7 @@ public class ExpenseLinkerCell extends ListCell<PlannedExpense> {
             setGraphic(null);
         } else {
             expenseDesc.setText(item.getExpenseSource());
-            expenseVal.setText(TripUtility.Formatting.formatMoney(item.getAmount(), "€", false));
+            expenseVal.setText(TripManager.Formatting.formatMoney(item.getAmount(), "€", false));
             expenseType.setText("#" + item.getCategory().name());
             setText(null);
             setGraphic(rootPane);

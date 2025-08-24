@@ -6,7 +6,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import krisapps.tripplanner.data.PopupManager;
-import krisapps.tripplanner.data.TripUtility;
+import krisapps.tripplanner.data.TripManager;
 import krisapps.tripplanner.data.listview.expense_linker.ExpenseLinkerCellFactory;
 import krisapps.tripplanner.data.listview.itinerary.ItineraryCellFactory;
 import krisapps.tripplanner.data.listview.upcoming_trips.UpcomingTripsCellFactory;
@@ -19,12 +19,15 @@ import java.time.Duration;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.UnaryOperator;
 
-public class Controller {
+import static java.lang.Thread.sleep;
+
+public class TripPlanner {
 
     //<editor-fold desc="Menu panels">
     @FXML
@@ -35,6 +38,9 @@ public class Controller {
 
     @FXML
     private VBox tripSetupPanel;
+
+    @FXML
+    private VBox loadingPanel;
     //</editor-fold>
 
     //<editor-fold desc="New trip setup">
@@ -102,11 +108,10 @@ public class Controller {
 
     //</editor-fold>
 
-    TripUtility trips = TripUtility.getInstance();
-    private Trip currentPlan = null;
+    private final TripManager trips = TripManager.getInstance();
+    private static Trip currentPlan = null;
     private boolean launchedInReadOnly = false;
-
-    UnaryOperator<TextFormatter.Change> numbersOnlyFormatter = (change) -> {
+    private final UnaryOperator<TextFormatter.Change> numbersOnlyFormatter = (change) -> {
         if (change.getControlNewText().isEmpty()) {
             return change;
         }
@@ -118,25 +123,35 @@ public class Controller {
 
         return null;
     };
+    public static final ScheduledExecutorService scheduler = new ScheduledThreadPoolExecutor(2);
 
-    static ScheduledExecutorService scheduler = new ScheduledThreadPoolExecutor(2);
+    private enum ProgramState {
+        CREATE_NEW_TRIP,
+        PLAN_TRIP,
+        SHOW_DASHBOARD,
+        LOADING_TRIP
+    }
+
+    private static TripPlanner instance;
+    public static TripPlanner getInstance() {
+        return instance;
+    }
 
     @FXML
     public void initialize() {
-        TripUtility.log("Initializing...");
+        TripManager.log("Initializing...");
         trips.init();
 
         if (trips.getTrips().isEmpty()) {
-            tripWizard.setVisible(false);
-            tripSetupPanel.setVisible(true);
-            upcomingTripsPanel.setVisible(false);
+            changeProgramState(ProgramState.CREATE_NEW_TRIP);
         } else {
-            tripWizard.setVisible(false);
-            tripSetupPanel.setVisible(false);
-            upcomingTripsPanel.setVisible(true);
+            changeProgramState(ProgramState.SHOW_DASHBOARD);
         }
+
         initUI();
         launchDataChecker();
+        launchCountdownRefresh();
+        instance = this;
     }
 
     public void initUI() {
@@ -225,6 +240,55 @@ public class Controller {
         }, 0L, 200L, TimeUnit.MILLISECONDS);
     }
 
+    public void launchCountdownRefresh() {
+        scheduler.scheduleAtFixedRate(() -> {
+            if (upcomingTripsPanel.isVisible()) {
+                upcomingTripsList.refresh();
+            }
+        }, 0, 1, TimeUnit.SECONDS);
+    }
+
+    private void changeProgramState(ProgramState changeTo) {
+        tripWizard.setVisible(false);
+        upcomingTripsPanel.setVisible(false);
+        tripSetupPanel.setVisible(false);
+        loadingPanel.setVisible(false);
+
+        switch (changeTo) {
+            case CREATE_NEW_TRIP -> tripSetupPanel.setVisible(true);
+            case PLAN_TRIP -> tripWizard.setVisible(true);
+            case SHOW_DASHBOARD -> upcomingTripsPanel.setVisible(true);
+            case LOADING_TRIP -> loadingPanel.setVisible(true);
+        }
+    }
+
+    private CompletableFuture<Void> loadTrip(Trip t) {
+        CompletableFuture<Void> future = new CompletableFuture<>();
+
+        refreshWindowTitle("KrisApps Trip Planner - loading " + t.getTripName());
+        changeProgramState(ProgramState.LOADING_TRIP);
+
+        currentPlan = t;
+        setupSpinners();
+        setupDropdowns();
+        setupListViews();
+        refreshItinerary();
+        refreshExpensePlanner();
+
+        Platform.runLater(() -> {
+            try {
+                sleep(2000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        refreshWindowTitle("KrisApps Trip Planner - planning " + t.getTripName());
+        future.complete(null);
+
+        return future;
+    }
+
+
     public void refreshItinerary() {
         if (currentPlan == null) return;
         if (currentPlan.tripDatesSupplied()) {
@@ -276,16 +340,13 @@ public class Controller {
             Optional<ButtonType> response = prompt.showAndWait();
             if (response.isPresent()) {
                 if (response.get().getButtonData() == ButtonBar.ButtonData.APPLY) {
-                    TripUtility.log("Discarded current trip plan.");
+                    TripManager.log("Discarded current trip plan.");
                     resetPlanner();
                     showTripSetup();
                 }
             }
-
         } else {
-            tripWizard.setVisible(false);
-            tripSetupPanel.setVisible(true);
-            upcomingTripsPanel.setVisible(false);
+            changeProgramState(ProgramState.CREATE_NEW_TRIP);
         }
     }
 
@@ -296,33 +357,34 @@ public class Controller {
         upcomingTripsPanel.setVisible(true);
     }
 
-    public void startWizard() {
-        currentPlan = new Trip(
+    public void openExistingTrip(Trip tripToOpen) {
+        loadTrip(tripToOpen).thenRun(() -> {
+           Platform.runLater(() -> {
+               changeProgramState(ProgramState.PLAN_TRIP);
+           });
+        });
+    }
+
+    public void createNewTrip() {
+        loadTrip(new Trip(
                 tripNameBox.getText(),
                 tripDestinationBox.getText()
-        );
+        ));
         if (!tripBudgetBox.getText().isEmpty()) {
             currentPlan.setBudget(Double.parseDouble(tripBudgetBox.getText()));
         } else {
             currentPlan.setBudget(0);
         }
 
-        refreshWindowTitle("KrisApps Trip Planner - planning " + currentPlan.getTripName());
-        tripSetupPanel.setVisible(false);
-        tripWizard.setVisible(true);
-
         // Reinitialize the spinners to apply limit changes for current trip plan (e.g. limit day picker to trip duration)
         setupSpinners();
+        changeProgramState(ProgramState.PLAN_TRIP);
     }
 
     public void resetPlanner() {
         currentPlan = null;
         refreshWindowTitle("KrisApps Trip Planner");
     }
-
-
-
-
 
 
     public void addItineraryEntry() {

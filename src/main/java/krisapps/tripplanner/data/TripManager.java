@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
 
-public class TripUtility {
+public class TripManager {
 
     private static final Gson gson = new GsonBuilder()
             .setObjectToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE)
@@ -34,15 +34,15 @@ public class TripUtility {
 
     private boolean initialized = false;
 
-    private static TripUtility instance;
+    private static TripManager instance;
 
-    private TripUtility() {
+    private TripManager() {
         
     }
 
-    public static TripUtility getInstance() {
+    public static TripManager getInstance() {
         if (instance == null) {
-            instance = new TripUtility();
+            instance = new TripManager();
         }
         return instance;
     }
@@ -115,7 +115,6 @@ public class TripUtility {
             return new Data();
         }
     }
-
 
     public void promptLinkExpenses(Itinerary.ItineraryItem item) {
         LinkExpensesDialog dlg = new LinkExpensesDialog();
