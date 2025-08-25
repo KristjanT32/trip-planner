@@ -58,7 +58,7 @@ public class Trip {
         return Duration.between(tripStartDate, tripEndDate);
     }
 
-    public ExpenseData getExpenses() {
+    public ExpenseData getExpenseData() {
         return expenses;
     }
 
@@ -71,7 +71,7 @@ public class Trip {
     }
 
     public void setBudget(double budget) {
-        this.expenses.budget = budget;
+        this.expenses.setBudget(budget);
     }
 
     public void setPartySize(short partySize) {

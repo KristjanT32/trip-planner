@@ -1,6 +1,7 @@
 * {
     -fx-effect: null;
     -fx-background-insets: 0;
+    -fx-font-family: "Segoe UI";
 }
 
 .button {
@@ -160,3 +161,8 @@
     -fx-background-radius: 10px;
 }
 
+.unsaved-changes-panel {
+    -fx-background-color: #9c9c9c;
+    -fx-border-radius: 10px;
+    -fx-background-radius: 10px;
+}

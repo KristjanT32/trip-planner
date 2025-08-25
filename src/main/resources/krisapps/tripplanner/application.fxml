@@ -22,6 +22,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
 <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="860.0" prefWidth="1015.0" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="krisapps.tripplanner.TripPlanner">
    <children>
@@ -57,7 +58,7 @@
             </MenuBar>
             <StackPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS">
                <children>
-                  <TabPane fx:id="tripWizard" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" tabClosingPolicy="UNAVAILABLE" visible="false">
+                  <TabPane fx:id="tripWizard" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" tabClosingPolicy="UNAVAILABLE">
                      <tabs>
                         <Tab id="0" text="Add trip details">
                            <content>
@@ -290,7 +291,7 @@
                                                    </font>
                                                 </Label>
                                                 <Separator prefWidth="200.0" visible="false" HBox.hgrow="ALWAYS" />
-                                                <Button fx:id="deleteActivityButton1" mnemonicParsing="false" prefHeight="33.0" prefWidth="138.0" text="Delete expense" />
+                                                <Button fx:id="deleteExpenseButton" mnemonicParsing="false" onAction="#deleteSelectedExpense" prefHeight="33.0" prefWidth="138.0" text="Delete expense" />
                                              </children>
                                              <VBox.margin>
                                                 <Insets top="10.0" />
@@ -654,7 +655,7 @@
                         <Insets top="20.0" />
                      </StackPane.margin>
                   </VBox>
-                  <VBox fx:id="loadingPanel" alignment="CENTER" prefHeight="200.0" prefWidth="100.0" StackPane.alignment="TOP_LEFT">
+                  <VBox fx:id="loadingPanel" alignment="CENTER" prefHeight="200.0" prefWidth="100.0" visible="false" StackPane.alignment="TOP_LEFT">
                      <children>
                         <Label text="Hold on!">
                            <font>
@@ -675,6 +676,55 @@
                   </VBox>
                </children>
             </StackPane>
+            <VBox>
+               <children>
+                  <StackPane>
+                     <children>
+                        <HBox fx:id="readOnlyNotification" alignment="CENTER_LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" prefHeight="50.0" styleClass="unsaved-changes-panel">
+                           <children>
+                              <FontIcon iconLiteral="fltfal-lock-shield-24" iconSize="24">
+                                 <HBox.margin>
+                                    <Insets right="5.0" />
+                                 </HBox.margin>
+                              </FontIcon>
+                              <Label maxWidth="1.7976931348623157E308" text="The planner is currently in read-only mode. No changes will be saved." HBox.hgrow="SOMETIMES">
+                                 <font>
+                                    <Font name="Segoe UI" size="20.0" />
+                                 </font>
+                              </Label>
+                              <Separator maxWidth="1.7976931348623157E308" visible="false" HBox.hgrow="SOMETIMES" />
+                              <Button mnemonicParsing="false" onAction="#disableReadOnly" text="Open in edit mode" />
+                           </children>
+                           <padding>
+                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                           </padding>
+                        </HBox>
+                        <HBox fx:id="unsavedChangesNotification" alignment="CENTER_LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" prefHeight="50.0" styleClass="unsaved-changes-panel" visible="false">
+                           <children>
+                              <FontIcon iconLiteral="fltfmz-save-24" iconSize="24">
+                                 <HBox.margin>
+                                    <Insets right="5.0" />
+                                 </HBox.margin>
+                              </FontIcon>
+                              <Label maxWidth="1.7976931348623157E308" text="You have unsaved changes!" HBox.hgrow="SOMETIMES">
+                                 <font>
+                                    <Font name="Segoe UI" size="20.0" />
+                                 </font>
+                              </Label>
+                              <Separator maxWidth="1.7976931348623157E308" visible="false" HBox.hgrow="SOMETIMES" />
+                              <Button fx:id="saveChangesButton" mnemonicParsing="false" onAction="#saveChanges" text="Save changes" />
+                           </children>
+                           <padding>
+                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                           </padding>
+                        </HBox>
+                     </children>
+                     <padding>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </padding>
+                  </StackPane>
+               </children>
+            </VBox>
          </children>
       </VBox>
    </children>

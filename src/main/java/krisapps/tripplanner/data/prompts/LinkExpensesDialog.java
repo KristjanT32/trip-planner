@@ -1,5 +1,6 @@
 package krisapps.tripplanner.data.prompts;
 
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -7,10 +8,13 @@ import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import krisapps.tripplanner.Application;
+import krisapps.tripplanner.TripPlanner;
 import krisapps.tripplanner.data.listview.expense_linker.ExpenseLinkerCellFactory;
+import krisapps.tripplanner.data.trip.Itinerary;
 import krisapps.tripplanner.data.trip.PlannedExpense;
 
 import java.io.IOException;
+import java.util.stream.Collectors;
 
 public class LinkExpensesDialog extends Dialog<Void> {
 
@@ -32,12 +36,14 @@ public class LinkExpensesDialog extends Dialog<Void> {
     @FXML
     private Button closeButton;
 
-    private String activityName;
+    private Itinerary.ItineraryItem item;
 
     private boolean initialized = false;
 
+    final TripPlanner trips = TripPlanner.getInstance();
 
-    public LinkExpensesDialog() {
+
+    public LinkExpensesDialog(Itinerary.ItineraryItem item) {
         try {
             FXMLLoader loader = new FXMLLoader(Application.class.getResource("dialogs/link_expenses.fxml"));
             loader.setController(this);
@@ -50,14 +56,25 @@ public class LinkExpensesDialog extends Dialog<Void> {
         getDialogPane().setContent(rootPane);
         initModality(Modality.WINDOW_MODAL);
 
+        this.item = item;
+
         expenseList.setCellFactory(new ExpenseLinkerCellFactory());
         linkedExpenseList.setCellFactory(new ExpenseLinkerCellFactory());
 
-        expenseList.getItems().add(new PlannedExpense("test", 100));
-        expenseList.getItems().add(new PlannedExpense("test-2", 100));
+        ObservableList<PlannedExpense> expenses = expenseList.getItems();
+        expenses.clear();
+        expenses.setAll(trips.getOpenPlan().getExpenseData().getPlannedExpenses().values());
 
-        linkedExpenseList.getItems().add(new PlannedExpense("linked", 100));
-        linkedExpenseList.getItems().add(new PlannedExpense("linked-2", 100));
+        ObservableList<PlannedExpense> linkedExpenses = linkedExpenseList.getItems();
+        linkedExpenses.clear();
+
+        // Map the associated expenses for this item to the actual expense object, then add all to the list.
+        linkedExpenses.setAll(
+                item.getAssociatedExpenses().stream()
+                        .map(uuid -> trips.getOpenPlan().getExpenseData().getPlannedExpenses().get(uuid))
+                        .collect(Collectors.toList())
+        );
+
 
         // Trickery to be able to close the dialog manually
         getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
@@ -66,21 +83,10 @@ public class LinkExpensesDialog extends Dialog<Void> {
         b.setManaged(false);
 
         setTitle("Link expenses");
-        activityNameLabel.setText(activityName);
+        activityNameLabel.setText(item.getItemDescription());
         closeButton.setOnAction(e -> {
             close();
         });
-    }
-
-    public String getActivityName() {
-        return activityName;
-    }
-
-    public void setActivityName(String activityName) {
-        this.activityName = activityName;
-        if (initialized) {
-            activityNameLabel.setText(activityName);
-        }
     }
 
     public void linkSelectedExpense() {

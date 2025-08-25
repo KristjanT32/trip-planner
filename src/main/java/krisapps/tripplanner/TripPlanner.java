@@ -99,6 +99,9 @@ public class TripPlanner {
 
     @FXML
     private ListView<PlannedExpense> expenseList;
+
+    @FXML
+    private Button deleteExpenseButton;
     //</editor-fold>
 
     //<editor-fold desc="Upcoming trips">
@@ -231,12 +234,15 @@ public class TripPlanner {
 
     public void launchDataChecker() {
         scheduler.scheduleAtFixedRate(() -> {
-            if (currentPlan == null) return;
-            if (!currentPlan.tripDatesSupplied()) {
-                tripWizard.getTabs().get(4).setDisable(true);
-                return;
+            Optional<PlannedExpense> selectedExpense = Optional.ofNullable(expenseList.getSelectionModel().getSelectedItem());
+            deleteExpenseButton.setDisable(selectedExpense.isEmpty());
+            if (currentPlan != null) {
+                if (!currentPlan.tripDatesSupplied()) {
+                    tripWizard.getTabs().get(4).setDisable(true);
+                    return;
+                }
+                tripWizard.getTabs().get(4).setDisable(false);
             }
-            tripWizard.getTabs().get(4).setDisable(false);
         }, 0L, 200L, TimeUnit.MILLISECONDS);
     }
 
@@ -282,9 +288,7 @@ public class TripPlanner {
                 throw new RuntimeException(e);
             }
         });
-        refreshWindowTitle("KrisApps Trip Planner - planning " + t.getTripName());
         future.complete(null);
-
         return future;
     }
 
@@ -303,10 +307,13 @@ public class TripPlanner {
     public void refreshExpensePlanner() {
         // Reinitialize the spinners to apply limit changes for current trip plan (e.g. limit day picker to trip duration)
         setupSpinners();
+        refreshExpenseList();
+    }
 
+    public void refreshExpenseList() {
         expenseList.getItems().clear();
         if (currentPlan != null) {
-            for (PlannedExpense exp: currentPlan.getExpenses().plannedExpenses) {
+            for (PlannedExpense exp: currentPlan.getExpenseData().getPlannedExpenses().values()) {
                 expenseList.getItems().add(exp);
             }
         }
@@ -360,6 +367,7 @@ public class TripPlanner {
     public void openExistingTrip(Trip tripToOpen) {
         loadTrip(tripToOpen).thenRun(() -> {
            Platform.runLater(() -> {
+               refreshWindowTitle("KrisApps Trip Planner - planning " + tripToOpen.getTripName());
                changeProgramState(ProgramState.PLAN_TRIP);
            });
         });
@@ -386,6 +394,13 @@ public class TripPlanner {
         refreshWindowTitle("KrisApps Trip Planner");
     }
 
+    public void disableReadOnly() {
+
+    }
+
+    public void saveChanges() {
+
+    }
 
     public void addItineraryEntry() {
         if (activityDescriptionBox.getText().isEmpty()) {
@@ -417,6 +432,12 @@ public class TripPlanner {
         refreshExpensePlanner();
     }
 
+    public void deleteSelectedExpense() {
+        Optional<PlannedExpense> selectedExpense = Optional.ofNullable(expenseList.getSelectionModel().getSelectedItem());
+        selectedExpense.ifPresent(expense -> currentPlan.getExpenseData().removeExpense(expense.getExpenseID()));
+        refreshExpenseList();
+    }
+
     public void refreshWindowTitle(String title) {
         if (Application.window != null) {
             Application.window.setTitle(title);
@@ -429,4 +450,7 @@ public class TripPlanner {
         }
     }
 
+    public Trip getOpenPlan() {
+        return currentPlan;
+    }
 }

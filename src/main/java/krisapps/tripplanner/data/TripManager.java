@@ -71,13 +71,11 @@ public class TripManager {
     }
 
     public void addExpense(Trip trip, PlannedExpense expense) {
-        trip.getExpenses().plannedExpenses.add(expense);
-        updateTrip(trip);
+        trip.getExpenseData().addExpense(expense);
     }
 
     public void removeExpense(Trip trip, UUID expenseID) {
-        trip.getExpenses().plannedExpenses.removeIf(exp -> exp.getExpenseID() == expenseID);
-        updateTrip(trip);
+        trip.getExpenseData().removeExpense(expenseID);
     }
 
     public void saveData(Data data) {
@@ -117,8 +115,7 @@ public class TripManager {
     }
 
     public void promptLinkExpenses(Itinerary.ItineraryItem item) {
-        LinkExpensesDialog dlg = new LinkExpensesDialog();
-        dlg.setActivityName(item.getItemDescription());
+        LinkExpensesDialog dlg = new LinkExpensesDialog(item);
         dlg.showAndWait();
     }
 
