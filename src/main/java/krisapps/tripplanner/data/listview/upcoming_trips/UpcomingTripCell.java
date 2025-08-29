@@ -85,9 +85,10 @@ public class UpcomingTripCell extends ListCell<Trip> {
     @Override
     protected void updateItem(Trip item, boolean empty) {
         super.updateItem(item, empty);
+
         editButton.setOnAction((e) -> {
             TripManager.log("Opening '" + item.getTripName() + "' (" + item.getUniqueID() + ") in Planner");
-            TripPlanner.getInstance().openExistingTrip(item);
+            TripPlanner.getInstance().openExistingTrip(item, true);
         });
 
         if (empty || item == null) {

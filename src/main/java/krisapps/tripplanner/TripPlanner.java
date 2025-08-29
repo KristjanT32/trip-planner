@@ -4,12 +4,14 @@ import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import krisapps.tripplanner.data.PopupManager;
 import krisapps.tripplanner.data.TripManager;
 import krisapps.tripplanner.data.listview.expense_linker.ExpenseLinkerCellFactory;
 import krisapps.tripplanner.data.listview.itinerary.ItineraryCellFactory;
 import krisapps.tripplanner.data.listview.upcoming_trips.UpcomingTripsCellFactory;
+import krisapps.tripplanner.data.prompts.LoadingDialog;
 import krisapps.tripplanner.data.trip.ExpenseCategory;
 import krisapps.tripplanner.data.trip.Itinerary;
 import krisapps.tripplanner.data.trip.PlannedExpense;
@@ -28,6 +30,9 @@ import java.util.function.UnaryOperator;
 import static java.lang.Thread.sleep;
 
 public class TripPlanner {
+
+    @FXML
+    private VBox root;
 
     //<editor-fold desc="Menu panels">
     @FXML
@@ -111,6 +116,14 @@ public class TripPlanner {
 
     //</editor-fold>
 
+    //<editor-fold desc="Notification area">
+    @FXML
+    private HBox readOnlyNotification;
+
+    @FXML
+    private HBox unsavedChangesNotification;
+    //</editor-fold>
+
     private final TripManager trips = TripManager.getInstance();
     private static Trip currentPlan = null;
     private boolean launchedInReadOnly = false;
@@ -164,6 +177,12 @@ public class TripPlanner {
         registerListeners();
 
         expenseAmountBox.setTextFormatter(new TextFormatter<>(numbersOnlyFormatter));
+        tripBudgetBox.setTextFormatter(new TextFormatter<>(numbersOnlyFormatter));
+
+        readOnlyNotification.setVisible(false);
+        readOnlyNotification.setManaged(false);
+        unsavedChangesNotification.setVisible(false);
+        unsavedChangesNotification.setManaged(false);
     }
 
     public void setupSpinners() {
@@ -236,7 +255,15 @@ public class TripPlanner {
         scheduler.scheduleAtFixedRate(() -> {
             Optional<PlannedExpense> selectedExpense = Optional.ofNullable(expenseList.getSelectionModel().getSelectedItem());
             deleteExpenseButton.setDisable(selectedExpense.isEmpty());
+
             if (currentPlan != null) {
+                if (currentPlan.hasBeenModified()) {
+                    unsavedChangesNotification.setVisible(true);
+                    unsavedChangesNotification.setManaged(true);
+                } else {
+                    unsavedChangesNotification.setVisible(false);
+                    unsavedChangesNotification.setManaged(false);
+                }
                 if (!currentPlan.tripDatesSupplied()) {
                     tripWizard.getTabs().get(4).setDisable(true);
                     return;
@@ -262,7 +289,16 @@ public class TripPlanner {
 
         switch (changeTo) {
             case CREATE_NEW_TRIP -> tripSetupPanel.setVisible(true);
-            case PLAN_TRIP -> tripWizard.setVisible(true);
+            case PLAN_TRIP -> {
+                tripWizard.setVisible(true);
+                if (launchedInReadOnly) {
+                    readOnlyNotification.setVisible(true);
+                    readOnlyNotification.setManaged(true);
+                } else {
+                    readOnlyNotification.setVisible(false);
+                    readOnlyNotification.setManaged(false);
+                }
+            }
             case SHOW_DASHBOARD -> upcomingTripsPanel.setVisible(true);
             case LOADING_TRIP -> loadingPanel.setVisible(true);
         }
@@ -270,11 +306,10 @@ public class TripPlanner {
 
     private CompletableFuture<Void> loadTrip(Trip t) {
         CompletableFuture<Void> future = new CompletableFuture<>();
-
         refreshWindowTitle("KrisApps Trip Planner - loading " + t.getTripName());
-        changeProgramState(ProgramState.LOADING_TRIP);
 
         currentPlan = t;
+        t.resetModifiedFlag();
         setupSpinners();
         setupDropdowns();
         setupListViews();
@@ -364,20 +399,27 @@ public class TripPlanner {
         upcomingTripsPanel.setVisible(true);
     }
 
-    public void openExistingTrip(Trip tripToOpen) {
-        loadTrip(tripToOpen).thenRun(() -> {
-           Platform.runLater(() -> {
-               refreshWindowTitle("KrisApps Trip Planner - planning " + tripToOpen.getTripName());
-               changeProgramState(ProgramState.PLAN_TRIP);
-           });
+    public void openExistingTrip(Trip tripToOpen, boolean openInReadOnly) {
+        LoadingDialog dlg = new LoadingDialog(LoadingDialog.LoadingOperationType.INDETERMINATE_SPINNER);
+        dlg.setPrimaryLabel("Opening plan");
+        dlg.setSecondaryLabel("Please wait while the trip is opened in the Planner...");
+        dlg.show("Loading", () -> {
+            Platform.runLater(() -> {
+                loadTrip(tripToOpen).join();
+                refreshWindowTitle("KrisApps Trip Planner - planning " + tripToOpen.getTripName());
+                launchedInReadOnly = openInReadOnly;
+                changeProgramState(ProgramState.PLAN_TRIP);
+            });
         });
     }
 
     public void createNewTrip() {
-        loadTrip(new Trip(
+        Trip trip = new Trip(
                 tripNameBox.getText(),
                 tripDestinationBox.getText()
-        ));
+        );
+
+        loadTrip(trip);
         if (!tripBudgetBox.getText().isEmpty()) {
             currentPlan.setBudget(Double.parseDouble(tripBudgetBox.getText()));
         } else {
@@ -387,6 +429,7 @@ public class TripPlanner {
         // Reinitialize the spinners to apply limit changes for current trip plan (e.g. limit day picker to trip duration)
         setupSpinners();
         changeProgramState(ProgramState.PLAN_TRIP);
+        refreshWindowTitle("KrisApps Trip Planner - planning " + trip.getTripName());
     }
 
     public void resetPlanner() {
@@ -399,7 +442,18 @@ public class TripPlanner {
     }
 
     public void saveChanges() {
+        LoadingDialog loadingDialog = new LoadingDialog(LoadingDialog.LoadingOperationType.INDETERMINATE_PROGRESSBAR);
+        loadingDialog.setPrimaryLabel("Just a second!");
+        loadingDialog.setSecondaryLabel("Saving changes to '" + currentPlan.getTripName() + "'");
 
+        loadingDialog.show("Saving trip data", () -> {
+            currentPlan.resetModifiedFlag();
+            trips.updateTrip(currentPlan);
+            Platform.runLater(() -> {
+                changeProgramState(ProgramState.SHOW_DASHBOARD);
+                refreshWindowTitle("KrisApps Trip Planner");
+            });
+        });
     }
 
     public void addItineraryEntry() {
@@ -453,4 +507,5 @@ public class TripPlanner {
     public Trip getOpenPlan() {
         return currentPlan;
     }
+
 }

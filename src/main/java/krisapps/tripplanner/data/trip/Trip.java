@@ -16,6 +16,7 @@ public class Trip {
     private final Itinerary itinerary;
 
     public final UUID uniqueID;
+    private boolean modified = false;
 
     public Trip(String tripName, String tripDestination) {
         this.tripName = tripName;
@@ -26,6 +27,7 @@ public class Trip {
         this.expenses = new ExpenseData();
         this.itinerary = new Itinerary();
         this.uniqueID = UUID.randomUUID();
+        this.modified = false;
     }
 
     public String getTripName() {
@@ -72,21 +74,36 @@ public class Trip {
 
     public void setBudget(double budget) {
         this.expenses.setBudget(budget);
+        this.modified = true;
     }
 
     public void setPartySize(short partySize) {
         this.partySize = partySize;
+        this.modified = true;
     }
 
     public void setTripStartDate(LocalDateTime tripStartDate) {
         this.tripStartDate = tripStartDate;
+        this.modified = true;
     }
 
     public void setTripEndDate(LocalDateTime tripEndDate) {
         this.tripEndDate = tripEndDate;
+        this.modified = true;
     }
 
     public boolean tripDatesSupplied() {
         return this.tripStartDate != null && this.tripEndDate != null;
+    }
+
+    public boolean hasBeenModified() {
+        this.modified = itinerary.hasBeenModified() | expenses.hasBeenModified() | modified;
+        return modified;
+    }
+
+    public void resetModifiedFlag() {
+        this.modified = false;
+        this.expenses.resetModifiedFlag();
+        this.itinerary.resetModifiedFlag();
     }
 }

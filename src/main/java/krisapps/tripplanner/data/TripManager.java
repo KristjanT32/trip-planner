@@ -62,12 +62,17 @@ public class TripManager {
         Data data = getData();
         ArrayList<Trip> trips = data.getTrips();
 
-        trips.removeIf(t -> t.getUniqueID() == trip.getUniqueID());
+        boolean updated = trips.removeIf(t -> t.getUniqueID() == trip.getUniqueID());
         trips.add(trip);
 
         data.setTrips(trips);
         saveData(data);
-        System.out.println("Updated trip '" + trip.getTripName() + "' (" + trip.getUniqueID() + ")");
+
+        if (updated) {
+            log("Updated trip '" + trip.getTripName() + "' (" + trip.getUniqueID() + ")");
+        } else {
+            log("Created new trip '" + trip.getTripName() + "' (" + trip.getUniqueID() + ")");
+        }
     }
 
     public void addExpense(Trip trip, PlannedExpense expense) {
