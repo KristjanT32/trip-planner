@@ -6,6 +6,10 @@ import java.util.UUID;
 
 public class Itinerary {
 
+    public LinkedHashMap<UUID, ItineraryItem> getItems() {
+        return items;
+    }
+
     public static class ItineraryItem {
         private String itemDescription;
         private int associatedDay;
@@ -43,6 +47,10 @@ public class Itinerary {
             associatedExpenses.addLast(expense.getExpenseID());
         }
 
+        public void addExpense(UUID expenseID) {
+            associatedExpenses.addLast(expenseID);
+        }
+
         public void removeExpense(String expenseDescription) {
 
         }
@@ -54,12 +62,9 @@ public class Itinerary {
         public UUID getItemID() {
             return itemID;
         }
-
-        // public PlannedExpense[] getAssociatedExpenses() { }
-        // public double getTotalCost() { }
     }
 
-    public LinkedHashMap<UUID, ItineraryItem> items;
+    private LinkedHashMap<UUID, ItineraryItem> items;
     private boolean modified = false;
 
     public Itinerary() {

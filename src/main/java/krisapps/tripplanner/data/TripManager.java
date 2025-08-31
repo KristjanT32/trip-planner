@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.ToNumberPolicy;
 import com.google.gson.stream.JsonReader;
-import krisapps.tripplanner.data.prompts.LinkExpensesDialog;
 import krisapps.tripplanner.data.trip.Itinerary;
 import krisapps.tripplanner.data.trip.PlannedExpense;
 import krisapps.tripplanner.data.trip.Trip;
@@ -36,9 +35,7 @@ public class TripManager {
 
     private static TripManager instance;
 
-    private TripManager() {
-        
-    }
+    private TripManager() { }
 
     public static TripManager getInstance() {
         if (instance == null) {
@@ -62,7 +59,7 @@ public class TripManager {
         Data data = getData();
         ArrayList<Trip> trips = data.getTrips();
 
-        boolean updated = trips.removeIf(t -> t.getUniqueID() == trip.getUniqueID());
+        boolean updated = trips.removeIf((t) -> t.getUniqueID().equals(trip.getUniqueID()));
         trips.add(trip);
 
         data.setTrips(trips);
@@ -81,6 +78,32 @@ public class TripManager {
 
     public void removeExpense(Trip trip, UUID expenseID) {
         trip.getExpenseData().removeExpense(expenseID);
+    }
+
+    public Itinerary.ItineraryItem getItineraryItemByID(Trip t, UUID id) {
+        return t.getItinerary().getItems().getOrDefault(id, null);
+    }
+
+    public PlannedExpense getExpenseByID(Trip t, UUID id) {
+        return t.getExpenseData().getPlannedExpenses().getOrDefault(id, null);
+    }
+
+    public boolean isExpenseLinked(Trip t, UUID expenseID) {
+        return t.getItinerary().getItems().values().stream().anyMatch(item -> item.getAssociatedExpenses().contains(expenseID));
+    }
+
+    public void linkExpense(Trip trip, UUID expenseID, UUID itineraryItemID) {
+        trip.getItinerary().getItems().computeIfPresent(itineraryItemID, (id, itineraryItem) -> {
+            itineraryItem.addExpense(expenseID);
+            return itineraryItem;
+        });
+    }
+
+    public void unlinkExpense(Trip trip, UUID expenseID, UUID itineraryItemID) {
+        trip.getItinerary().getItems().computeIfPresent(itineraryItemID, (id, itineraryItem) -> {
+            itineraryItem.removeExpense(expenseID);
+            return itineraryItem;
+        });
     }
 
     public void saveData(Data data) {
@@ -117,11 +140,6 @@ public class TripManager {
             log("Failed to retrieve data from data file: " + e.getMessage());
             return new Data();
         }
-    }
-
-    public void promptLinkExpenses(Itinerary.ItineraryItem item) {
-        LinkExpensesDialog dlg = new LinkExpensesDialog(item);
-        dlg.showAndWait();
     }
 
     // Saving values

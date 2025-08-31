@@ -161,7 +161,33 @@
 }
 
 .unsaved-changes-panel {
-    -fx-background-color: #9c9c9c;
+    -fx-background-color: #ffe979;
     -fx-border-radius: 10px;
     -fx-background-radius: 10px;
+}
+
+.unsaved-changes-panel > .button {
+    -fx-background-color: #ffeea2;
+    -fx-border-color: black;
+    -fx-font-weight: bold;
+}
+
+.unsaved-changes-panel > .button:hover {
+    -fx-background-color: #a59a69;
+}
+
+.readonly-panel {
+    -fx-background-color: #ff7979;
+    -fx-border-radius: 10px;
+    -fx-background-radius: 10px;
+}
+
+.readonly-panel > .button {
+    -fx-background-color: #ffa1a1;
+    -fx-border-color: black;
+    -fx-font-weight: bold;
+}
+
+.readonly-panel > .button:hover {
+    -fx-background-color: #9c6363;
 }

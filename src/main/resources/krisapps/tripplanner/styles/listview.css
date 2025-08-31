@@ -38,6 +38,14 @@
     -fx-text-fill: black;
 }
 
+.expense-linker-cell .button {
+    -fx-background-color: #e8e8e8;
+}
+
+.expense-linker-cell .button:hover {
+    -fx-background-color: #a3a3a3;
+}
+
 .expense-linker-listview .list-cell {
     -fx-padding: 5px;
     -fx-background-color: #cccccc;

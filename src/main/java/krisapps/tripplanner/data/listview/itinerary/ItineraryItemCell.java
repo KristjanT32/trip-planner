@@ -7,10 +7,14 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.layout.VBox;
 import krisapps.tripplanner.Application;
+import krisapps.tripplanner.TripPlanner;
+import krisapps.tripplanner.data.PopupManager;
 import krisapps.tripplanner.data.TripManager;
+import krisapps.tripplanner.data.prompts.LinkExpensesDialog;
 import krisapps.tripplanner.data.trip.Itinerary;
 
 import java.io.IOException;
+import java.util.UUID;
 
 public class ItineraryItemCell extends ListCell<Itinerary.ItineraryItem> {
 
@@ -28,6 +32,9 @@ public class ItineraryItemCell extends ListCell<Itinerary.ItineraryItem> {
 
     @FXML
     private Button linkExpensesButton;
+
+    @FXML
+    private Button editActivityButton;
 
     final TripManager util = TripManager.getInstance();
 
@@ -48,16 +55,11 @@ public class ItineraryItemCell extends ListCell<Itinerary.ItineraryItem> {
         descriptionLabel.setStyle("-fx-text-fill: black");
         dayLabel.setStyle("-fx-text-fill: black");
         expenseSummaryLabel.setStyle("-fx-text-fill: black");
-
-        expenseSummaryLabel.setText("Not implemented yet");
     }
 
     @Override
     protected void updateItem(Itinerary.ItineraryItem item, boolean empty) {
         super.updateItem(item, empty);
-        linkExpensesButton.setOnAction((_event) -> {
-            util.promptLinkExpenses(item);
-        });
 
         if (empty || item == null) {
             setText(null);
@@ -67,6 +69,24 @@ public class ItineraryItemCell extends ListCell<Itinerary.ItineraryItem> {
             dayLabel.setText(item.getAssociatedDay() == -1 ? "" : "Planned for Day " + item.getAssociatedDay());
             setText(null);
             setGraphic(rootPane);
+
+            linkExpensesButton.setOnAction((_event) -> {
+                LinkExpensesDialog dlg = new LinkExpensesDialog(item);
+                dlg.showAndWait();
+                this.updateItem(item, false);
+            });
+
+            editActivityButton.setOnAction((event -> {
+                // TODO: Implement activity editing (allow user to change activity name / reassign day)
+                PopupManager.showPredefinedPopup(PopupManager.PopupType.NOT_IMPLEMENTED);
+            }));
+
+            double totalExpenses = 0.0d;
+            for (UUID expenseID: item.getAssociatedExpenses()) {
+                totalExpenses += TripPlanner.getInstance().getOpenPlan().getExpenseData().getPlannedExpenses().get(expenseID).getAmount();
+            }
+
+            expenseSummaryLabel.setText(TripManager.Formatting.formatMoney(totalExpenses, "€", false));
         }
     }
 }

@@ -2,10 +2,12 @@ package krisapps.tripplanner.data.listview.expense_linker;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.layout.HBox;
 import krisapps.tripplanner.Application;
+import krisapps.tripplanner.data.PopupManager;
 import krisapps.tripplanner.data.TripManager;
 import krisapps.tripplanner.data.trip.PlannedExpense;
 
@@ -25,10 +27,15 @@ public class ExpenseLinkerCell extends ListCell<PlannedExpense> {
     @FXML
     private Label expenseType;
 
-    final TripManager util = TripManager.getInstance();
+    @FXML
+    private Button editExpenseButton;
 
-    public ExpenseLinkerCell() {
+    final TripManager util = TripManager.getInstance();
+    final boolean editable;
+
+    public ExpenseLinkerCell(boolean editable) {
         loadFXML();
+        this.editable = editable;
     }
 
     private void loadFXML() {
@@ -44,6 +51,19 @@ public class ExpenseLinkerCell extends ListCell<PlannedExpense> {
         expenseDesc.setStyle("-fx-text-fill: black");
         expenseVal.setStyle("-fx-text-fill: black");
         expenseType.setStyle("-fx-text-fill: black");
+        editExpenseButton.setVisible(false);
+
+        selectedProperty().addListener((observable, oldValue, newValue) -> {
+            if (editable) {
+                editExpenseButton.setVisible(newValue);
+            } else {
+                editExpenseButton.setVisible(false);
+            }
+        });
+
+        editExpenseButton.setOnAction(event -> {
+            PopupManager.showPredefinedPopup(PopupManager.PopupType.NOT_IMPLEMENTED);
+        });
     }
 
     @Override

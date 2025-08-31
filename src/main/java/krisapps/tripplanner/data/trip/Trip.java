@@ -102,8 +102,8 @@ public class Trip {
     }
 
     public void resetModifiedFlag() {
-        this.modified = false;
         this.expenses.resetModifiedFlag();
         this.itinerary.resetModifiedFlag();
+        this.modified = false;
     }
 }
