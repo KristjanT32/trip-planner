@@ -7,8 +7,9 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.layout.HBox;
 import krisapps.tripplanner.Application;
-import krisapps.tripplanner.data.PopupManager;
+import krisapps.tripplanner.TripPlanner;
 import krisapps.tripplanner.data.TripManager;
+import krisapps.tripplanner.data.prompts.EditExpenseDialog;
 import krisapps.tripplanner.data.trip.PlannedExpense;
 
 import java.io.IOException;
@@ -60,15 +61,19 @@ public class ExpenseLinkerCell extends ListCell<PlannedExpense> {
                 editExpenseButton.setVisible(false);
             }
         });
-
-        editExpenseButton.setOnAction(event -> {
-            PopupManager.showPredefinedPopup(PopupManager.PopupType.NOT_IMPLEMENTED);
-        });
     }
 
     @Override
     protected void updateItem(PlannedExpense item, boolean empty) {
         super.updateItem(item, empty);
+
+        editExpenseButton.setOnAction(event -> {
+            if (editable) {
+                EditExpenseDialog editDialog = new EditExpenseDialog(TripPlanner.getInstance().getOpenPlan(), item);
+                editDialog.showAndWait();
+                this.updateItem(item, false);
+            }
+        });
 
         if (empty || item == null) {
             setText(null);

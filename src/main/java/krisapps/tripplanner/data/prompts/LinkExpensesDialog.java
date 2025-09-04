@@ -56,7 +56,7 @@ public class LinkExpensesDialog extends Dialog<Void> {
             throw new RuntimeException(e);
         }
         getDialogPane().setContent(rootPane);
-        initModality(Modality.WINDOW_MODAL);
+        initModality(Modality.APPLICATION_MODAL);
 
         this.item = item;
 

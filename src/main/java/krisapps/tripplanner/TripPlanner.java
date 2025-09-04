@@ -90,6 +90,9 @@ public class TripPlanner {
 
     @FXML
     private Label selectedItineraryEntryLabel;
+
+    @FXML
+    private Button deleteActivityButton;
     //</editor-fold>
 
     //<editor-fold desc="Trip overview">
@@ -167,10 +170,12 @@ public class TripPlanner {
         return instance;
     }
 
-    /*
-    * TODO: Figure out why opening a new trip after saving another trip before marks the newly opened trip as modified.
-    * This is probably due to the way UI is initialized with trip data, so likely a better way is required.
-    * */
+    /**
+     * TODO: Implement remaining top bar buttons (close planner, rename trip etc.)
+     * TODO: Implement 'Set reminders' (incl. integration with Google Calendar)
+     * TODO: Implement 'Trip Overview'
+     * TODO: Implement plan document generation (also add menu for that)
+     */
 
     @FXML
     public void initialize() {
@@ -315,7 +320,9 @@ public class TripPlanner {
     public void launchRefreshTask() {
         scheduler.scheduleAtFixedRate(() -> {
             Optional<PlannedExpense> selectedExpense = Optional.ofNullable(expenseList.getSelectionModel().getSelectedItem());
+            Optional<Itinerary.ItineraryItem> selectedItineraryItem = Optional.ofNullable(itineraryListView.getSelectionModel().getSelectedItem());
             deleteExpenseButton.setDisable(selectedExpense.isEmpty());
+            deleteActivityButton.setDisable(selectedItineraryItem.isEmpty());
 
             if (currentPlan != null) {
                 if (launchedInReadOnly) {
@@ -325,7 +332,7 @@ public class TripPlanner {
                     readOnlyNotification.setVisible(false);
                     readOnlyNotification.setManaged(false);
 
-                    if (currentPlan.hasBeenModified()) {
+                    if (currentPlan.hasBeenModified() && !launchedInReadOnly) {
                         unsavedChangesNotification.setVisible(true);
                         unsavedChangesNotification.setManaged(true);
                     } else {
@@ -379,12 +386,23 @@ public class TripPlanner {
         }
     }
 
+    private void enableReadOnly(boolean readOnly) {
+        this.launchedInReadOnly = readOnly;
+        if (launchedInReadOnly) {
+            unsavedChangesNotification.setVisible(false);
+            unsavedChangesNotification.setManaged(false);
+        }
+    }
+
     private CompletableFuture<Void> loadTrip(Trip t) {
         CompletableFuture<Void> future = new CompletableFuture<>();
         refreshWindowTitle("KrisApps Trip Planner - loading " + t.getTripName());
 
         currentPlan = t;
         t.resetModifiedFlag();
+
+        readOnlyNotification.setVisible(false);
+        readOnlyNotification.setManaged(false);
 
         future.complete(null);
         return future;
@@ -466,12 +484,23 @@ public class TripPlanner {
         dlg.show("Loading", () -> {
             Platform.runLater(() -> {
                 loadTrip(tripToOpen).join();
-                launchedInReadOnly = openInReadOnly;
+                enableReadOnly(openInReadOnly);
                 changeProgramState(ProgramState.PLAN_TRIP);
                 updateUIForCurrentPlan();
                 refreshWindowTitle("KrisApps Trip Planner - planning " + tripToOpen.getTripName());
             });
         });
+    }
+
+    public void discardChanges() {
+        loadTrip(currentPlan).join();
+        enableReadOnly(true);
+        changeProgramState(ProgramState.PLAN_TRIP);
+        updateUIForCurrentPlan();
+        refreshItinerary();
+        refreshExpensePlanner();
+        refreshWindowTitle("KrisApps Trip Planner - planning " + currentPlan.getTripName());
+        TripManager.log("Discarded changes to open trip.");
     }
 
     public void createNewTrip() {
@@ -512,12 +541,13 @@ public class TripPlanner {
 
         if (response.isPresent()) {
             if (response.get().getButtonData().equals(ButtonBar.ButtonData.APPLY)) {
-                launchedInReadOnly = false;
+                enableReadOnly(false);
             }
         }
     }
 
     public void saveChanges() {
+        if (launchedInReadOnly) { return; }
         saveChanges(false);
     }
 
@@ -548,7 +578,7 @@ public class TripPlanner {
             return;
         }
         PlannedExpense expense = new PlannedExpense(Double.parseDouble(expenseAmountBox.getText()), expenseNameBox.getText(), ExpenseCategory.valueOf(expenseTypeSelector.getValue()));
-        expense.setDay(expenseDayBox.getValue());
+        expense.setDay(expenseDayBox.getValue() == 0 ? -1 : expenseDayBox.getValue());
         trips.addExpense(currentPlan, expense);
 
         expenseAmountBox.setText("");
@@ -571,13 +601,21 @@ public class TripPlanner {
         String activityDesc =  activityDescriptionBox.getText();
         int activityDay = activityDayBox.getValue() != null ? activityDayBox.getValue() : -1;
         currentPlan.getItinerary().addItem(new Itinerary.ItineraryItem(activityDesc, activityDay));
+
+        activityDescriptionBox.setText("");
+        activityDayBox.getValueFactory().setValue(-1);
         refreshItinerary();
     }
 
     public void deleteSelectedItineraryEntry() {
         Optional<Itinerary.ItineraryItem> selectedEntry = Optional.ofNullable(itineraryListView.getSelectionModel().getSelectedItem());
-        selectedEntry.ifPresent(itineraryItem -> currentPlan.getItinerary().removeItem(itineraryItem.getItemID()));
-        refreshItinerary();
+        Optional<ButtonType> btn = PopupManager.showConfirmation("Delete itinerary item", "Are you sure you wish to delete this itinerary item?\nAll its related expenses will remain intact.", new ButtonType("Yes, delete", ButtonBar.ButtonData.APPLY), new ButtonType("No, cancel", ButtonBar.ButtonData.CANCEL_CLOSE));
+        if (btn.isPresent()) {
+            if (btn.get().getButtonData() == ButtonBar.ButtonData.APPLY) {
+                selectedEntry.ifPresent(itineraryItem -> currentPlan.getItinerary().removeItem(itineraryItem.getItemID()));
+                refreshItinerary();
+            }
+        }
     }
 
     public void refreshWindowTitle(String title) {

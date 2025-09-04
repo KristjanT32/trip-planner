@@ -44,10 +44,12 @@ public class Itinerary {
         }
 
         public void addExpense(PlannedExpense expense) {
+            if (associatedExpenses.contains(expense.getExpenseID())) return;
             associatedExpenses.addLast(expense.getExpenseID());
         }
 
         public void addExpense(UUID expenseID) {
+            if (associatedExpenses.contains(expenseID)) return;
             associatedExpenses.addLast(expenseID);
         }
 

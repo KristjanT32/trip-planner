@@ -40,7 +40,7 @@
                     <items>
                         <MenuItem mnemonicParsing="false" text="Rename trip" />
                         <MenuItem mnemonicParsing="false" text="Change trip destination" />
-                      <MenuItem mnemonicParsing="false" text="Discard all changes" />
+                      <MenuItem mnemonicParsing="false" onAction="#discardChanges" text="Discard all changes" />
                         <MenuItem mnemonicParsing="false" text="Close wizard" />
                     </items>
                   </Menu>
@@ -164,16 +164,27 @@
                                                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                                              </padding>
                                           </HBox>
-                                          <Separator maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" orientation="VERTICAL" prefHeight="50.0" visible="false" VBox.vgrow="SOMETIMES" />
-                                          <Label alignment="CENTER" prefHeight="55.0" prefWidth="896.0" text="Itinerary">
+                                          <Label text="Keep day as -1 or 0 if you do not wish to assign a specific day to this item">
+                                             <font>
+                                                <Font name="Segoe UI" size="16.0" />
+                                             </font>
+                                             <VBox.margin>
+                                                <Insets top="10.0" />
+                                             </VBox.margin>
+                                          </Label>
+                                          <Separator maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" orientation="VERTICAL" prefHeight="34.0" prefWidth="795.0" visible="false" VBox.vgrow="SOMETIMES" />
+                                          <Label alignment="CENTER" prefWidth="896.0" text="Itinerary">
                                              <font>
                                                 <Font name="Segoe UI Bold" size="20.0" />
                                              </font>
+                                             <VBox.margin>
+                                                <Insets bottom="15.0" />
+                                             </VBox.margin>
                                           </Label>
                                           <ListView fx:id="itineraryListView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="itinerary-listview" VBox.vgrow="ALWAYS" />
                                           <HBox alignment="CENTER_RIGHT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="SOMETIMES">
                                              <children>
-                                                <Label fx:id="selectedItineraryEntryLabel" text="Day 1 - Activity description">
+                                                <Label fx:id="selectedItineraryEntryLabel" text="Nothing selected">
                                                    <font>
                                                       <Font name="Segoe UI Bold" size="20.0" />
                                                    </font>
@@ -266,7 +277,7 @@
                                                       <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                                                    </padding>
                                                 </HBox>
-                                                <Label text="Leave day on -1 if you do not wish to assign a specific day to this expense">
+                                                <Label text="Keep day as -1 or 0 if you do not wish to assign a specific day to this expense">
                                                    <font>
                                                       <Font name="Segoe UI" size="16.0" />
                                                    </font>
@@ -276,16 +287,19 @@
                                                 </Label>
                                              </children>
                                           </VBox>
-                                          <Separator maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" orientation="VERTICAL" prefHeight="60.0" visible="false" VBox.vgrow="SOMETIMES" />
-                                          <Label alignment="CENTER" prefHeight="55.0" prefWidth="896.0" text="Planned expenses" VBox.vgrow="NEVER">
+                                          <Separator maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" orientation="VERTICAL" prefHeight="50.0" visible="false" VBox.vgrow="SOMETIMES" />
+                                          <Label alignment="CENTER" prefWidth="795.0" text="Planned expenses">
                                              <font>
                                                 <Font name="Segoe UI Bold" size="20.0" />
                                              </font>
+                                             <padding>
+                                                <Insets bottom="15.0" />
+                                             </padding>
                                           </Label>
-                                          <ListView fx:id="expenseList" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="expense-listview" VBox.vgrow="ALWAYS" />
+                                          <ListView fx:id="expenseList" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="351.0" prefWidth="795.0" styleClass="expense-listview" VBox.vgrow="ALWAYS" />
                                           <HBox alignment="CENTER_RIGHT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="SOMETIMES">
                                              <children>
-                                                <Label fx:id="selectedExpenseLabel" text="Expense description">
+                                                <Label fx:id="selectedExpenseLabel" text="Nothing selected">
                                                    <font>
                                                       <Font name="Segoe UI Bold" size="20.0" />
                                                    </font>

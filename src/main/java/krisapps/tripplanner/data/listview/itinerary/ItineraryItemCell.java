@@ -8,8 +8,8 @@ import javafx.scene.control.ListCell;
 import javafx.scene.layout.VBox;
 import krisapps.tripplanner.Application;
 import krisapps.tripplanner.TripPlanner;
-import krisapps.tripplanner.data.PopupManager;
 import krisapps.tripplanner.data.TripManager;
+import krisapps.tripplanner.data.prompts.EditItineraryEntryDialog;
 import krisapps.tripplanner.data.prompts.LinkExpensesDialog;
 import krisapps.tripplanner.data.trip.Itinerary;
 
@@ -77,8 +77,9 @@ public class ItineraryItemCell extends ListCell<Itinerary.ItineraryItem> {
             });
 
             editActivityButton.setOnAction((event -> {
-                // TODO: Implement activity editing (allow user to change activity name / reassign day)
-                PopupManager.showPredefinedPopup(PopupManager.PopupType.NOT_IMPLEMENTED);
+                EditItineraryEntryDialog editDialog = new EditItineraryEntryDialog(TripPlanner.getInstance().getOpenPlan(), item);
+                editDialog.showAndWait();
+                this.updateItem(item, false);
             }));
 
             double totalExpenses = 0.0d;

@@ -35,7 +35,7 @@
                         <Font name="Segoe UI Italic" size="10.0" />
                      </font>
                   </Label>
-                  <Button fx:id="editExpenseButton" maxHeight="1.7976931348623157E308" mnemonicParsing="false" text="Edit" HBox.hgrow="NEVER">
+                  <Button fx:id="editExpenseButton" maxHeight="1.7976931348623157E308" mnemonicParsing="false" text="Edit" visible="false" HBox.hgrow="NEVER">
                      <font>
                         <Font name="Segoe UI" size="10.0" />
                      </font>

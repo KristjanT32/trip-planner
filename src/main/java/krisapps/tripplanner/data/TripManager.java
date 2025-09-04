@@ -46,8 +46,34 @@ public class TripManager {
 
     public void init() {
         if (initialized) return;
-        // Init tasks
+        purgeInvalidExpenses();
+
         initialized = true;
+    }
+
+    private void purgeInvalidExpenses() {
+        Data data = getData();
+        ArrayList<Trip> trips = data.getTrips();
+        boolean modified = false;
+
+        log("Checking for invalid expense entries in itineraries...");
+        for (Trip t: trips) {
+            for (Itinerary.ItineraryItem item: t.getItinerary().getItems().values()) {
+                for (UUID expense: item.getAssociatedExpenses()) {
+                    if (getExpenseByID(t, expense) != null) continue;
+
+                    log("Invalid expense entry '" + expense + "' found in linked expenses for '" + item.getItemDescription() + "' - removing");
+                    item.getAssociatedExpenses().remove(expense);
+                    modified = true;
+                }
+            }
+        }
+        if (modified) {
+            data.setTrips(trips);
+            saveData(data);
+        } else {
+            log("All good. No invalid entries found.");
+        }
     }
 
     public ArrayList<Trip> getTrips() {
@@ -77,6 +103,17 @@ public class TripManager {
     }
 
     public void removeExpense(Trip trip, UUID expenseID) {
+        // Unlink expense from all itinerary items before deletion
+        if (isExpenseLinked(trip, expenseID)) {
+            log("Found itinerary items with expense marked for deletion. Purging.");
+            for (Itinerary.ItineraryItem item: trip.getItinerary().getItems().values()) {
+                if (item.getAssociatedExpenses().contains(expenseID)) {
+                    item.removeExpense(expenseID);
+                    log("Removed '" + expenseID + "' from '" + item.getItemDescription() + "'");
+                }
+            }
+        }
+
         trip.getExpenseData().removeExpense(expenseID);
     }
 

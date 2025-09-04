@@ -2,6 +2,7 @@ package krisapps.tripplanner.data;
 
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import krisapps.tripplanner.Application;
 
 import java.util.Optional;
 
@@ -16,6 +17,7 @@ public class PopupManager {
 
     public static void showPredefinedPopup(PopupType type) {
         Alert alert = new Alert(null);
+        alert.getDialogPane().getStylesheets().add(Application.class.getResource("styles/styles.css").toExternalForm());
         switch (type) {
             case EXPENSE_NAME_MISSING -> {
                 alert.setTitle("Cannot add expense entry");
@@ -43,6 +45,7 @@ public class PopupManager {
         }
 
         Alert a = new Alert(Alert.AlertType.CONFIRMATION);
+        a.getDialogPane().getStylesheets().add(Application.class.getResource("styles/styles.css").toExternalForm());
         a.setTitle(title);
         a.setHeaderText(null);
         a.setContentText(message);
