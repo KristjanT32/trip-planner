@@ -84,7 +84,7 @@ public class LinkExpensesDialog extends Dialog<Void> {
         b.setManaged(false);
 
         setTitle(trips.isReadOnlyEnabled() ? "Link expenses (preview; read-only mode active)" : "Link expenses");
-        activityNameLabel.setText(item.getItemDescription());
+        activityNameLabel.setText(item.getDescription());
         closeButton.setOnAction(e -> {
             close();
         });
@@ -92,7 +92,7 @@ public class LinkExpensesDialog extends Dialog<Void> {
 
     private void recalculateTotal() {
         totalExpenses = 0.0d;
-        for (PlannedExpense exp: item.getAssociatedExpenses().stream().map(exp -> trips.getOpenPlan().getExpenseData().getPlannedExpenses().get(exp)).toList()) {
+        for (PlannedExpense exp: item.getLinkedExpenses().stream().map(exp -> trips.getOpenPlan().getExpenseData().getPlannedExpenses().get(exp)).toList()) {
             totalExpenses += exp.getAmount();
         }
     }
@@ -102,8 +102,8 @@ public class LinkExpensesDialog extends Dialog<Void> {
         expenses.clear();
 
         for (PlannedExpense exp: trips.getOpenPlan().getExpenseData().getPlannedExpenses().values()) {
-            if (item.getAssociatedExpenses().contains(exp.getExpenseID())) continue;
-            if (TripManager.getInstance().isExpenseLinked(trips.getOpenPlan(), exp.getExpenseID())) continue;
+            if (item.getLinkedExpenses().contains(exp.getId())) continue;
+            if (TripManager.getInstance().isExpenseLinked(trips.getOpenPlan(), exp.getId())) continue;
             expenses.add(exp);
         }
 
@@ -112,7 +112,7 @@ public class LinkExpensesDialog extends Dialog<Void> {
 
         // Map the associated expenses for this item to the actual expense object, then add all to the list.
         linkedExpenses.setAll(
-                item.getAssociatedExpenses().stream()
+                item.getLinkedExpenses().stream()
                         .map(uuid -> trips.getOpenPlan().getExpenseData().getPlannedExpenses().get(uuid))
                         .collect(Collectors.toList())
         );
@@ -125,8 +125,8 @@ public class LinkExpensesDialog extends Dialog<Void> {
     public void linkSelectedExpense() {
         SelectionModel<PlannedExpense> expense = expenseList.getSelectionModel();
         if (expense.getSelectedItem() != null) {
-            item.addExpense(expense.getSelectedItem());
-            TripManager.log("Linked expense #" + expense.getSelectedItem().getExpenseID() + " -> " + item.getItemDescription());
+            item.linkExpense(expense.getSelectedItem());
+            TripManager.log("Linked expense #" + expense.getSelectedItem().getId() + " -> " + item.getDescription());
             refreshUI();
         }
     }
@@ -134,8 +134,8 @@ public class LinkExpensesDialog extends Dialog<Void> {
     public void unlinkSelectedExpense() {
         SelectionModel<PlannedExpense> expense = linkedExpenseList.getSelectionModel();
         if (expense.getSelectedItem() != null) {
-            item.removeExpense(expense.getSelectedItem().getExpenseID());
-            TripManager.log("Unlinked expense #" + expense.getSelectedItem().getExpenseID() + " from " + item.getItemDescription());
+            item.unlinkExpense(expense.getSelectedItem().getId());
+            TripManager.log("Unlinked expense #" + expense.getSelectedItem().getId() + " from " + item.getDescription());
             refreshUI();
         }
     }

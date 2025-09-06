@@ -28,8 +28,8 @@ public class ExpenseData {
     }
 
     public void addExpense(PlannedExpense exp) {
-        if (plannedExpenses.containsKey(exp.getExpenseID())) return;
-        plannedExpenses.put(exp.getExpenseID(), exp);
+        if (plannedExpenses.containsKey(exp.getId())) return;
+        plannedExpenses.put(exp.getId(), exp);
         this.modified = true;
     }
 

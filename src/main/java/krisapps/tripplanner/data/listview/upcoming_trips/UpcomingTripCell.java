@@ -5,7 +5,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
-import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.HBox;
 import krisapps.tripplanner.Application;
 import krisapps.tripplanner.TripPlanner;
@@ -50,7 +49,7 @@ public class UpcomingTripCell extends ListCell<Trip> {
     private Button editButton;
 
     @FXML
-    private ProgressBar countdownProgressbar;
+    private HBox buttonContainer;
 
     final TripManager util = TripManager.getInstance();
     final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMMM dd, yyyy");
@@ -79,6 +78,18 @@ public class UpcomingTripCell extends ListCell<Trip> {
 
         overviewButton.setOnAction((e) -> {
             TripManager.log("Overview button pressed");
+        });
+
+        buttonContainer.setVisible(false);
+        buttonContainer.setManaged(false);
+        selectedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                buttonContainer.setVisible(true);
+                buttonContainer.setManaged(true);
+            } else {
+                buttonContainer.setVisible(false);
+                buttonContainer.setManaged(false);
+            }
         });
     }
 

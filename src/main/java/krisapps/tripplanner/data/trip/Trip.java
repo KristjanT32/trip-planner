@@ -92,6 +92,16 @@ public class Trip {
         this.modified = true;
     }
 
+    public void setTripName(String tripName) {
+        this.tripName = tripName;
+        this.modified = true;
+    }
+
+    public void setTripDestination(String tripDestination) {
+        this.tripDestination = tripDestination;
+        this.modified = true;
+    }
+
     public boolean tripDatesSupplied() {
         return this.tripStartDate != null && this.tripEndDate != null;
     }

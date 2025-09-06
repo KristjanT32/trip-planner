@@ -1,8 +1,12 @@
 package krisapps.tripplanner.data;
 
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
+import javafx.geometry.Pos;
+import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import krisapps.tripplanner.Application;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
@@ -12,10 +16,11 @@ public class PopupManager {
         EXPENSE_NAME_MISSING,
         EXPENSE_AMOUNT_MISSING,
         NOT_IMPLEMENTED,
+        PLANNING_IN_PROGRESS
 
     }
 
-    public static void showPredefinedPopup(PopupType type) {
+    public static Optional<ButtonType> showPredefinedPopup(PopupType type) {
         Alert alert = new Alert(null);
         alert.getDialogPane().getStylesheets().add(Application.class.getResource("styles/styles.css").toExternalForm());
         switch (type) {
@@ -29,6 +34,13 @@ public class PopupManager {
                 alert.setContentText("Please fill in the value of your expense and try again.");
                 alert.setAlertType(Alert.AlertType.ERROR);
             }
+            case PLANNING_IN_PROGRESS -> {
+                alert.setTitle("Trip planning in progress!");
+                alert.setContentText("A trip is currently open in Trip Planner. Do you want to discard this open plan, and start a new one?");
+                alert.getButtonTypes().clear();
+                alert.getButtonTypes().addAll(new ButtonType("Yes, discard current plan", ButtonBar.ButtonData.APPLY), ButtonType.CANCEL);
+                alert.setAlertType(Alert.AlertType.CONFIRMATION);
+            }
             case NOT_IMPLEMENTED -> {
                 alert.setTitle("Uh-oh!");
                 alert.setContentText("This feature hasn't been implemented yet. Sorry!");
@@ -36,7 +48,7 @@ public class PopupManager {
             }
         }
         alert.setHeaderText(null);
-        alert.show();
+        return alert.showAndWait();
     }
 
     public static Optional<ButtonType> showConfirmation(String title, String message, ButtonType optionA, ButtonType optionB) {
@@ -52,6 +64,49 @@ public class PopupManager {
         a.getButtonTypes().clear();
         a.getButtonTypes().addAll(optionA, optionB);
         return a.showAndWait();
+    }
+
+    public static String showInputDialog(String title, String message, String inputLabel, @Nullable String inputValue) {
+        Alert a = new Alert(Alert.AlertType.INFORMATION);
+
+        a.getDialogPane().getStylesheets().add(Application.class.getResource("styles/styles.css").toExternalForm());
+        a.setTitle(title);
+        a.setHeaderText(null);
+
+        VBox root = new VBox();
+        HBox.setHgrow(root, Priority.ALWAYS);
+
+        Label msgLabel = new Label(message);
+        Label inputBoxLabel = new Label(inputLabel);
+        TextField inputField = new TextField();
+
+        VBox inputContainer = new VBox();
+        inputContainer.getChildren().add(inputBoxLabel);
+        inputContainer.getChildren().add(inputField);
+        inputContainer.setSpacing(5);
+
+        inputBoxLabel.setStyle("-fx-font-weight: bold");
+
+        HBox.setHgrow(inputContainer, Priority.ALWAYS);
+        inputContainer.setAlignment(Pos.CENTER_LEFT);
+
+        HBox.setHgrow(inputField, Priority.ALWAYS);
+
+        root.getChildren().add(msgLabel);
+        root.getChildren().add(inputContainer);
+        root.setSpacing(5);
+
+        inputField.setText(inputValue == null ? "" : inputValue);
+
+        a.getDialogPane().setContent(root);
+
+        Optional<ButtonType> response = a.showAndWait();
+        if (response.isPresent()) {
+            if (response.get() == ButtonType.OK) {
+                return inputField.getText();
+            }
+        }
+        return null;
     }
 
 

@@ -5,22 +5,22 @@ import java.util.UUID;
 public class PlannedExpense {
     private int day = -1;
     private double amount;
-    private String expenseSource;
+    private String description;
     private ExpenseCategory category;
-    private final UUID expenseID;
+    private final UUID id;
 
-    public PlannedExpense(double amount, String expenseSource, ExpenseCategory category) {
+    public PlannedExpense(double amount, String description, ExpenseCategory category) {
         this.amount = amount;
-        this.expenseSource = expenseSource;
+        this.description = description;
         this.category = category;
-        this.expenseID = UUID.randomUUID();
+        this.id = UUID.randomUUID();
     }
 
-    public PlannedExpense(String expenseSource, double amount) {
-        this.expenseSource = expenseSource;
+    public PlannedExpense(String description, double amount) {
+        this.description = description;
         this.amount = amount;
         this.category = ExpenseCategory.UNCATEGORIZED;
-        this.expenseID = UUID.randomUUID();
+        this.id = UUID.randomUUID();
     }
 
     public void setDay(int day) {
@@ -31,8 +31,8 @@ public class PlannedExpense {
         this.amount = amount;
     }
 
-    public void setExpenseSource(String expenseSource) {
-        this.expenseSource = expenseSource;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public void setCategory(ExpenseCategory category) {
@@ -47,15 +47,15 @@ public class PlannedExpense {
         return amount;
     }
 
-    public String getExpenseSource() {
-        return expenseSource;
+    public String getDescription() {
+        return description;
     }
 
     public ExpenseCategory getCategory() {
         return category;
     }
 
-    public UUID getExpenseID() {
-        return expenseID;
+    public UUID getId() {
+        return id;
     }
 }

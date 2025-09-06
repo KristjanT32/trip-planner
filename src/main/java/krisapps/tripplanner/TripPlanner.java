@@ -3,6 +3,7 @@ package krisapps.tripplanner;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.chart.PieChart;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -11,11 +12,15 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import krisapps.tripplanner.data.DayExpenses;
 import krisapps.tripplanner.data.PopupManager;
 import krisapps.tripplanner.data.TripManager;
+import krisapps.tripplanner.data.listview.cost_list.CategoryExpenseSummary;
+import krisapps.tripplanner.data.listview.cost_list.CostListCellFactory;
 import krisapps.tripplanner.data.listview.expense_linker.ExpenseLinkerCellFactory;
 import krisapps.tripplanner.data.listview.itinerary.ItineraryCellFactory;
 import krisapps.tripplanner.data.listview.upcoming_trips.UpcomingTripsCellFactory;
+import krisapps.tripplanner.data.prompts.EditTripDetailsDialog;
 import krisapps.tripplanner.data.prompts.LoadingDialog;
 import krisapps.tripplanner.data.trip.ExpenseCategory;
 import krisapps.tripplanner.data.trip.Itinerary;
@@ -28,6 +33,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Optional;
@@ -101,6 +107,27 @@ public class TripPlanner {
 
     @FXML
     private Label peopleInvolvedLabel;
+
+    @FXML
+    private Label destinationLabel;
+
+    @FXML
+    private Label totalExpensesLabel;
+
+    @FXML
+    private Label dailyExpensesLabel;
+
+    @FXML
+    private Label dailyAverageLabel;
+
+    @FXML
+    private ListView<Itinerary.ItineraryItem> summaryItinerary;
+
+    @FXML
+    private ListView<CategoryExpenseSummary> categoryBreakdownList;
+
+    @FXML
+    private PieChart expenseChart;
     //</editor-fold>
 
     //<editor-fold desc="Expense planner">
@@ -171,9 +198,8 @@ public class TripPlanner {
     }
 
     /**
-     * TODO: Implement remaining top bar buttons (close planner, rename trip etc.)
      * TODO: Implement 'Set reminders' (incl. integration with Google Calendar)
-     * TODO: Implement 'Trip Overview'
+     * TODO: Finish implementing 'Trip Overview' (add missing data, add polish, add bottom margin to itinerary label etc.)
      * TODO: Implement plan document generation (also add menu for that)
      */
 
@@ -204,10 +230,7 @@ public class TripPlanner {
         if (currentPlan != null) {
             expenseDayValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(-1, (int) currentPlan.getTripDuration().toDays(), -1);
             itineraryDayValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(-1, (int) currentPlan.getTripDuration().toDays(), -1);
-
-            for (Itinerary.ItineraryItem item : currentPlan.getItinerary().getItems().values()) {
-                itineraryListView.getItems().add(item);
-            }
+            refreshItinerary();
 
 
         } else {
@@ -271,9 +294,11 @@ public class TripPlanner {
     }
 
     public void setupListViews() {
-        itineraryListView.setCellFactory(new ItineraryCellFactory());
+        itineraryListView.setCellFactory(new ItineraryCellFactory(true));
+        summaryItinerary.setCellFactory(new ItineraryCellFactory(false));
         expenseList.setCellFactory(new ExpenseLinkerCellFactory(true));
         upcomingTripsList.setCellFactory(new UpcomingTripsCellFactory());
+        categoryBreakdownList.setCellFactory(new CostListCellFactory());
     }
 
     public void registerListeners() {
@@ -304,13 +329,13 @@ public class TripPlanner {
 
         expenseList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
            if (newValue != null) {
-               selectedExpenseLabel.setText(newValue.getExpenseSource() + " - " + TripManager.Formatting.formatMoney(newValue.getAmount(), "€", false) + (newValue.getDay() != -1 ? " (Day #" + newValue.getDay() + ")" : ""));
+               selectedExpenseLabel.setText(newValue.getDescription() + " - " + TripManager.Formatting.formatMoney(newValue.getAmount(), "€", false) + (newValue.getDay() != -1 ? " (Day #" + newValue.getDay() + ")" : ""));
            }
         });
 
         itineraryListView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
            if (newValue != null) {
-               selectedItineraryEntryLabel.setText(newValue.getItemDescription() + (newValue.getAssociatedDay() != -1 ? " (Day #" + newValue.getAssociatedDay() + ")" : ""));
+               selectedItineraryEntryLabel.setText(newValue.getDescription() + (newValue.getDay() != -1 ? " (Day #" + newValue.getDay() + ")" : ""));
            }
         });
 
@@ -408,13 +433,23 @@ public class TripPlanner {
         return future;
     }
 
+    public void refreshViews() {
+        refreshItinerary();
+        refreshTripOverview();
+        refreshExpensePlanner();
+        refreshUpcomingTrips();
+    }
+
 
     public void refreshItinerary() {
         if (currentPlan == null) return;
 
-        ObservableList<Itinerary.ItineraryItem> itineraryItems = itineraryListView.getItems();
-        itineraryItems.clear();
-        itineraryItems.addAll(currentPlan.getItinerary().getItems().values().stream().sorted(Comparator.comparingInt(Itinerary.ItineraryItem::getAssociatedDay)).toList());
+        itineraryListView.getItems().clear();
+        for (Itinerary.ItineraryItem item : currentPlan.getItinerary().getItems().values().stream().sorted(Comparator.comparingInt((i) -> {
+            if (i.getDay() == -1 || i.getDay() == 0) return Integer.MAX_VALUE; else return i.getDay();
+        })).toList()) {
+            itineraryListView.getItems().add(item);
+        }
     }
 
     public void refreshExpensePlanner() {
@@ -440,6 +475,76 @@ public class TripPlanner {
                 + " (duration: " + tripDuration + (tripDuration == 1 ? " day" : " days") + ")"
         );
         peopleInvolvedLabel.setText(String.valueOf(currentPlan.getPartySize()));
+
+        destinationLabel.setText(currentPlan.getTripDestination());
+
+        categoryBreakdownList.getItems().clear();
+        ArrayList<CategoryExpenseSummary> categorySummaries = new ArrayList<>();
+
+        double totalExpenses = 0.0;
+
+        // Group all expenses into summary objects
+        for (PlannedExpense e: currentPlan.getExpenseData().getPlannedExpenses().values()) {
+
+            // Get the existing summary object or create a new one for the expense category if missing.
+            CategoryExpenseSummary summary = categorySummaries.stream().filter(sum -> sum.getCategory().equals(e.getCategory())).findFirst().orElse(new CategoryExpenseSummary(e.getCategory()));
+
+            summary.addExpense(e);
+            if (categorySummaries.stream().noneMatch(sum -> sum.getCategory().equals(e.getCategory()))) {
+                categorySummaries.add(summary);
+            }
+            totalExpenses += e.getAmount();
+        }
+
+        ArrayList<DayExpenses> dayExpenseSummaries = new ArrayList<>();
+
+        for (PlannedExpense e: currentPlan.getExpenseData().getPlannedExpenses().values()) {
+            if (e.getDay() == -1) continue;
+            DayExpenses expenses = dayExpenseSummaries.stream().filter(dayExpenses -> dayExpenses.getDayIndex() == e.getDay()).findFirst().orElse(new DayExpenses(e.getDay()));
+
+            expenses.addExpense(e);
+            if (dayExpenseSummaries.stream().noneMatch(dayExpenses -> dayExpenses.getDayIndex() == e.getDay())) {
+                dayExpenseSummaries.add(expenses);
+                TripManager.log("Day #" + expenses.getDayIndex() + ": " + expenses.getTotalExpenses());
+            }
+        }
+
+        double minExpenses = Double.MAX_VALUE;
+        double maxExpenses = 0.0d;
+        double dailyAverage = 0.0d;
+        for (DayExpenses expenseSummary: dayExpenseSummaries) {
+            if (expenseSummary.getTotalExpenses() < minExpenses) {
+                minExpenses = expenseSummary.getTotalExpenses();
+            }
+            if (expenseSummary.getTotalExpenses() > maxExpenses) {
+                maxExpenses = expenseSummary.getTotalExpenses();
+            }
+            dailyAverage += expenseSummary.getTotalExpenses();
+        }
+
+        dailyAverage = dailyAverage / dayExpenseSummaries.size();
+
+        totalExpensesLabel.setText(totalExpenses + "€");
+        dailyExpensesLabel.setText(minExpenses + "€" + " - " + maxExpenses + "€");
+        dailyAverageLabel.setText(dailyAverage + "€");
+
+        // Sort by total amount, descending
+        categorySummaries.sort(Comparator.comparingDouble(CategoryExpenseSummary::getTotalAmount).reversed());
+        categoryBreakdownList.getItems().addAll(categorySummaries);
+
+        ObservableList<Itinerary.ItineraryItem> itineraryItems = summaryItinerary.getItems();
+        itineraryItems.clear();
+        itineraryItems.addAll(currentPlan.getItinerary().getItems().values().stream().sorted(Comparator.comparingInt((i) -> {
+            if (i.getDay() == -1 || i.getDay() == 0) return Integer.MAX_VALUE; else return i.getDay();
+        })).toList());
+        summaryItinerary.setItems(itineraryItems);
+
+
+
+        expenseChart.getData().clear();
+        for (CategoryExpenseSummary sum: categorySummaries) {
+            expenseChart.getData().add(new PieChart.Data(sum.getCategory().getDisplayName(), sum.getTotalAmount()));
+        }
     }
 
     public void refreshUpcomingTrips() {
@@ -449,15 +554,16 @@ public class TripPlanner {
         }
     }
 
+    public void promptEditTripDetails() {
+        if (currentPlan == null) { return; }
+        EditTripDetailsDialog editDialog = new EditTripDetailsDialog(currentPlan);
+        editDialog.showAndWait();
+    }
+
     public void showTripSetup() {
         if (currentPlan != null) {
-            Alert prompt = new Alert(Alert.AlertType.CONFIRMATION);
-            prompt.setHeaderText(null);
-            prompt.setTitle("Trip planning in progress!");
-            prompt.setContentText("A trip is currently open in Trip Planner. Do you want to discard this open plan, and start a new one?");
-            prompt.getButtonTypes().clear();
-            prompt.getButtonTypes().addAll(new ButtonType("Yes, discard current plan", ButtonBar.ButtonData.APPLY), ButtonType.CANCEL);
-            Optional<ButtonType> response = prompt.showAndWait();
+
+            Optional<ButtonType> response = PopupManager.showPredefinedPopup(PopupManager.PopupType.PLANNING_IN_PROGRESS);
             if (response.isPresent()) {
                 if (response.get().getButtonData() == ButtonBar.ButtonData.APPLY) {
                     TripManager.log("Discarded current trip plan.");
@@ -477,7 +583,26 @@ public class TripPlanner {
         upcomingTripsPanel.setVisible(true);
     }
 
+    /**
+     * Loads a trip from the file and opens it in the Planner.
+     * @param tripToOpen The trip to load
+     * @param openInReadOnly Whether to open the Planner in read-only mode.
+     */
     public void openExistingTrip(Trip tripToOpen, boolean openInReadOnly) {
+        if (currentPlan != null) {
+            Optional<ButtonType> response = PopupManager.showPredefinedPopup(PopupManager.PopupType.PLANNING_IN_PROGRESS);
+            if (response.isPresent()) {
+                if (response.get().getButtonData() == ButtonBar.ButtonData.APPLY) {
+                    TripManager.log("Discarded current trip plan.");
+                    resetPlanner();
+                } else {
+                    return;
+                }
+            } else {
+                return;
+            }
+        }
+
         LoadingDialog dlg = new LoadingDialog(LoadingDialog.LoadingOperationType.INDETERMINATE_SPINNER);
         dlg.setPrimaryLabel("Opening plan");
         dlg.setSecondaryLabel("Please wait while the trip is opened in the Planner...");
@@ -492,17 +617,38 @@ public class TripPlanner {
         });
     }
 
-    public void discardChanges() {
-        loadTrip(currentPlan).join();
-        enableReadOnly(true);
-        changeProgramState(ProgramState.PLAN_TRIP);
-        updateUIForCurrentPlan();
-        refreshItinerary();
-        refreshExpensePlanner();
-        refreshWindowTitle("KrisApps Trip Planner - planning " + currentPlan.getTripName());
-        TripManager.log("Discarded changes to open trip.");
+    /***
+     * Reloads the active trip from the file, resetting all changes.
+     */
+    public void discardChanges(boolean silent) {
+        if (currentPlan == null) { return; }
+        if (silent) {
+            loadTrip(currentPlan).join();
+            enableReadOnly(true);
+            changeProgramState(ProgramState.PLAN_TRIP);
+            updateUIForCurrentPlan();
+            refreshItinerary();
+            refreshExpensePlanner();
+            refreshWindowTitle("KrisApps Trip Planner - planning " + currentPlan.getTripName());
+            TripManager.log("Discarded changes to open trip.");
+        } else {
+            Optional<ButtonType> response = PopupManager.showConfirmation(
+                    "Discard all trip changes",
+                    "Are you sure you wish to discard all pending changes? This action cannot be undone.",
+                    new ButtonType("Yes, discard", ButtonBar.ButtonData.APPLY),
+                    new ButtonType("No, keep changes", ButtonBar.ButtonData.CANCEL_CLOSE)
+            );
+            if (response.isPresent()) {
+                if (response.get().getButtonData() == ButtonBar.ButtonData.APPLY) {
+                    discardChanges(true);
+                }
+            }
+        }
     }
 
+    /**
+     * Creates a new trip and opens it in the Planner.
+     */
     public void createNewTrip() {
         Trip trip = new Trip(
                 tripNameBox.getText(),
@@ -525,6 +671,38 @@ public class TripPlanner {
     public void resetPlanner() {
         currentPlan = null;
         refreshWindowTitle("KrisApps Trip Planner");
+    }
+
+    public void promptClosePlanner() {
+        if (currentPlan == null) { return; }
+        closePlanner(false);
+    }
+
+    public void promptDiscardChanges() {
+        discardChanges(false);
+    }
+
+    /**
+     * Discards all changes, closes planner and opens the trip list.
+     */
+    public void closePlanner(boolean silent) {
+        if (silent) {
+            resetPlanner();
+            changeProgramState(ProgramState.SHOW_DASHBOARD);
+        } else {
+            Optional<ButtonType> response = PopupManager.showConfirmation(
+                    "Close planner",
+                    "Are you sure you wish to close the planner? This will discard all pending changes and reset the planner.",
+                    new ButtonType("Yes, close planner", ButtonBar.ButtonData.APPLY),
+                    new ButtonType("No, cancel", ButtonBar.ButtonData.CANCEL_CLOSE)
+            );
+            if (response.isPresent()) {
+                if (response.get().getButtonData() == ButtonBar.ButtonData.APPLY) {
+                    resetPlanner();
+                    changeProgramState(ProgramState.SHOW_DASHBOARD);
+                }
+            }
+        }
     }
 
     public boolean isReadOnlyEnabled() {
@@ -590,7 +768,7 @@ public class TripPlanner {
 
     public void deleteSelectedExpense() {
         Optional<PlannedExpense> selectedExpense = Optional.ofNullable(expenseList.getSelectionModel().getSelectedItem());
-        selectedExpense.ifPresent(expense -> currentPlan.getExpenseData().removeExpense(expense.getExpenseID()));
+        selectedExpense.ifPresent(expense -> currentPlan.getExpenseData().removeExpense(expense.getId()));
         refreshExpenseList();
     }
 
@@ -612,7 +790,7 @@ public class TripPlanner {
         Optional<ButtonType> btn = PopupManager.showConfirmation("Delete itinerary item", "Are you sure you wish to delete this itinerary item?\nAll its related expenses will remain intact.", new ButtonType("Yes, delete", ButtonBar.ButtonData.APPLY), new ButtonType("No, cancel", ButtonBar.ButtonData.CANCEL_CLOSE));
         if (btn.isPresent()) {
             if (btn.get().getButtonData() == ButtonBar.ButtonData.APPLY) {
-                selectedEntry.ifPresent(itineraryItem -> currentPlan.getItinerary().removeItem(itineraryItem.getItemID()));
+                selectedEntry.ifPresent(itineraryItem -> currentPlan.getItinerary().removeItem(itineraryItem.getId()));
                 refreshItinerary();
             }
         }

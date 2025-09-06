@@ -48,27 +48,19 @@ public class EditItineraryEntryDialog extends Dialog<Void> {
 
         setResultConverter((response) -> {
             if (response.getButtonData() == ButtonBar.ButtonData.APPLY) {
-                t.getItinerary().getItems().replace(item.getItemID(), item);
+                if (!descriptionBox.getText().isEmpty()) {
+                    item.setDescription(descriptionBox.getText());
+                }
+                item.setDay(dayBox.getValue() == 0 ? -1 : dayBox.getValue());
+                t.getItinerary().getItems().replace(item.getId(), item);
             }
             return null;
         });
 
-        descriptionBox.setText(item.getItemDescription());
-        descriptionBox.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (!newValue.isEmpty()) {
-                item.setItemDescription(newValue);
-            }
-        });
+        descriptionBox.setText(item.getDescription());
 
         dayBox.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(-1, (int) t.getTripDuration().toDays()));
-        dayBox.getValueFactory().setValue(item.getAssociatedDay());
-        dayBox.valueProperty().addListener(((observable, oldValue, newValue) -> {
-            if (newValue == 0) {
-                item.setAssociatedDay(-1);
-                return;
-            }
-            item.setAssociatedDay(newValue);
-        }));
+        dayBox.getValueFactory().setValue(item.getDay());
     }
 
 

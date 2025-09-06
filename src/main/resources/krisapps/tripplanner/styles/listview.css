@@ -72,6 +72,31 @@
 }
 /* </editor-fold> */
 
+/* <editor-fold desc="Cost List" */
+.cost-list {
+    -fx-padding: 5px;
+    -fx-background-color: white;
+    -fx-background-radius: 20px;
+    -fx-border-radius: 20px;
+}
+
+.cost-list-cell {
+    -fx-padding: 10px;
+    -fx-background-color: transparent;
+    -fx-background-radius: 20px;
+    -fx-border-radius: 20px;
+    -fx-text-fill: black;
+}
+
+.cost-list .list-cell {
+    -fx-padding: 5px;
+    -fx-background-color: transparent;
+    -fx-background-radius: 20px;
+    -fx-border-radius: 20px;
+    -fx-text-fill: black;
+}
+/* </editor-fold> */
+
 /* <editor-fold desc="Upcoming Trips List"> */
 .upcoming-trips-listview {
     -fx-padding: 10px;
@@ -80,15 +105,17 @@
     -fx-border-radius: 20px;
 }
 
+/* Cell Layout CSS */
 .upcoming-trip-cell {
     -fx-background-color: #e8e8e8;
     -fx-background-radius: 20px;
     -fx-border-radius: 20px;
 }
 
+/* Internal Cell CSS */
 .upcoming-trips-listview .list-cell {
-    -fx-padding: 5px 10px 5px 10px;
-    -fx-background-color: #e8e8e8;
+    -fx-padding: 5px;
+    -fx-background-color: transparent;
     -fx-background-radius: 20px;
     -fx-border-radius: 20px;
 }

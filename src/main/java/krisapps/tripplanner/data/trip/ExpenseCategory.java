@@ -12,9 +12,13 @@ public enum ExpenseCategory {
     MISCELLANEOUS("Miscellaneous"),
     ;
 
-    private final String name;
+    private final String displayName;
 
-    ExpenseCategory(String name) {
-        this.name = name;
+    ExpenseCategory(String displayName) {
+        this.displayName = displayName;
+    }
+
+    public String getDisplayName() {
+        return displayName;
     }
 }

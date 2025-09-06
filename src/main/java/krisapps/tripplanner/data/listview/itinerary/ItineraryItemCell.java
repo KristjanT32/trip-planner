@@ -37,8 +37,10 @@ public class ItineraryItemCell extends ListCell<Itinerary.ItineraryItem> {
     private Button editActivityButton;
 
     final TripManager util = TripManager.getInstance();
+    private final boolean editable;
 
-    public ItineraryItemCell() {
+    public ItineraryItemCell(boolean editable) {
+        this.editable = editable;
         loadFXML();
     }
 
@@ -55,6 +57,11 @@ public class ItineraryItemCell extends ListCell<Itinerary.ItineraryItem> {
         descriptionLabel.setStyle("-fx-text-fill: black");
         dayLabel.setStyle("-fx-text-fill: black");
         expenseSummaryLabel.setStyle("-fx-text-fill: black");
+
+        if (!editable) {
+            editActivityButton.setVisible(false);
+            linkExpensesButton.setVisible(false);
+        }
     }
 
     @Override
@@ -65,8 +72,8 @@ public class ItineraryItemCell extends ListCell<Itinerary.ItineraryItem> {
             setText(null);
             setGraphic(null);
         } else {
-            descriptionLabel.setText(item.getItemDescription());
-            dayLabel.setText(item.getAssociatedDay() == -1 ? "" : "Planned for Day " + item.getAssociatedDay());
+            descriptionLabel.setText(item.getDescription());
+            dayLabel.setText(item.getDay() == -1 ? "No day assigned" : "Planned for Day " + item.getDay());
             setText(null);
             setGraphic(rootPane);
 
@@ -83,7 +90,7 @@ public class ItineraryItemCell extends ListCell<Itinerary.ItineraryItem> {
             }));
 
             double totalExpenses = 0.0d;
-            for (UUID expenseID: item.getAssociatedExpenses()) {
+            for (UUID expenseID: item.getLinkedExpenses()) {
                 totalExpenses += TripPlanner.getInstance().getOpenPlan().getExpenseData().getPlannedExpenses().get(expenseID).getAmount();
             }
 

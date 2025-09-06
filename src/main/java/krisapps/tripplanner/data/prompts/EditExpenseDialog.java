@@ -76,7 +76,14 @@ public class EditExpenseDialog extends Dialog<Void> {
                     valueBox.setText("0");
                 }
 
-                t.getExpenseData().removeExpense(expense.getExpenseID());
+                // Apply all data changes
+                expense.setAmount(Double.parseDouble(valueBox.getText()));
+                if (!descriptionBox.getText().isEmpty()) { expense.setDescription(descriptionBox.getText()); }
+                expense.setCategory(ExpenseCategory.valueOf(categoryBox.getSelectionModel().getSelectedItem()));
+                expense.setDay(dayBox.getValue());
+
+                // Refresh the expense entry in the expense data for the trip
+                t.getExpenseData().removeExpense(expense.getId());
                 t.getExpenseData().addExpense(expense);
             }
             return null;
@@ -92,26 +99,15 @@ public class EditExpenseDialog extends Dialog<Void> {
            }
         });
 
-        descriptionBox.setText(expense.getExpenseSource());
-        descriptionBox.textProperty().addListener((observable, oldValue, newValue) -> {
-           if (!newValue.isEmpty()) {
-               expense.setExpenseSource(newValue);
-           }
-        });
+        descriptionBox.setText(expense.getDescription());
 
         dayBox.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(-1, (int) t.getTripDuration().toDays()));
         dayBox.getValueFactory().setValue(expense.getDay());
-        dayBox.valueProperty().addListener(((observable, oldValue, newValue) -> {
-            expense.setDay(newValue);
-        }));
 
         ObservableList<String> items = categoryBox.getItems();
         items.clear();
         items.addAll(Arrays.stream(ExpenseCategory.values()).map(ExpenseCategory::name).toList());
         categoryBox.getSelectionModel().select(expense.getCategory().name());
-        categoryBox.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> {
-            expense.setCategory(ExpenseCategory.valueOf(newValue));
-        }));
     }
 
 

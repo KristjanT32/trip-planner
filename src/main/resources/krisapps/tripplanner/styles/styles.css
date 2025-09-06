@@ -148,17 +148,6 @@
     -fx-border-radius: 20px;
 }
 
-.upcoming-trip-pb .bar {
-    -fx-background-color: #00e400;
-    -fx-border-radius: 10px;
-    -fx-background-radius: 10px;
-}
-
-.upcoming-trip-pb .track {
-    -fx-background-color: #bababa;
-    -fx-border-radius: 10px;
-    -fx-background-radius: 10px;
-}
 
 .unsaved-changes-panel {
     -fx-background-color: #ffe979;
@@ -190,4 +179,11 @@
 
 .readonly-panel > .button:hover {
     -fx-background-color: #9c6363;
+}
+
+.cost-chart {
+    -fx-background-color: white;
+    -fx-background-radius: 20px;
+    -fx-border-radius: 20px;
+    -fx-border-color: #787878;
 }

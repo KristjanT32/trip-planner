@@ -79,7 +79,7 @@ public class ExpenseLinkerCell extends ListCell<PlannedExpense> {
             setText(null);
             setGraphic(null);
         } else {
-            expenseDesc.setText(item.getExpenseSource());
+            expenseDesc.setText(item.getDescription());
             expenseVal.setText(TripManager.Formatting.formatMoney(item.getAmount(), "€", false));
             expenseType.setText("#" + item.getCategory().name());
             setText(null);

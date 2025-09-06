@@ -11,58 +11,54 @@ public class Itinerary {
     }
 
     public static class ItineraryItem {
-        private String itemDescription;
-        private int associatedDay;
-        private final LinkedList<UUID> associatedExpenses;
-        private final UUID itemID;
+        private String description;
+        private int day;
+        private final LinkedList<UUID> linkedExpenses;
+        private final UUID id;
 
-        public ItineraryItem(String itemDescription, int associatedDay) {
-            this.itemDescription = itemDescription;
-            this.associatedDay = associatedDay;
-            this.associatedExpenses = new LinkedList<>();
-            itemID = UUID.randomUUID();
+        public ItineraryItem(String description, int day) {
+            this.description = description;
+            this.day = day;
+            this.linkedExpenses = new LinkedList<>();
+            this.id = UUID.randomUUID();
         }
 
-        public String getItemDescription() {
-            return itemDescription;
+        public String getDescription() {
+            return description;
         }
 
-        public int getAssociatedDay() {
-            return associatedDay;
+        public int getDay() {
+            return day;
         }
 
-        public LinkedList<UUID> getAssociatedExpenses() {
-            return associatedExpenses;
+        public LinkedList<UUID> getLinkedExpenses() {
+            return linkedExpenses;
         }
 
-        public void setItemDescription(String itemDescription) {
-            this.itemDescription = itemDescription;
+        public void setDescription(String description) {
+            this.description = description;
         }
 
-        public void setAssociatedDay(int associatedDay) {
-            this.associatedDay = associatedDay;
+        public void setDay(int day) {
+            this.day = day;
         }
 
-        public void addExpense(PlannedExpense expense) {
-            if (associatedExpenses.contains(expense.getExpenseID())) return;
-            associatedExpenses.addLast(expense.getExpenseID());
+        public void linkExpense(PlannedExpense expense) {
+            if (linkedExpenses.contains(expense.getId())) return;
+            linkedExpenses.addLast(expense.getId());
         }
 
-        public void addExpense(UUID expenseID) {
-            if (associatedExpenses.contains(expenseID)) return;
-            associatedExpenses.addLast(expenseID);
+        public void linkExpense(UUID expenseID) {
+            if (linkedExpenses.contains(expenseID)) return;
+            linkedExpenses.addLast(expenseID);
         }
 
-        public void removeExpense(String expenseDescription) {
-
+        public void unlinkExpense(UUID expenseID) {
+            linkedExpenses.removeIf(p -> p.equals(expenseID));
         }
 
-        public void removeExpense(UUID expenseID) {
-            associatedExpenses.removeIf(p -> p.equals(expenseID));
-        }
-
-        public UUID getItemID() {
-            return itemID;
+        public UUID getId() {
+            return id;
         }
     }
 
@@ -80,7 +76,7 @@ public class Itinerary {
     }
 
     public void addItem(ItineraryItem item) {
-        items.putLast(item.getItemID(), item);
+        items.putLast(item.getId(), item);
         this.modified = true;
     }
 

@@ -59,11 +59,11 @@ public class TripManager {
         log("Checking for invalid expense entries in itineraries...");
         for (Trip t: trips) {
             for (Itinerary.ItineraryItem item: t.getItinerary().getItems().values()) {
-                for (UUID expense: item.getAssociatedExpenses()) {
+                for (UUID expense: item.getLinkedExpenses()) {
                     if (getExpenseByID(t, expense) != null) continue;
 
-                    log("Invalid expense entry '" + expense + "' found in linked expenses for '" + item.getItemDescription() + "' - removing");
-                    item.getAssociatedExpenses().remove(expense);
+                    log("Invalid expense entry '" + expense + "' found in linked expenses for '" + item.getDescription() + "' - removing");
+                    item.getLinkedExpenses().remove(expense);
                     modified = true;
                 }
             }
@@ -107,9 +107,9 @@ public class TripManager {
         if (isExpenseLinked(trip, expenseID)) {
             log("Found itinerary items with expense marked for deletion. Purging.");
             for (Itinerary.ItineraryItem item: trip.getItinerary().getItems().values()) {
-                if (item.getAssociatedExpenses().contains(expenseID)) {
-                    item.removeExpense(expenseID);
-                    log("Removed '" + expenseID + "' from '" + item.getItemDescription() + "'");
+                if (item.getLinkedExpenses().contains(expenseID)) {
+                    item.unlinkExpense(expenseID);
+                    log("Removed '" + expenseID + "' from '" + item.getDescription() + "'");
                 }
             }
         }
@@ -126,19 +126,19 @@ public class TripManager {
     }
 
     public boolean isExpenseLinked(Trip t, UUID expenseID) {
-        return t.getItinerary().getItems().values().stream().anyMatch(item -> item.getAssociatedExpenses().contains(expenseID));
+        return t.getItinerary().getItems().values().stream().anyMatch(item -> item.getLinkedExpenses().contains(expenseID));
     }
 
     public void linkExpense(Trip trip, UUID expenseID, UUID itineraryItemID) {
         trip.getItinerary().getItems().computeIfPresent(itineraryItemID, (id, itineraryItem) -> {
-            itineraryItem.addExpense(expenseID);
+            itineraryItem.linkExpense(expenseID);
             return itineraryItem;
         });
     }
 
     public void unlinkExpense(Trip trip, UUID expenseID, UUID itineraryItemID) {
         trip.getItinerary().getItems().computeIfPresent(itineraryItemID, (id, itineraryItem) -> {
-            itineraryItem.removeExpense(expenseID);
+            itineraryItem.unlinkExpense(expenseID);
             return itineraryItem;
         });
     }
