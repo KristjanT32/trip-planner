@@ -121,6 +121,15 @@ public class TripPlanner {
     private Label dailyAverageLabel;
 
     @FXML
+    private Label budgetLabel;
+
+    @FXML
+    private Label budgetStatusLabel;
+
+    @FXML
+    private Label budgetInfoLabel;
+
+    @FXML
     private ListView<Itinerary.ItineraryItem> summaryItinerary;
 
     @FXML
@@ -246,8 +255,10 @@ public class TripPlanner {
 
         tripPartySizeBox.getValueFactory().setValue((int) currentPlan.getPartySize());
 
-        refreshUpcomingTrips();
-        refreshExpensePlanner();
+        selectedExpenseLabel.setText("Nothing selected");
+        selectedItineraryEntryLabel.setText("Nothing selected");
+
+        refreshViews();
     }
 
     public void initUI() {
@@ -337,6 +348,17 @@ public class TripPlanner {
            if (newValue != null) {
                selectedItineraryEntryLabel.setText(newValue.getDescription() + (newValue.getDay() != -1 ? " (Day #" + newValue.getDay() + ")" : ""));
            }
+        });
+
+        categoryBreakdownList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (oldValue != null) {
+                Optional<PieChart.Data> slice = expenseChart.getData().stream().filter(data -> data.getName().equals(oldValue.getCategory().getDisplayName())).findFirst();
+                slice.ifPresent(data -> data.getNode().setStyle("-fx-border-color: transparent; -fx-border-width: 0px"));
+            }
+            if (newValue != null) {
+                Optional<PieChart.Data> slice = expenseChart.getData().stream().filter(data -> data.getName().equals(newValue.getCategory().getDisplayName())).findFirst();
+                slice.ifPresent(data -> data.getNode().setStyle("-fx-border-color: black; -fx-border-width: 2px"));
+            }
         });
 
         refreshItinerary();
@@ -505,7 +527,6 @@ public class TripPlanner {
             expenses.addExpense(e);
             if (dayExpenseSummaries.stream().noneMatch(dayExpenses -> dayExpenses.getDayIndex() == e.getDay())) {
                 dayExpenseSummaries.add(expenses);
-                TripManager.log("Day #" + expenses.getDayIndex() + ": " + expenses.getTotalExpenses());
             }
         }
 
@@ -524,9 +545,14 @@ public class TripPlanner {
 
         dailyAverage = dailyAverage / dayExpenseSummaries.size();
 
+        if (currentPlan.getExpenseData().getPlannedExpenses().isEmpty()) {
+            minExpenses = 0.0d;
+            maxExpenses = 0.0d;
+            dailyAverage = 0.0d;
+        }
         totalExpensesLabel.setText(totalExpenses + "€");
         dailyExpensesLabel.setText(minExpenses + "€" + " - " + maxExpenses + "€");
-        dailyAverageLabel.setText(dailyAverage + "€");
+        dailyAverageLabel.setText(TripManager.Formatting.decimalFormatter.format(dailyAverage) + "€");
 
         // Sort by total amount, descending
         categorySummaries.sort(Comparator.comparingDouble(CategoryExpenseSummary::getTotalAmount).reversed());
@@ -539,11 +565,21 @@ public class TripPlanner {
         })).toList());
         summaryItinerary.setItems(itineraryItems);
 
-
-
         expenseChart.getData().clear();
         for (CategoryExpenseSummary sum: categorySummaries) {
             expenseChart.getData().add(new PieChart.Data(sum.getCategory().getDisplayName(), sum.getTotalAmount()));
+        }
+
+        budgetLabel.setText(currentPlan.getExpenseData().getBudget() + "€");
+        if (currentPlan.getExpenseData().getTotalExpenses() <= currentPlan.getExpenseData().getBudget()) {
+            budgetInfoLabel.setVisible(false);
+            budgetInfoLabel.setManaged(false);
+            budgetStatusLabel.setText("Within budget!");
+        } else {
+            budgetInfoLabel.setVisible(true);
+            budgetInfoLabel.setManaged(true);
+            budgetStatusLabel.setText("Over budget!");
+            budgetInfoLabel.setText("+" + Math.abs(currentPlan.getExpenseData().getBudget() - currentPlan.getExpenseData().getTotalExpenses()) + "€");
         }
     }
 
@@ -558,6 +594,7 @@ public class TripPlanner {
         if (currentPlan == null) { return; }
         EditTripDetailsDialog editDialog = new EditTripDetailsDialog(currentPlan);
         editDialog.showAndWait();
+        refreshViews();
     }
 
     public void showTripSetup() {

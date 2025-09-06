@@ -49,6 +49,23 @@
                   </TextField>
                </children>
             </VBox>
+            <VBox maxWidth="1.7976931348623157E308">
+               <children>
+                  <Label text="Trip budget">
+                     <VBox.margin>
+                        <Insets bottom="5.0" />
+                     </VBox.margin>
+                     <font>
+                        <Font name="Segoe UI" size="12.0" />
+                     </font>
+                  </Label>
+                  <TextField fx:id="budgetBox" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" promptText="Budget">
+                     <font>
+                        <Font name="Segoe UI Light" size="20.0" />
+                     </font>
+                  </TextField>
+               </children>
+            </VBox>
          </children>
          <VBox.margin>
             <Insets top="10.0" />

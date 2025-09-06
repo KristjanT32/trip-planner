@@ -2,16 +2,14 @@ package krisapps.tripplanner.data.prompts;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import krisapps.tripplanner.Application;
 import krisapps.tripplanner.data.trip.Trip;
 
 import java.io.IOException;
+import java.util.function.UnaryOperator;
 
 public class EditTripDetailsDialog extends Dialog<Void> {
 
@@ -24,7 +22,23 @@ public class EditTripDetailsDialog extends Dialog<Void> {
     @FXML
     private TextField destinationBox;
 
+    @FXML
+    private TextField budgetBox;
+
     private final Trip trip;
+
+    private final UnaryOperator<TextFormatter.Change> numbersOnlyFormatter = (change) -> {
+        if (change.getControlNewText().isEmpty()) {
+            return change;
+        }
+
+        try {
+            Double.parseDouble(change.getControlNewText());
+            return change;
+        } catch (NumberFormatException ignored) {}
+
+        return null;
+    };
 
 
     public EditTripDetailsDialog(Trip t) {
@@ -53,12 +67,21 @@ public class EditTripDetailsDialog extends Dialog<Void> {
                 if (!destinationBox.getText().isEmpty()) {
                     trip.setTripDestination(destinationBox.getText());
                 }
+                if (!budgetBox.getText().isEmpty()) {
+                    if (Double.parseDouble(budgetBox.getText()) < 0) {
+                        budgetBox.setText("0.0");
+                    }
+                    trip.setBudget(Double.parseDouble(budgetBox.getText()));
+                }
             }
             return null;
         });
 
         nameBox.setText(trip.getTripName());
         destinationBox.setText(trip.getTripDestination());
+        budgetBox.setText(String.valueOf(trip.getExpenseData().getBudget()));
+
+        budgetBox.setTextFormatter(new TextFormatter<>(numbersOnlyFormatter));
     }
 
 

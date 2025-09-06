@@ -14,6 +14,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.*;
@@ -229,6 +230,9 @@ public class TripManager {
 
 
     public static class Formatting {
+
+        public static DecimalFormat decimalFormatter = new DecimalFormat("#.##");
+
         public static String generateDurationString(Date start, Date current, boolean showZeros, boolean withWords) {
             Instant startInstant = start.toInstant();
             Instant endInstant = current.toInstant();

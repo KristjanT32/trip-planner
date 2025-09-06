@@ -43,6 +43,15 @@ public class ExpenseData {
         this.modified = true;
     }
 
+    public double getTotalExpenses() {
+        double total = 0.0d;
+        for (PlannedExpense e: plannedExpenses.values()) {
+            total += e.getAmount();
+        }
+
+        return total;
+    }
+
     public boolean hasBeenModified() {
         return modified;
     }

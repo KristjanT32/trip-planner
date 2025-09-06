@@ -520,9 +520,68 @@
                                                    </padding>
                                                 </VBox>
                                                 <Separator orientation="VERTICAL" prefHeight="20.0" visible="false" VBox.vgrow="NEVER" />
+                                                <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="330.0" prefWidth="873.0" styleClass="options-panel" VBox.vgrow="SOMETIMES">
+                                                   <children>
+                                                      <Label alignment="CENTER" maxWidth="1.7976931348623157E308" text="Budget info">
+                                                         <font>
+                                                            <Font name="Segoe UI Light" size="20.0" />
+                                                         </font>
+                                                         <VBox.margin>
+                                                            <Insets bottom="5.0" />
+                                                         </VBox.margin>
+                                                      </Label>
+                                                      <HBox alignment="TOP_CENTER" spacing="10.0">
+                                                         <children>
+                                                            <VBox alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="amount-panel" HBox.hgrow="SOMETIMES">
+                                                               <children>
+                                                                  <Label alignment="CENTER" maxWidth="1.7976931348623157E308" text="Budget">
+                                                                     <font>
+                                                                        <Font name="Segoe UI Light" size="16.0" />
+                                                                     </font>
+                                                                  </Label>
+                                                                  <Label fx:id="budgetLabel" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="10000.0" VBox.vgrow="ALWAYS">
+                                                                     <font>
+                                                                        <Font name="Segoe UI Bold" size="40.0" />
+                                                                     </font>
+                                                                  </Label>
+                                                               </children>
+                                                               <padding>
+                                                                  <Insets bottom="10.0" left="25.0" right="25.0" top="10.0" />
+                                                               </padding>
+                                                            </VBox>
+                                                            <VBox alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="amount-panel" HBox.hgrow="SOMETIMES">
+                                                               <children>
+                                                                  <Label alignment="CENTER" maxWidth="1.7976931348623157E308" text="Status">
+                                                                     <font>
+                                                                        <Font name="Segoe UI Light" size="16.0" />
+                                                                     </font>
+                                                                  </Label>
+                                                                  <Label fx:id="budgetStatusLabel" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Within budget!" VBox.vgrow="ALWAYS">
+                                                                     <font>
+                                                                        <Font name="Segoe UI Light" size="40.0" />
+                                                                     </font>
+                                                                  </Label>
+                                                                  <Label fx:id="budgetInfoLabel" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="+200.0EUR" textFill="#c30000">
+                                                                     <font>
+                                                                        <Font name="Segoe UI" size="15.0" />
+                                                                     </font>
+                                                                  </Label>
+                                                               </children>
+                                                               <padding>
+                                                                  <Insets bottom="10.0" left="50.0" right="50.0" top="10.0" />
+                                                               </padding>
+                                                            </VBox>
+                                                         </children>
+                                                      </HBox>
+                                                   </children>
+                                                   <padding>
+                                                      <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                                   </padding>
+                                                </VBox>
+                                                <Separator orientation="VERTICAL" prefHeight="20.0" visible="false" />
                                                 <VBox fx:id="costOverviewPanel" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="400.0" styleClass="options-panel" VBox.vgrow="SOMETIMES">
                                                    <children>
-                                                      <Label alignment="CENTER" maxWidth="1.7976931348623157E308" text="Cost summary">
+                                                      <Label alignment="CENTER" maxWidth="1.7976931348623157E308" text="Expense summary">
                                                          <font>
                                                             <Font name="Segoe UI Light" size="20.0" />
                                                          </font>
@@ -534,7 +593,7 @@
                                                                   <Insets bottom="10.0" left="5.0" right="5.0" top="10.0" />
                                                                </padding>
                                                                <children>
-                                                                  <Label text="Costs by category">
+                                                                  <Label text="Expenses by category">
                                                                      <font>
                                                                         <Font name="Segoe UI Bold" size="18.0" />
                                                                      </font>
@@ -565,7 +624,7 @@
                                                       </HBox>
                                                       <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="20.0">
                                                          <children>
-                                                            <HBox>
+                                                            <HBox alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="amount-panel" HBox.hgrow="ALWAYS">
                                                                <children>
                                                                   <Label text="Total expenses:">
                                                                      <font>
@@ -582,7 +641,7 @@
                                                                   </Label>
                                                                </children>
                                                             </HBox>
-                                                            <HBox>
+                                                            <HBox alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="amount-panel" HBox.hgrow="ALWAYS">
                                                                <children>
                                                                   <Label text="Per day:">
                                                                      <font>
@@ -599,7 +658,7 @@
                                                                   </Label>
                                                                </children>
                                                             </HBox>
-                                                            <HBox>
+                                                            <HBox alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="amount-panel" HBox.hgrow="ALWAYS">
                                                                <children>
                                                                   <Label text="Per day (avg.)">
                                                                      <font>

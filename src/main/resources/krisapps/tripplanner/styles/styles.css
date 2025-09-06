@@ -187,3 +187,10 @@
     -fx-border-radius: 20px;
     -fx-border-color: #787878;
 }
+
+.amount-panel {
+    -fx-background-color: white;
+    -fx-background-radius: 20px;
+    -fx-border-radius: 20px;
+    -fx-border-color: #787878;
+}
