@@ -45,141 +45,10 @@ import java.util.function.UnaryOperator;
 
 public class TripPlanner {
 
-    @FXML
-    private VBox root;
-
-    //<editor-fold desc="Menu panels">
-    @FXML
-    private TabPane tripWizard;
-
-    @FXML
-    private VBox upcomingTripsPanel;
-
-    @FXML
-    private VBox tripSetupPanel;
-
-    @FXML
-    private VBox loadingPanel;
-    //</editor-fold>
-
-    //<editor-fold desc="New trip setup">
-    @FXML
-    private TextField tripNameBox;
-
-    @FXML
-    private TextField tripDestinationBox;
-
-    @FXML
-    private TextField tripBudgetBox;
-    //</editor-fold>
-
-    //<editor-fold desc="Trip details menu">
-    @FXML
-    private DatePicker tripStartBox;
-
-    @FXML
-    private DatePicker tripEndBox;
-
-    @FXML
-    private Spinner<Integer> tripPartySizeBox;
-    //</editor-fold>
-
-    //<editor-fold desc="Itinerary">
-    @FXML
-    private Spinner<Integer> activityDayBox;
-
-    @FXML
-    private TextField activityDescriptionBox;
-
-    @FXML
-    private ListView<Itinerary.ItineraryItem> itineraryListView;
-
-    @FXML
-    private Label selectedItineraryEntryLabel;
-
-    @FXML
-    private Button deleteActivityButton;
-    //</editor-fold>
-
-    //<editor-fold desc="Trip overview">
-    @FXML
-    private Label tripDatesLabel;
-
-    @FXML
-    private Label peopleInvolvedLabel;
-
-    @FXML
-    private Label destinationLabel;
-
-    @FXML
-    private Label totalExpensesLabel;
-
-    @FXML
-    private Label dailyExpensesLabel;
-
-    @FXML
-    private Label dailyAverageLabel;
-
-    @FXML
-    private Label budgetLabel;
-
-    @FXML
-    private Label budgetStatusLabel;
-
-    @FXML
-    private Label budgetInfoLabel;
-
-    @FXML
-    private ListView<Itinerary.ItineraryItem> summaryItinerary;
-
-    @FXML
-    private ListView<CategoryExpenseSummary> categoryBreakdownList;
-
-    @FXML
-    private PieChart expenseChart;
-    //</editor-fold>
-
-    //<editor-fold desc="Expense planner">
-    @FXML
-    private ChoiceBox<String> expenseTypeSelector;
-
-    @FXML
-    private TextField expenseAmountBox;
-
-    @FXML
-    private TextField expenseNameBox;
-
-    @FXML
-    private Spinner<Integer> expenseDayBox;
-
-    @FXML
-    private ListView<PlannedExpense> expenseList;
-
-    @FXML
-    private Button deleteExpenseButton;
-
-    @FXML
-    private Label selectedExpenseLabel;
-    //</editor-fold>
-
-    //<editor-fold desc="Upcoming trips">
-
-    @FXML
-    private ListView<Trip> upcomingTripsList;
-
-    //</editor-fold>
-
-    //<editor-fold desc="Notification area">
-    @FXML
-    private HBox readOnlyNotification;
-
-    @FXML
-    private HBox unsavedChangesNotification;
-    //</editor-fold>
-
-    private final TripManager trips = TripManager.getInstance();
+    public static final ScheduledExecutorService scheduler = new ScheduledThreadPoolExecutor(2);
     private static Trip currentPlan = null;
-    private boolean launchedInReadOnly = false;
+    private static TripPlanner instance;
+    private final TripManager trips = TripManager.getInstance();
     private final UnaryOperator<TextFormatter.Change> numbersOnlyFormatter = (change) -> {
         if (change.getControlNewText().isEmpty()) {
             return change;
@@ -188,25 +57,113 @@ public class TripPlanner {
         try {
             Double.parseDouble(change.getControlNewText());
             return change;
-        } catch (NumberFormatException ignored) {}
+        } catch (NumberFormatException ignored) {
+        }
 
         return null;
     };
-    public static final ScheduledExecutorService scheduler = new ScheduledThreadPoolExecutor(2);
+    //</editor-fold>
+    @FXML
+    private VBox root;
+    //<editor-fold desc="Menu panels">
+    @FXML
+    private TabPane tripWizard;
+    @FXML
+    private VBox upcomingTripsPanel;
+    //</editor-fold>
+    @FXML
+    private VBox tripSetupPanel;
+    @FXML
+    private VBox loadingPanel;
+    //<editor-fold desc="New trip setup">
+    @FXML
+    private TextField tripNameBox;
+    //</editor-fold>
+    @FXML
+    private TextField tripDestinationBox;
+    @FXML
+    private TextField tripBudgetBox;
+    //<editor-fold desc="Trip details menu">
+    @FXML
+    private DatePicker tripStartBox;
+    @FXML
+    private DatePicker tripEndBox;
+    @FXML
+    private Spinner<Integer> tripPartySizeBox;
+    //</editor-fold>
+    //<editor-fold desc="Itinerary">
+    @FXML
+    private Spinner<Integer> activityDayBox;
+    @FXML
+    private TextField activityDescriptionBox;
+    @FXML
+    private ListView<Itinerary.ItineraryItem> itineraryListView;
+    @FXML
+    private Label selectedItineraryEntryLabel;
+    @FXML
+    private Button deleteActivityButton;
+    //<editor-fold desc="Trip overview">
+    @FXML
+    private Label tripDatesLabel;
+    @FXML
+    private Label peopleInvolvedLabel;
+    @FXML
+    private Label destinationLabel;
+    @FXML
+    private Label totalExpensesLabel;
+    @FXML
+    private Label dailyExpensesLabel;
+    @FXML
+    private Label dailyAverageLabel;
+    @FXML
+    private Label budgetLabel;
+    //</editor-fold>
+    @FXML
+    private Label budgetStatusLabel;
+    @FXML
+    private Label budgetInfoLabel;
+    @FXML
+    private ListView<Itinerary.ItineraryItem> summaryItinerary;
+    @FXML
+    private ListView<CategoryExpenseSummary> categoryBreakdownList;
+    @FXML
+    private PieChart expenseChart;
+    //<editor-fold desc="Expense planner">
+    @FXML
+    private ChoiceBox<String> expenseTypeSelector;
+    @FXML
+    private TextField expenseAmountBox;
+    //</editor-fold>
 
-    private enum ProgramState {
-        CREATE_NEW_TRIP,
-        PLAN_TRIP,
-        SHOW_DASHBOARD,
-        LOADING_TRIP
-    }
+    //<editor-fold desc="Upcoming trips">
+    @FXML
+    private TextField expenseNameBox;
 
-    private static TripPlanner instance;
+    //</editor-fold>
+    @FXML
+    private Spinner<Integer> expenseDayBox;
+    @FXML
+    private ListView<PlannedExpense> expenseList;
+    //</editor-fold>
+    @FXML
+    private Button deleteExpenseButton;
+    @FXML
+    private Label selectedExpenseLabel;
+    @FXML
+    private ListView<Trip> upcomingTripsList;
+    //<editor-fold desc="Notification area">
+    @FXML
+    private HBox readOnlyNotification;
+    @FXML
+    private HBox unsavedChangesNotification;
+    private boolean launchedInReadOnly = false;
+
     public static TripPlanner getInstance() {
         return instance;
     }
 
     /**
+     * TODO: Ensure 'Trip Overview' doesn't access unset variables for newly created Trips
      * TODO: Implement 'Set reminders' (incl. integration with Google Calendar)
      * TODO: Finish implementing 'Trip Overview' (add missing data, add polish, add bottom margin to itinerary label etc.)
      * TODO: Implement plan document generation (also add menu for that)
@@ -339,15 +296,15 @@ public class TripPlanner {
         });
 
         expenseList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-           if (newValue != null) {
-               selectedExpenseLabel.setText(newValue.getDescription() + " - " + TripManager.Formatting.formatMoney(newValue.getAmount(), "€", false) + (newValue.getDay() != -1 ? " (Day #" + newValue.getDay() + ")" : ""));
-           }
+            if (newValue != null) {
+                selectedExpenseLabel.setText(newValue.getDescription() + " - " + TripManager.Formatting.formatMoney(newValue.getAmount(), "€", false) + (newValue.getDay() != -1 ? " (Day #" + newValue.getDay() + ")" : ""));
+            }
         });
 
         itineraryListView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-           if (newValue != null) {
-               selectedItineraryEntryLabel.setText(newValue.getDescription() + (newValue.getDay() != -1 ? " (Day #" + newValue.getDay() + ")" : ""));
-           }
+            if (newValue != null) {
+                selectedItineraryEntryLabel.setText(newValue.getDescription() + (newValue.getDay() != -1 ? " (Day #" + newValue.getDay() + ")" : ""));
+            }
         });
 
         categoryBreakdownList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
@@ -462,13 +419,13 @@ public class TripPlanner {
         refreshUpcomingTrips();
     }
 
-
     public void refreshItinerary() {
         if (currentPlan == null) return;
 
         itineraryListView.getItems().clear();
         for (Itinerary.ItineraryItem item : currentPlan.getItinerary().getItems().values().stream().sorted(Comparator.comparingInt((i) -> {
-            if (i.getDay() == -1 || i.getDay() == 0) return Integer.MAX_VALUE; else return i.getDay();
+            if (i.getDay() == -1 || i.getDay() == 0) return Integer.MAX_VALUE;
+            else return i.getDay();
         })).toList()) {
             itineraryListView.getItems().add(item);
         }
@@ -483,7 +440,7 @@ public class TripPlanner {
     public void refreshExpenseList() {
         expenseList.getItems().clear();
         if (currentPlan != null) {
-            for (PlannedExpense exp: currentPlan.getExpenseData().getPlannedExpenses().values()) {
+            for (PlannedExpense exp : currentPlan.getExpenseData().getPlannedExpenses().values()) {
                 expenseList.getItems().add(exp);
             }
         }
@@ -494,7 +451,7 @@ public class TripPlanner {
         long tripDuration = Duration.between(currentPlan.getTripStartDate(), currentPlan.getTripEndDate()).toDays();
         tripDatesLabel.setText(
                 formatter.format(currentPlan.getTripStartDate().toLocalDate()) + " - " + formatter.format(currentPlan.getTripEndDate().toLocalDate())
-                + " (duration: " + tripDuration + (tripDuration == 1 ? " day" : " days") + ")"
+                        + " (duration: " + tripDuration + (tripDuration == 1 ? " day" : " days") + ")"
         );
         peopleInvolvedLabel.setText(String.valueOf(currentPlan.getPartySize()));
 
@@ -506,7 +463,7 @@ public class TripPlanner {
         double totalExpenses = 0.0;
 
         // Group all expenses into summary objects
-        for (PlannedExpense e: currentPlan.getExpenseData().getPlannedExpenses().values()) {
+        for (PlannedExpense e : currentPlan.getExpenseData().getPlannedExpenses().values()) {
 
             // Get the existing summary object or create a new one for the expense category if missing.
             CategoryExpenseSummary summary = categorySummaries.stream().filter(sum -> sum.getCategory().equals(e.getCategory())).findFirst().orElse(new CategoryExpenseSummary(e.getCategory()));
@@ -520,7 +477,7 @@ public class TripPlanner {
 
         ArrayList<DayExpenses> dayExpenseSummaries = new ArrayList<>();
 
-        for (PlannedExpense e: currentPlan.getExpenseData().getPlannedExpenses().values()) {
+        for (PlannedExpense e : currentPlan.getExpenseData().getPlannedExpenses().values()) {
             if (e.getDay() == -1) continue;
             DayExpenses expenses = dayExpenseSummaries.stream().filter(dayExpenses -> dayExpenses.getDayIndex() == e.getDay()).findFirst().orElse(new DayExpenses(e.getDay()));
 
@@ -533,7 +490,7 @@ public class TripPlanner {
         double minExpenses = Double.MAX_VALUE;
         double maxExpenses = 0.0d;
         double dailyAverage = 0.0d;
-        for (DayExpenses expenseSummary: dayExpenseSummaries) {
+        for (DayExpenses expenseSummary : dayExpenseSummaries) {
             if (expenseSummary.getTotalExpenses() < minExpenses) {
                 minExpenses = expenseSummary.getTotalExpenses();
             }
@@ -561,12 +518,13 @@ public class TripPlanner {
         ObservableList<Itinerary.ItineraryItem> itineraryItems = summaryItinerary.getItems();
         itineraryItems.clear();
         itineraryItems.addAll(currentPlan.getItinerary().getItems().values().stream().sorted(Comparator.comparingInt((i) -> {
-            if (i.getDay() == -1 || i.getDay() == 0) return Integer.MAX_VALUE; else return i.getDay();
+            if (i.getDay() == -1 || i.getDay() == 0) return Integer.MAX_VALUE;
+            else return i.getDay();
         })).toList());
         summaryItinerary.setItems(itineraryItems);
 
         expenseChart.getData().clear();
-        for (CategoryExpenseSummary sum: categorySummaries) {
+        for (CategoryExpenseSummary sum : categorySummaries) {
             expenseChart.getData().add(new PieChart.Data(sum.getCategory().getDisplayName(), sum.getTotalAmount()));
         }
 
@@ -585,13 +543,15 @@ public class TripPlanner {
 
     public void refreshUpcomingTrips() {
         upcomingTripsList.getItems().clear();
-        for (Trip t: trips.getTrips().stream().sorted(Comparator.comparingLong(t -> Duration.between(LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault()), t.getTripStartDate()).toHours())).toList()) {
+        for (Trip t : trips.getTrips().stream().sorted(Comparator.comparingLong(t -> Duration.between(LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault()), t.getTripStartDate()).toHours())).toList()) {
             upcomingTripsList.getItems().add(t);
         }
     }
 
     public void promptEditTripDetails() {
-        if (currentPlan == null) { return; }
+        if (currentPlan == null) {
+            return;
+        }
         EditTripDetailsDialog editDialog = new EditTripDetailsDialog(currentPlan);
         editDialog.showAndWait();
         refreshViews();
@@ -622,7 +582,8 @@ public class TripPlanner {
 
     /**
      * Loads a trip from the file and opens it in the Planner.
-     * @param tripToOpen The trip to load
+     *
+     * @param tripToOpen     The trip to load
      * @param openInReadOnly Whether to open the Planner in read-only mode.
      */
     public void openExistingTrip(Trip tripToOpen, boolean openInReadOnly) {
@@ -658,7 +619,9 @@ public class TripPlanner {
      * Reloads the active trip from the file, resetting all changes.
      */
     public void discardChanges(boolean silent) {
-        if (currentPlan == null) { return; }
+        if (currentPlan == null) {
+            return;
+        }
         if (silent) {
             loadTrip(currentPlan).join();
             enableReadOnly(true);
@@ -711,7 +674,9 @@ public class TripPlanner {
     }
 
     public void promptClosePlanner() {
-        if (currentPlan == null) { return; }
+        if (currentPlan == null) {
+            return;
+        }
         closePlanner(false);
     }
 
@@ -762,7 +727,9 @@ public class TripPlanner {
     }
 
     public void saveChanges() {
-        if (launchedInReadOnly) { return; }
+        if (launchedInReadOnly) {
+            return;
+        }
         saveChanges(false);
     }
 
@@ -813,7 +780,7 @@ public class TripPlanner {
         if (activityDescriptionBox.getText().isEmpty()) {
             return;
         }
-        String activityDesc =  activityDescriptionBox.getText();
+        String activityDesc = activityDescriptionBox.getText();
         int activityDay = activityDayBox.getValue() != null ? activityDayBox.getValue() : -1;
         currentPlan.getItinerary().addItem(new Itinerary.ItineraryItem(activityDesc, activityDay));
 
@@ -847,6 +814,13 @@ public class TripPlanner {
 
     public Trip getOpenPlan() {
         return currentPlan;
+    }
+
+    private enum ProgramState {
+        CREATE_NEW_TRIP,
+        PLAN_TRIP,
+        SHOW_DASHBOARD,
+        LOADING_TRIP
     }
 
 }

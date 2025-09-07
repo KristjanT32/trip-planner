@@ -30,19 +30,26 @@ public class TripManager {
             .registerTypeAdapter(LocalDate.class, new LocalDateTypeAdapter())
             .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeTypeAdapter())
             .create();
-    private final File dataFile = new File(System.getProperty("user.home") + File.separator + "AppData" + File.separator + "Local" + File.separator + "TripPlanner Data" + File.separator + "data.json");
-
+    private static TripManager instance;
+    private final File dataFile = new File(System.getProperty("user.home") + File.separator + "TripPlanner Data" + File.separator + "data.json");
     private boolean initialized = false;
 
-    private static TripManager instance;
-
-    private TripManager() { }
+    private TripManager() {
+    }
 
     public static TripManager getInstance() {
         if (instance == null) {
             instance = new TripManager();
         }
         return instance;
+    }
+
+    public static void log(String msg) {
+        if (msg.toLowerCase().contains("failed") || msg.toLowerCase().contains("error") || msg.toLowerCase().contains("fail") || msg.toLowerCase().contains("couldn't") || msg.toLowerCase().contains("could not")) {
+            System.out.println(String.format("[%s TripPlanner/ERROR]: ", Formatting.formatDate(Date.from(Instant.now()), true)) + msg);
+        } else {
+            System.out.println(String.format("[%s TripPlanner/INFO]: ", Formatting.formatDate(Date.from(Instant.now()), true)) + msg);
+        }
     }
 
     public void init() {
@@ -58,9 +65,9 @@ public class TripManager {
         boolean modified = false;
 
         log("Checking for invalid expense entries in itineraries...");
-        for (Trip t: trips) {
-            for (Itinerary.ItineraryItem item: t.getItinerary().getItems().values()) {
-                for (UUID expense: item.getLinkedExpenses()) {
+        for (Trip t : trips) {
+            for (Itinerary.ItineraryItem item : t.getItinerary().getItems().values()) {
+                for (UUID expense : item.getLinkedExpenses()) {
                     if (getExpenseByID(t, expense) != null) continue;
 
                     log("Invalid expense entry '" + expense + "' found in linked expenses for '" + item.getDescription() + "' - removing");
@@ -107,7 +114,7 @@ public class TripManager {
         // Unlink expense from all itinerary items before deletion
         if (isExpenseLinked(trip, expenseID)) {
             log("Found itinerary items with expense marked for deletion. Purging.");
-            for (Itinerary.ItineraryItem item: trip.getItinerary().getItems().values()) {
+            for (Itinerary.ItineraryItem item : trip.getItinerary().getItems().values()) {
                 if (item.getLinkedExpenses().contains(expenseID)) {
                     item.unlinkExpense(expenseID);
                     log("Removed '" + expenseID + "' from '" + item.getDescription() + "'");
@@ -159,6 +166,7 @@ public class TripManager {
             log("Data saving failed - " + e.getMessage());
         }
     }
+
     private Data getData() {
 
         if (!dataFile.exists()) {
@@ -190,9 +198,11 @@ public class TripManager {
         }
         saveData(data);
     }
+
     public Object getValue(String key) {
         return getData().getSavedValues().getOrDefault(key, "");
     }
+
     public Object getValue(String key, Object defaultValue) {
         return getData().getSavedValues().getOrDefault(key, defaultValue);
     }
@@ -201,8 +211,8 @@ public class TripManager {
         log("No files found, initializing first-time setup.");
 
         try {
-            log("Creating a data directory at: " + Path.of(System.getProperty("user.home") + File.separator + "AppData" + File.separator + "Local" + File.separator + "TripPlanner Data"));
-            Files.createDirectory(Path.of(System.getProperty("user.home") + File.separator + "AppData" + File.separator + "Local" + File.separator + "TripPlanner Data"));
+            log("Creating a data directory at: " + Path.of(System.getProperty("user.home") + File.separator + "TripPlanner Data"));
+            Files.createDirectory(Path.of(System.getProperty("user.home") + File.separator + "TripPlanner Data"));
         } catch (IOException e) {
             log("Failed to create data directory: " + e.getMessage());
         }
@@ -216,6 +226,7 @@ public class TripManager {
             log("Failed to create file: " + e.getMessage());
         }
     }
+
     private void createDataFile() {
         try {
             if (!dataFile.exists()) {
@@ -227,7 +238,6 @@ public class TripManager {
             log("Could not create a new data file - " + e.getMessage());
         }
     }
-
 
     public static class Formatting {
 
@@ -258,6 +268,7 @@ public class TripManager {
                 }
             }
         }
+
         public static String formatDate(Date date, boolean withTime) {
 
             if (date == null) {
@@ -273,6 +284,7 @@ public class TripManager {
                 return dateOnly.format(LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault()));
             }
         }
+
         public static String formatMoney(double money, String symbol, boolean symbolIsPrefix) {
             String[] doubleString = String.valueOf(money).split("\\.");
             if (symbolIsPrefix) {
@@ -281,17 +293,20 @@ public class TripManager {
                 return doubleString[0] + "." + (Integer.parseInt(doubleString[1]) <= 9 ? "0" + Integer.parseInt(doubleString[1]) : Integer.parseInt(doubleString[1])) + " " + symbol;
             }
         }
+
         public static String formatTimeUnit(int unit) {
             return unit <= 9
                     ? "0" + unit
                     : String.valueOf(unit);
         }
+
         public static String formatTime(Date date) {
             if (date == null) {
                 return "N/A";
             }
             return DateTimeFormatter.ofPattern("HH:mm:ss").format(LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault()));
         }
+
         public static String getNumberSuffix(int number) {
             return switch (String.valueOf(number).charAt(String.valueOf(number).length() - 1)) {
                 case 1 -> "st";
@@ -300,6 +315,7 @@ public class TripManager {
                 default -> "th";
             };
         }
+
         public Date dateFromJSON(String date) {
             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
             try {
@@ -308,14 +324,6 @@ public class TripManager {
                 log("Failed to parse a date from '" + date + "'");
                 return null;
             }
-        }
-    }
-
-    public static void log(String msg) {
-        if (msg.toLowerCase().contains("failed") || msg.toLowerCase().contains("error") || msg.toLowerCase().contains("fail") || msg.toLowerCase().contains("couldn't") || msg.toLowerCase().contains("could not")) {
-            System.out.println(String.format("[%s TripPlanner/ERROR]: ", Formatting.formatDate(Date.from(Instant.now()), true)) + msg);
-        } else {
-            System.out.println(String.format("[%s TripPlanner/INFO]: ", Formatting.formatDate(Date.from(Instant.now()), true)) + msg);
         }
     }
 }
