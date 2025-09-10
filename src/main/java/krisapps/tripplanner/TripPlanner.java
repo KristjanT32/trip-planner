@@ -447,6 +447,7 @@ public class TripPlanner {
     }
 
     public void refreshTripOverview() {
+        if (currentPlan == null) return;
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         long tripDuration = Duration.between(currentPlan.getTripStartDate(), currentPlan.getTripEndDate()).toDays();
         tripDatesLabel.setText(
