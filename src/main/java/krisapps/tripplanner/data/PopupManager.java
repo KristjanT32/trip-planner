@@ -16,7 +16,7 @@ public class PopupManager {
         EXPENSE_NAME_MISSING,
         EXPENSE_AMOUNT_MISSING,
         NOT_IMPLEMENTED,
-        PLANNING_IN_PROGRESS
+        NEW_TRIP_WIZARD_EMPTY, NO_OPEN_PLAN, PLANNING_IN_PROGRESS
 
     }
 
@@ -40,6 +40,16 @@ public class PopupManager {
                 alert.getButtonTypes().clear();
                 alert.getButtonTypes().addAll(new ButtonType("Yes, discard current plan", ButtonBar.ButtonData.APPLY), ButtonType.CANCEL);
                 alert.setAlertType(Alert.AlertType.CONFIRMATION);
+            }
+            case NEW_TRIP_WIZARD_EMPTY -> {
+                alert.setTitle("Incomplete data!");
+                alert.setContentText("Please fill in all the required fields (*) to start planning your trip.");
+                alert.setAlertType(Alert.AlertType.ERROR);
+            }
+            case NO_OPEN_PLAN -> {
+                alert.setTitle("No plan open yet");
+                alert.setContentText("There are currently no open plans in the Planner. Open a plan in the Planner first.");
+                alert.setAlertType(Alert.AlertType.WARNING);
             }
             case NOT_IMPLEMENTED -> {
                 alert.setTitle("Uh-oh!");

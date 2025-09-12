@@ -165,6 +165,22 @@
     -fx-background-color: #a59a69;
 }
 
+.return-to-planner-panel {
+    -fx-background-color: #86f189;
+    -fx-border-radius: 10px;
+    -fx-background-radius: 10px;
+}
+
+.return-to-planner-panel > .button {
+    -fx-background-color: #baffbb;
+    -fx-border-color: black;
+    -fx-font-weight: bold;
+}
+
+.return-to-planner-panel > .button:hover {
+    -fx-background-color: #80ae81;
+}
+
 .readonly-panel {
     -fx-background-color: #ff7979;
     -fx-border-radius: 10px;

@@ -13,6 +13,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import krisapps.tripplanner.data.DayExpenses;
+import krisapps.tripplanner.data.PlannerNotification;
 import krisapps.tripplanner.data.PopupManager;
 import krisapps.tripplanner.data.TripManager;
 import krisapps.tripplanner.data.listview.cost_list.CategoryExpenseSummary;
@@ -26,6 +27,7 @@ import krisapps.tripplanner.data.trip.ExpenseCategory;
 import krisapps.tripplanner.data.trip.Itinerary;
 import krisapps.tripplanner.data.trip.PlannedExpense;
 import krisapps.tripplanner.data.trip.Trip;
+import krisapps.tripplanner.misc.AnimationUtils;
 
 import java.awt.*;
 import java.time.Duration;
@@ -73,8 +75,7 @@ public class TripPlanner {
     //</editor-fold>
     @FXML
     private VBox tripSetupPanel;
-    @FXML
-    private VBox loadingPanel;
+
     //<editor-fold desc="New trip setup">
     @FXML
     private TextField tripNameBox;
@@ -156,6 +157,8 @@ public class TripPlanner {
     private HBox readOnlyNotification;
     @FXML
     private HBox unsavedChangesNotification;
+    @FXML
+    private HBox returnToPlannerNotification;
     private boolean launchedInReadOnly = false;
 
     public static TripPlanner getInstance() {
@@ -163,9 +166,7 @@ public class TripPlanner {
     }
 
     /**
-     * TODO: Ensure 'Trip Overview' doesn't access unset variables for newly created Trips
      * TODO: Implement 'Set reminders' (incl. integration with Google Calendar)
-     * TODO: Finish implementing 'Trip Overview' (add missing data, add polish, add bottom margin to itinerary label etc.)
      * TODO: Implement plan document generation (also add menu for that)
      */
 
@@ -223,6 +224,7 @@ public class TripPlanner {
         setupListViews();
         setupDropdowns();
         registerListeners();
+        registerAnimations();
 
         root.sceneProperty().addListener((event, oldVal, newVal) -> {
             if (newVal != null) {
@@ -243,10 +245,8 @@ public class TripPlanner {
         expenseAmountBox.setTextFormatter(new TextFormatter<>(numbersOnlyFormatter));
         tripBudgetBox.setTextFormatter(new TextFormatter<>(numbersOnlyFormatter));
 
-        readOnlyNotification.setVisible(false);
-        readOnlyNotification.setManaged(false);
-        unsavedChangesNotification.setVisible(false);
-        unsavedChangesNotification.setManaged(false);
+        setNotificationVisible(PlannerNotification.READ_ONLY_MODE, false);
+        setNotificationVisible(PlannerNotification.UNSAVED_CHANGES, false);
     }
 
     public void setupSpinners() {
@@ -267,6 +267,10 @@ public class TripPlanner {
         expenseList.setCellFactory(new ExpenseLinkerCellFactory(true));
         upcomingTripsList.setCellFactory(new UpcomingTripsCellFactory());
         categoryBreakdownList.setCellFactory(new CostListCellFactory());
+    }
+
+    public void registerAnimations() {
+
     }
 
     public void registerListeners() {
@@ -329,19 +333,21 @@ public class TripPlanner {
             deleteActivityButton.setDisable(selectedItineraryItem.isEmpty());
 
             if (currentPlan != null) {
-                if (launchedInReadOnly) {
-                    readOnlyNotification.setVisible(true);
-                    readOnlyNotification.setManaged(true);
+                if (!tripWizard.isVisible()) {
+                    setNotificationVisible(PlannerNotification.RETURN_TO_PLANNER, true);
                 } else {
-                    readOnlyNotification.setVisible(false);
-                    readOnlyNotification.setManaged(false);
+                    setNotificationVisible(PlannerNotification.RETURN_TO_PLANNER, false);
+                }
+
+                if (launchedInReadOnly) {
+                    setNotificationVisible(PlannerNotification.READ_ONLY_MODE, true);
+                } else {
+                    setNotificationVisible(PlannerNotification.READ_ONLY_MODE, false);
 
                     if (currentPlan.hasBeenModified() && !launchedInReadOnly) {
-                        unsavedChangesNotification.setVisible(true);
-                        unsavedChangesNotification.setManaged(true);
+                        setNotificationVisible(PlannerNotification.UNSAVED_CHANGES, true);
                     } else {
-                        unsavedChangesNotification.setVisible(false);
-                        unsavedChangesNotification.setManaged(false);
+                        setNotificationVisible(PlannerNotification.UNSAVED_CHANGES, false);
                     }
                 }
 
@@ -351,10 +357,7 @@ public class TripPlanner {
                 }
                 tripWizard.getTabs().get(4).setDisable(false);
             } else {
-                readOnlyNotification.setVisible(false);
-                readOnlyNotification.setManaged(false);
-                unsavedChangesNotification.setVisible(false);
-                unsavedChangesNotification.setManaged(false);
+                setNotificationVisible(PlannerNotification.ALL, false);
             }
         }, 0L, 100L, TimeUnit.MILLISECONDS);
     }
@@ -371,30 +374,56 @@ public class TripPlanner {
         tripWizard.setVisible(false);
         upcomingTripsPanel.setVisible(false);
         tripSetupPanel.setVisible(false);
-        loadingPanel.setVisible(false);
 
         switch (changeTo) {
             case CREATE_NEW_TRIP -> tripSetupPanel.setVisible(true);
             case PLAN_TRIP -> {
                 tripWizard.setVisible(true);
                 if (launchedInReadOnly) {
-                    readOnlyNotification.setVisible(true);
-                    readOnlyNotification.setManaged(true);
+                    setNotificationVisible(PlannerNotification.READ_ONLY_MODE, true);
                 } else {
-                    readOnlyNotification.setVisible(false);
-                    readOnlyNotification.setManaged(false);
+                    setNotificationVisible(PlannerNotification.READ_ONLY_MODE, false);
                 }
             }
             case SHOW_DASHBOARD -> upcomingTripsPanel.setVisible(true);
-            case LOADING_TRIP -> loadingPanel.setVisible(true);
+        }
+    }
+
+    private void setNotificationVisible(PlannerNotification notification, boolean visible) {
+        switch (notification) {
+            case UNSAVED_CHANGES -> handleNotificationVisibilityChange(visible, unsavedChangesNotification);
+            case READ_ONLY_MODE -> handleNotificationVisibilityChange(visible, readOnlyNotification);
+            case RETURN_TO_PLANNER -> handleNotificationVisibilityChange(visible, returnToPlannerNotification);
+            case ALL -> {
+                for (PlannerNotification notif: PlannerNotification.values()) {
+                    if (notif == PlannerNotification.ALL) continue;
+                    setNotificationVisible(notif, visible);
+                }
+            }
+        }
+    }
+
+    private void handleNotificationVisibilityChange(boolean visible, HBox notificationContainer) {
+        if (notificationContainer.isVisible() == visible) return;
+        if (!visible) {
+            if (notificationContainer.getUserData() == "animating") return;
+            notificationContainer.setUserData("animating");
+            AnimationUtils.animateHBoxHorizontalScale(notificationContainer, 1, 0, javafx.util.Duration.millis(200), () -> {
+                notificationContainer.setVisible(false);
+                notificationContainer.setManaged(false);
+                notificationContainer.setUserData(null);
+            });
+        } else {
+            notificationContainer.setVisible(true);
+            notificationContainer.setManaged(true);
+            AnimationUtils.animateHBoxHorizontalScale(notificationContainer, 0, 1, javafx.util.Duration.millis(200), () -> {});
         }
     }
 
     private void enableReadOnly(boolean readOnly) {
         this.launchedInReadOnly = readOnly;
         if (launchedInReadOnly) {
-            unsavedChangesNotification.setVisible(false);
-            unsavedChangesNotification.setManaged(false);
+            setNotificationVisible(PlannerNotification.UNSAVED_CHANGES, false);
         }
     }
 
@@ -405,8 +434,7 @@ public class TripPlanner {
         currentPlan = t;
         t.resetModifiedFlag();
 
-        readOnlyNotification.setVisible(false);
-        readOnlyNotification.setManaged(false);
+        setNotificationVisible(PlannerNotification.READ_ONLY_MODE, false);
 
         future.complete(null);
         return future;
@@ -581,6 +609,16 @@ public class TripPlanner {
         upcomingTripsPanel.setVisible(true);
     }
 
+    public void returnToPlanner() {
+        if (currentPlan != null) {
+            tripSetupPanel.setVisible(false);
+            upcomingTripsPanel.setVisible(false);
+            tripWizard.setVisible(true);
+        } else {
+            PopupManager.showPredefinedPopup(PopupManager.PopupType.NO_OPEN_PLAN);
+        }
+    }
+
     /**
      * Loads a trip from the file and opens it in the Planner.
      *
@@ -648,9 +686,14 @@ public class TripPlanner {
     }
 
     /**
-     * Creates a new trip and opens it in the Planner.
+     * This is a callback method for the 'Start planning!' button on the new trip wizard.
+     * Creates a new trip using data from the new trip wizard and opens it in the Planner.
      */
     public void createNewTrip() {
+        if (tripNameBox.getText().isEmpty() | tripDestinationBox.getText().isEmpty()) {
+            PopupManager.showPredefinedPopup(PopupManager.PopupType.NEW_TRIP_WIZARD_EMPTY);
+            return;
+        }
         Trip trip = new Trip(
                 tripNameBox.getText(),
                 tripDestinationBox.getText()
@@ -821,7 +864,6 @@ public class TripPlanner {
         CREATE_NEW_TRIP,
         PLAN_TRIP,
         SHOW_DASHBOARD,
-        LOADING_TRIP
     }
 
 }
