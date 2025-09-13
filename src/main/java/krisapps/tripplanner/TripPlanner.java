@@ -28,6 +28,7 @@ import krisapps.tripplanner.data.trip.Itinerary;
 import krisapps.tripplanner.data.trip.PlannedExpense;
 import krisapps.tripplanner.data.trip.Trip;
 import krisapps.tripplanner.misc.AnimationUtils;
+import krisapps.tripplanner.misc.ReminderManager;
 
 import java.awt.*;
 import java.time.Duration;
@@ -189,6 +190,8 @@ public class TripPlanner {
         instance = this;
 
         TripManager.log("Initialization completed in " + (System.currentTimeMillis() - startTime) + "ms");
+        TripManager.log("Initializing Calendar Service");
+        ReminderManager.GoogleCalendarIntegration.initialize();
     }
 
     public void updateUIForCurrentPlan() {

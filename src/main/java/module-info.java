@@ -7,6 +7,13 @@ module krisapps.tripplanner {
     requires java.desktop;
     requires org.apache.commons.lang3;
     requires org.jetbrains.annotations;
+    requires google.http.client.jackson2;
+    requires google.api.services.calendar.v3.rev411;
+    requires google.oauth.client;
+    requires google.api.client;
+    requires com.google.api.client.extensions.jetty.auth;
+    requires com.google.api.client.extensions.java6.auth;
+    requires com.google.api.client;
 
     opens krisapps.tripplanner to javafx.fxml;
     opens krisapps.tripplanner.data.listview.itinerary to javafx.fxml;

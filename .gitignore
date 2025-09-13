@@ -36,3 +36,6 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+### Credentials ###
+/src/main/resources/krisapps/tripplanner/google_tokens/
