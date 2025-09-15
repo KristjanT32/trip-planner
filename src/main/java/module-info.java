@@ -1,6 +1,7 @@
 module krisapps.tripplanner {
     requires javafx.controls;
     requires javafx.fxml;
+    requires jdk.httpserver;
 
     requires org.kordamp.ikonli.javafx;
     requires com.google.gson;
@@ -14,6 +15,7 @@ module krisapps.tripplanner {
     requires com.google.api.client.extensions.jetty.auth;
     requires com.google.api.client.extensions.java6.auth;
     requires com.google.api.client;
+    requires java.sql;
 
     opens krisapps.tripplanner to javafx.fxml;
     opens krisapps.tripplanner.data.listview.itinerary to javafx.fxml;

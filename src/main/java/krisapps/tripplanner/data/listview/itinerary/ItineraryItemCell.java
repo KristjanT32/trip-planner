@@ -49,8 +49,7 @@ public class ItineraryItemCell extends ListCell<Itinerary.ItineraryItem> {
             FXMLLoader loader = new FXMLLoader(Application.class.getResource("listview/itinerary_item_cell.fxml"));
             loader.setController(this);
             rootPane = loader.load();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
@@ -90,11 +89,11 @@ public class ItineraryItemCell extends ListCell<Itinerary.ItineraryItem> {
             }));
 
             double totalExpenses = 0.0d;
-            for (UUID expenseID: item.getLinkedExpenses()) {
+            for (UUID expenseID : item.getLinkedExpenses()) {
                 totalExpenses += TripPlanner.getInstance().getOpenPlan().getExpenseData().getPlannedExpenses().get(expenseID).getAmount();
             }
 
-            expenseSummaryLabel.setText(TripManager.Formatting.formatMoney(totalExpenses, "€", false));
+            expenseSummaryLabel.setText(TripManager.Formatting.formatMoney(totalExpenses, Character.toString(TripManager.getInstance().getSettings().getCurrencySymbol()), false));
         }
     }
 }

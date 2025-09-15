@@ -1,5 +1,6 @@
 package krisapps.tripplanner;
 
+import com.google.api.services.calendar.model.Event;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -7,15 +8,13 @@ import javafx.scene.chart.PieChart;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import krisapps.tripplanner.data.DayExpenses;
-import krisapps.tripplanner.data.PlannerNotification;
-import krisapps.tripplanner.data.PopupManager;
-import krisapps.tripplanner.data.TripManager;
+import krisapps.tripplanner.data.*;
 import krisapps.tripplanner.data.listview.cost_list.CategoryExpenseSummary;
 import krisapps.tripplanner.data.listview.cost_list.CostListCellFactory;
 import krisapps.tripplanner.data.listview.expense_linker.ExpenseLinkerCellFactory;
@@ -28,7 +27,7 @@ import krisapps.tripplanner.data.trip.Itinerary;
 import krisapps.tripplanner.data.trip.PlannedExpense;
 import krisapps.tripplanner.data.trip.Trip;
 import krisapps.tripplanner.misc.AnimationUtils;
-import krisapps.tripplanner.misc.ReminderManager;
+import krisapps.tripplanner.misc.GoogleCalendarIntegration;
 
 import java.awt.*;
 import java.time.Duration;
@@ -48,8 +47,10 @@ import java.util.function.UnaryOperator;
 
 public class TripPlanner {
 
+    //<editor-fold desc="Globals">
     public static final ScheduledExecutorService scheduler = new ScheduledThreadPoolExecutor(2);
     private static Trip currentPlan = null;
+    private static ProgramSettings currentSettings;
     private static TripPlanner instance;
     private final TripManager trips = TripManager.getInstance();
     private final UnaryOperator<TextFormatter.Change> numbersOnlyFormatter = (change) -> {
@@ -65,26 +66,33 @@ public class TripPlanner {
 
         return null;
     };
+    private boolean launchedInReadOnly = false;
     //</editor-fold>
+
+    //<editor-fold desc="Miscellaneous UI">
     @FXML
     private VBox root;
+
+    @FXML
+    private MenuItem debugAction;
+    //</editor-fold>
+
     //<editor-fold desc="Menu panels">
     @FXML
     private TabPane tripWizard;
     @FXML
     private VBox upcomingTripsPanel;
-    //</editor-fold>
     @FXML
     private VBox tripSetupPanel;
-
+    //</editor-fold>
     //<editor-fold desc="New trip setup">
     @FXML
     private TextField tripNameBox;
-    //</editor-fold>
     @FXML
     private TextField tripDestinationBox;
     @FXML
     private TextField tripBudgetBox;
+    //</editor-fold>
     //<editor-fold desc="Trip details menu">
     @FXML
     private DatePicker tripStartBox;
@@ -104,6 +112,7 @@ public class TripPlanner {
     private Label selectedItineraryEntryLabel;
     @FXML
     private Button deleteActivityButton;
+    //</editor-fold>
     //<editor-fold desc="Trip overview">
     @FXML
     private Label tripDatesLabel;
@@ -119,7 +128,6 @@ public class TripPlanner {
     private Label dailyAverageLabel;
     @FXML
     private Label budgetLabel;
-    //</editor-fold>
     @FXML
     private Label budgetStatusLabel;
     @FXML
@@ -130,29 +138,52 @@ public class TripPlanner {
     private ListView<CategoryExpenseSummary> categoryBreakdownList;
     @FXML
     private PieChart expenseChart;
+    //</editor-fold>
     //<editor-fold desc="Expense planner">
     @FXML
     private ChoiceBox<String> expenseTypeSelector;
     @FXML
     private TextField expenseAmountBox;
-    //</editor-fold>
-
-    //<editor-fold desc="Upcoming trips">
-    @FXML
-    private TextField expenseNameBox;
-
-    //</editor-fold>
     @FXML
     private Spinner<Integer> expenseDayBox;
     @FXML
     private ListView<PlannedExpense> expenseList;
-    //</editor-fold>
+    @FXML
+    private TextField expenseNameBox;
     @FXML
     private Button deleteExpenseButton;
     @FXML
     private Label selectedExpenseLabel;
+    //</editor-fold>
+    //<editor-fold desc="Upcoming trips">
     @FXML
     private ListView<Trip> upcomingTripsList;
+    //</editor-fold>
+    //<editor-fold desc="Reminders">
+    @FXML
+    private ToggleButton calendarIntegrationToggle;
+
+    @FXML
+    private VBox calendarSettingsPanel;
+
+    @FXML
+    private VBox calendarSettingsContent;
+
+    @FXML
+    private CheckBox reminderToggle;
+
+    @FXML
+    private HBox reminderOptions;
+
+    @FXML
+    private TextField reminderOffsetBox;
+    @FXML
+    private ChoiceBox<TimeUnit> reminderOffsetUnitSelector;
+
+
+    @FXML
+    private ChoiceBox<String> countdownFormatSelector;
+    //</editor-fold>
     //<editor-fold desc="Notification area">
     @FXML
     private HBox readOnlyNotification;
@@ -160,13 +191,16 @@ public class TripPlanner {
     private HBox unsavedChangesNotification;
     @FXML
     private HBox returnToPlannerNotification;
-    private boolean launchedInReadOnly = false;
+    //</editor-fold>
+
 
     public static TripPlanner getInstance() {
         return instance;
     }
 
     /**
+     * TODO: Link the google calendar panel to its internal CalendarSettings object (to allow data to be saved and retrieved)
+     * TODO: Implement calendar event creation on save, based on the saved CalendarSettings.
      * TODO: Implement 'Set reminders' (incl. integration with Google Calendar)
      * TODO: Implement plan document generation (also add menu for that)
      */
@@ -191,7 +225,8 @@ public class TripPlanner {
 
         TripManager.log("Initialization completed in " + (System.currentTimeMillis() - startTime) + "ms");
         TripManager.log("Initializing Calendar Service");
-        ReminderManager.GoogleCalendarIntegration.initialize();
+        GoogleCalendarIntegration.initialize();
+        currentSettings = TripManager.getInstance().getSettings();
     }
 
     public void updateUIForCurrentPlan() {
@@ -227,7 +262,8 @@ public class TripPlanner {
         setupListViews();
         setupDropdowns();
         registerListeners();
-        registerAnimations();
+        initReminderPanel();
+
 
         root.sceneProperty().addListener((event, oldVal, newVal) -> {
             if (newVal != null) {
@@ -244,12 +280,43 @@ public class TripPlanner {
                 });
             }
         });
+        debugAction.setOnAction((e) -> {
+            if (currentPlan == null) return;
+            // GoogleCalendarIntegration.createCalendarEventForTrip(currentPlan, null, "_test32");
+            LoadingDialog dlg = new LoadingDialog(LoadingDialog.LoadingOperationType.INDETERMINATE_PROGRESSBAR);
+            dlg.setPrimaryLabel("Please wait");
+            dlg.setSecondaryLabel("Querying the Calendar API...");
+            dlg.show("Hold on!", () -> {
+                for (Event ev : GoogleCalendarIntegration.getTripPlannerCalendarEvents()) {
+                    TripManager.log(ev.getDescription());
+                }
+            });
+        });
 
         expenseAmountBox.setTextFormatter(new TextFormatter<>(numbersOnlyFormatter));
         tripBudgetBox.setTextFormatter(new TextFormatter<>(numbersOnlyFormatter));
 
         setNotificationVisible(PlannerNotification.READ_ONLY_MODE, false);
         setNotificationVisible(PlannerNotification.UNSAVED_CHANGES, false);
+    }
+
+    public void initReminderPanel() {
+        calendarIntegrationToggle.selectedProperty().addListener((observable, oldVal, newVal) -> {
+            calendarIntegrationToggle.setText(newVal ? "Enabled" : "Disabled");
+            calendarSettingsContent.setDisable(!newVal);
+        });
+        reminderToggle.selectedProperty().addListener((observable, oldVal, newVal) -> {
+            reminderOptions.setDisable(!newVal);
+        });
+
+        reminderOffsetBox.setTextFormatter(new TextFormatter<>(numbersOnlyFormatter));
+        reminderOffsetUnitSelector.getItems().clear();
+        reminderOffsetUnitSelector.getItems().addAll(TimeUnit.MINUTES, TimeUnit.HOURS, TimeUnit.DAYS);
+
+        countdownFormatSelector.getItems().clear();
+        for (CountdownFormat format : CountdownFormat.values()) {
+            countdownFormatSelector.getItems().add(format.getFormat());
+        }
     }
 
     public void setupSpinners() {
@@ -270,10 +337,6 @@ public class TripPlanner {
         expenseList.setCellFactory(new ExpenseLinkerCellFactory(true));
         upcomingTripsList.setCellFactory(new UpcomingTripsCellFactory());
         categoryBreakdownList.setCellFactory(new CostListCellFactory());
-    }
-
-    public void registerAnimations() {
-
     }
 
     public void registerListeners() {
@@ -304,7 +367,7 @@ public class TripPlanner {
 
         expenseList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
-                selectedExpenseLabel.setText(newValue.getDescription() + " - " + TripManager.Formatting.formatMoney(newValue.getAmount(), "€", false) + (newValue.getDay() != -1 ? " (Day #" + newValue.getDay() + ")" : ""));
+                selectedExpenseLabel.setText(newValue.getDescription() + " - " + TripManager.Formatting.formatMoney(newValue.getAmount(), Character.toString(currentSettings.getCurrencySymbol()), false) + (newValue.getDay() != -1 ? " (Day #" + newValue.getDay() + ")" : ""));
             }
         });
 
@@ -398,7 +461,7 @@ public class TripPlanner {
             case READ_ONLY_MODE -> handleNotificationVisibilityChange(visible, readOnlyNotification);
             case RETURN_TO_PLANNER -> handleNotificationVisibilityChange(visible, returnToPlannerNotification);
             case ALL -> {
-                for (PlannerNotification notif: PlannerNotification.values()) {
+                for (PlannerNotification notif : PlannerNotification.values()) {
                     if (notif == PlannerNotification.ALL) continue;
                     setNotificationVisible(notif, visible);
                 }
@@ -419,7 +482,8 @@ public class TripPlanner {
         } else {
             notificationContainer.setVisible(true);
             notificationContainer.setManaged(true);
-            AnimationUtils.animateHBoxHorizontalScale(notificationContainer, 0, 1, javafx.util.Duration.millis(200), () -> {});
+            AnimationUtils.animateHBoxHorizontalScale(notificationContainer, 0, 1, javafx.util.Duration.millis(200), () -> {
+            });
         }
     }
 
@@ -435,6 +499,11 @@ public class TripPlanner {
         refreshWindowTitle("KrisApps Trip Planner - loading " + t.getTripName());
 
         currentPlan = t;
+        /*
+        if (!currentSettings.getCalendarSettings().containsKey(t.getUniqueID())) {
+            currentSettings.setCalendarSettings(t.getUniqueID(), new ProgramSettings.CalendarSettings());
+        }
+         */
         t.resetModifiedFlag();
 
         setNotificationVisible(PlannerNotification.READ_ONLY_MODE, false);
@@ -539,9 +608,9 @@ public class TripPlanner {
             maxExpenses = 0.0d;
             dailyAverage = 0.0d;
         }
-        totalExpensesLabel.setText(totalExpenses + "€");
-        dailyExpensesLabel.setText(minExpenses + "€" + " - " + maxExpenses + "€");
-        dailyAverageLabel.setText(TripManager.Formatting.decimalFormatter.format(dailyAverage) + "€");
+        totalExpensesLabel.setText(totalExpenses + Character.toString(currentSettings.getCurrencySymbol()));
+        dailyExpensesLabel.setText(minExpenses + Character.toString(currentSettings.getCurrencySymbol()) + " - " + maxExpenses + Character.toString(currentSettings.getCurrencySymbol()));
+        dailyAverageLabel.setText(TripManager.Formatting.decimalFormatter.format(dailyAverage) + Character.toString(currentSettings.getCurrencySymbol()));
 
         // Sort by total amount, descending
         categorySummaries.sort(Comparator.comparingDouble(CategoryExpenseSummary::getTotalAmount).reversed());
@@ -560,7 +629,7 @@ public class TripPlanner {
             expenseChart.getData().add(new PieChart.Data(sum.getCategory().getDisplayName(), sum.getTotalAmount()));
         }
 
-        budgetLabel.setText(currentPlan.getExpenseData().getBudget() + "€");
+        budgetLabel.setText(currentPlan.getExpenseData().getBudget() + Character.toString(currentSettings.getCurrencySymbol()));
         if (currentPlan.getExpenseData().getTotalExpenses() <= currentPlan.getExpenseData().getBudget()) {
             budgetInfoLabel.setVisible(false);
             budgetInfoLabel.setManaged(false);
@@ -569,7 +638,7 @@ public class TripPlanner {
             budgetInfoLabel.setVisible(true);
             budgetInfoLabel.setManaged(true);
             budgetStatusLabel.setText("Over budget!");
-            budgetInfoLabel.setText("+" + Math.abs(currentPlan.getExpenseData().getBudget() - currentPlan.getExpenseData().getTotalExpenses()) + "€");
+            budgetInfoLabel.setText("+" + Math.abs(currentPlan.getExpenseData().getBudget() - currentPlan.getExpenseData().getTotalExpenses()) + Character.toString(currentSettings.getCurrencySymbol()));
         }
     }
 

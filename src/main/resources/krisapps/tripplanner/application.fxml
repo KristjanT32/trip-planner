@@ -4,6 +4,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.chart.PieChart?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.ChoiceBox?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
@@ -47,7 +48,7 @@
                     <items>
                       <MenuItem mnemonicParsing="false" text="Generate plan document" />
                         <MenuItem mnemonicParsing="false" onAction="#refreshViews" text="Refresh views" />
-                        <MenuItem mnemonicParsing="false" text="Debug action" />
+                        <MenuItem fx:id="debugAction" mnemonicParsing="false" text="Debug action" />
                     </items>
                   </Menu>
                   <Menu mnemonicParsing="false" text="Other">
@@ -391,7 +392,7 @@
                                              </padding>
                                           </VBox>
                                           <Separator orientation="VERTICAL" prefHeight="50.0" visible="false" />
-                                          <VBox fx:id="countdown1" alignment="CENTER_LEFT" styleClass="options-panel">
+                                          <VBox fx:id="calendarSettingsPanel" alignment="CENTER_LEFT" styleClass="options-panel">
                                              <children>
                                                 <HBox alignment="CENTER_LEFT">
                                                    <children>
@@ -418,7 +419,33 @@
                                                       <Insets bottom="10.0" />
                                                    </VBox.margin>
                                                 </Label>
-                                                <VBox fx:id="calendarIntegrationOptions" alignment="TOP_CENTER" VBox.vgrow="SOMETIMES">
+                                                <VBox>
+                                                   <children>
+                                                      <VBox fx:id="calendarSettingsContent" disable="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" spacing="5.0">
+                                                         <children>
+                                                            <CheckBox fx:id="reminderToggle" mnemonicParsing="false" text="Enable remider for calendar event" />
+                                                            <HBox fx:id="reminderOptions" disable="true" spacing="5.0">
+                                                               <children>
+                                                                  <Label maxHeight="1.7976931348623157E308" text="Remind me">
+                                                                     <font>
+                                                                        <Font name="Segoe UI" size="16.0" />
+                                                                     </font>
+                                                                     <HBox.margin>
+                                                                        <Insets />
+                                                                     </HBox.margin>
+                                                                  </Label>
+                                                                  <TextField fx:id="reminderOffsetBox" promptText="Amount" />
+                                                                  <ChoiceBox fx:id="reminderOffsetUnitSelector" maxHeight="1.7976931348623157E308" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="340.0" />
+                                                                  <Label maxHeight="1.7976931348623157E308" text="before the trip starts">
+                                                                     <font>
+                                                                        <Font name="Segoe UI" size="16.0" />
+                                                                     </font>
+                                                                  </Label>
+                                                               </children>
+                                                            </HBox>
+                                                         </children>
+                                                      </VBox>
+                                                   </children>
                                                    <VBox.margin>
                                                       <Insets top="10.0" />
                                                    </VBox.margin>

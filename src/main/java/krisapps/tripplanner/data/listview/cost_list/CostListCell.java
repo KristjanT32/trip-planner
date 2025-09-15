@@ -6,6 +6,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.layout.VBox;
 import krisapps.tripplanner.Application;
+import krisapps.tripplanner.data.TripManager;
 
 import java.io.IOException;
 
@@ -32,8 +33,7 @@ public class CostListCell extends ListCell<CategoryExpenseSummary> {
             FXMLLoader loader = new FXMLLoader(Application.class.getResource("listview/cost_list_cell.fxml"));
             loader.setController(this);
             rootPane = loader.load();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -46,8 +46,7 @@ public class CostListCell extends ListCell<CategoryExpenseSummary> {
             categoryNameLabel.setText(item.getCategory().getDisplayName());
             entryCountLabel.setText("Total expenses: " + item.getExpenseCount());
 
-            // TODO: Implement currency symbol setting
-            totalLabel.setText(item.getTotalAmount() + "€");
+            totalLabel.setText(item.getTotalAmount() + Character.toString(TripManager.getInstance().getSettings().getCurrencySymbol()));
 
             categoryNameLabel.setStyle("-fx-text-fill: black");
             entryCountLabel.setStyle("-fx-text-fill: black");

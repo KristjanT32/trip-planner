@@ -44,8 +44,7 @@ public class ExpenseLinkerCell extends ListCell<PlannedExpense> {
             FXMLLoader loader = new FXMLLoader(Application.class.getResource("listview/expense_linker_expense_cell.fxml"));
             loader.setController(this);
             rootPane = loader.load();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
@@ -80,7 +79,7 @@ public class ExpenseLinkerCell extends ListCell<PlannedExpense> {
             setGraphic(null);
         } else {
             expenseDesc.setText(item.getDescription());
-            expenseVal.setText(TripManager.Formatting.formatMoney(item.getAmount(), "€", false));
+            expenseVal.setText(TripManager.Formatting.formatMoney(item.getAmount(), Character.toString(TripManager.getInstance().getSettings().getCurrencySymbol()), false));
             expenseType.setText("#" + item.getCategory().name());
             setText(null);
             setGraphic(rootPane);

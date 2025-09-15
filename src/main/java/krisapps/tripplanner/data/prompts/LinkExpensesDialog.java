@@ -51,8 +51,7 @@ public class LinkExpensesDialog extends Dialog<Void> {
             loader.setController(this);
             rootPane = loader.load();
             initialized = true;
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
         getDialogPane().setContent(rootPane);
@@ -64,9 +63,9 @@ public class LinkExpensesDialog extends Dialog<Void> {
         linkedExpenseList.setCellFactory(new ExpenseLinkerCellFactory(false));
 
         expenseList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-           if (newValue != null) {
-               linkedExpenseList.getSelectionModel().clearSelection();
-           }
+            if (newValue != null) {
+                linkedExpenseList.getSelectionModel().clearSelection();
+            }
         });
 
         linkedExpenseList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
@@ -92,7 +91,7 @@ public class LinkExpensesDialog extends Dialog<Void> {
 
     private void recalculateTotal() {
         totalExpenses = 0.0d;
-        for (PlannedExpense exp: item.getLinkedExpenses().stream().map(exp -> trips.getOpenPlan().getExpenseData().getPlannedExpenses().get(exp)).toList()) {
+        for (PlannedExpense exp : item.getLinkedExpenses().stream().map(exp -> trips.getOpenPlan().getExpenseData().getPlannedExpenses().get(exp)).toList()) {
             totalExpenses += exp.getAmount();
         }
     }
@@ -101,7 +100,7 @@ public class LinkExpensesDialog extends Dialog<Void> {
         ObservableList<PlannedExpense> expenses = expenseList.getItems();
         expenses.clear();
 
-        for (PlannedExpense exp: trips.getOpenPlan().getExpenseData().getPlannedExpenses().values()) {
+        for (PlannedExpense exp : trips.getOpenPlan().getExpenseData().getPlannedExpenses().values()) {
             if (item.getLinkedExpenses().contains(exp.getId())) continue;
             if (TripManager.getInstance().isExpenseLinked(trips.getOpenPlan(), exp.getId())) continue;
             expenses.add(exp);
@@ -119,7 +118,7 @@ public class LinkExpensesDialog extends Dialog<Void> {
 
         // TODO: Implement settings for the currency symbol
         recalculateTotal();
-        expenseTotalLabel.setText(TripManager.Formatting.formatMoney(totalExpenses, "€", false));
+        expenseTotalLabel.setText(TripManager.Formatting.formatMoney(totalExpenses, Character.toString(TripManager.getInstance().getSettings().getCurrencySymbol()), false));
     }
 
     public void linkSelectedExpense() {

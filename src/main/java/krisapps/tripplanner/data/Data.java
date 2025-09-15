@@ -9,10 +9,12 @@ public class Data {
 
     private HashMap<String, Object> values;
     private ArrayList<Trip> trips;
+    private ProgramSettings settings;
 
     public Data() {
         this.values = new HashMap<>();
         this.trips = new ArrayList<>();
+        this.settings = new ProgramSettings();
     }
 
     public HashMap<String, Object> getSavedValues() {
@@ -25,5 +27,13 @@ public class Data {
 
     public ArrayList<Trip> getTrips() {
         return this.trips;
+    }
+
+    public ProgramSettings getSettings() {
+        return settings;
+    }
+
+    public void setSettings(ProgramSettings settings) {
+        this.settings = settings;
     }
 }

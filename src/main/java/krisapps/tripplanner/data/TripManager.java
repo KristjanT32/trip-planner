@@ -167,6 +167,11 @@ public class TripManager {
         }
     }
 
+    /**
+     * Loads the saved data from disk.
+     *
+     * @return The data
+     */
     private Data getData() {
 
         if (!dataFile.exists()) {
@@ -237,6 +242,10 @@ public class TripManager {
         } catch (IOException e) {
             log("Could not create a new data file - " + e.getMessage());
         }
+    }
+
+    public ProgramSettings getSettings() {
+        return getData().getSettings();
     }
 
     public static class Formatting {
