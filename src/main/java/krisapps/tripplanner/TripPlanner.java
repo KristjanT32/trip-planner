@@ -349,6 +349,9 @@ public class TripPlanner {
             } else {
                 currentPlan.setTripStartDate(newValue.atStartOfDay());
             }
+            if (currentPlan.tripDatesSupplied()) {
+                updateUIForCurrentPlan();
+            }
         });
         tripEndBox.valueProperty().addListener((observable, oldValue, newValue) -> {
             if (currentPlan == null) return;
@@ -357,6 +360,9 @@ public class TripPlanner {
                 currentPlan.setTripEndDate(null);
             } else {
                 currentPlan.setTripEndDate(newValue.atStartOfDay());
+            }
+            if (currentPlan.tripDatesSupplied()) {
+                updateUIForCurrentPlan();
             }
         });
         tripPartySizeBox.valueProperty().addListener((observable, oldValue, newValue) -> {

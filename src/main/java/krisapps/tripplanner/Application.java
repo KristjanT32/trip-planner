@@ -16,8 +16,8 @@ public class Application extends javafx.application.Application {
         Scene scene = new Scene(fxmlLoader.load(), 926, 734);
         stage.setTitle("KrisApps Trip Planner");
         stage.setScene(scene);
-        stage.setMinWidth(1015);
-        stage.setMinHeight(860);
+        stage.setMinWidth(926);
+        stage.setMinHeight(734);
         window = stage;
         stage.show();
     }
