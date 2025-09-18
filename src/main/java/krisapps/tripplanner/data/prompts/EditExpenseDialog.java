@@ -6,7 +6,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
-import krisapps.tripplanner.Application;
+import krisapps.tripplanner.PlannerApplication;
 import krisapps.tripplanner.data.trip.ExpenseCategory;
 import krisapps.tripplanner.data.trip.PlannedExpense;
 import krisapps.tripplanner.data.trip.Trip;
@@ -25,7 +25,8 @@ public class EditExpenseDialog extends Dialog<Void> {
         try {
             Double.parseDouble(change.getControlNewText());
             return change;
-        } catch (NumberFormatException ignored) {}
+        } catch (NumberFormatException ignored) {
+        }
 
         return null;
     };
@@ -51,11 +52,10 @@ public class EditExpenseDialog extends Dialog<Void> {
 
     public EditExpenseDialog(Trip t, PlannedExpense expense) {
         try {
-            FXMLLoader loader = new FXMLLoader(Application.class.getResource("dialogs/edit_expense.fxml"));
+            FXMLLoader loader = new FXMLLoader(PlannerApplication.class.getResource("dialogs/edit_expense.fxml"));
             loader.setController(this);
             rootPane = loader.load();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
@@ -78,7 +78,9 @@ public class EditExpenseDialog extends Dialog<Void> {
 
                 // Apply all data changes
                 expense.setAmount(Double.parseDouble(valueBox.getText()));
-                if (!descriptionBox.getText().isEmpty()) { expense.setDescription(descriptionBox.getText()); }
+                if (!descriptionBox.getText().isEmpty()) {
+                    expense.setDescription(descriptionBox.getText());
+                }
                 expense.setCategory(ExpenseCategory.valueOf(categoryBox.getSelectionModel().getSelectedItem()));
                 expense.setDay(dayBox.getValue());
 
@@ -92,11 +94,11 @@ public class EditExpenseDialog extends Dialog<Void> {
         valueBox.setTextFormatter(new TextFormatter<>(numbersOnlyFormatter));
         valueBox.setText(String.valueOf(expense.getAmount()));
         valueBox.textProperty().addListener((observable, oldValue, newValue) -> {
-           if (!newValue.isEmpty()) {
-               expense.setAmount(Double.parseDouble(newValue));
-           } else {
-               expense.setAmount(0.0);
-           }
+            if (!newValue.isEmpty()) {
+                expense.setAmount(Double.parseDouble(newValue));
+            } else {
+                expense.setAmount(0.0);
+            }
         });
 
         descriptionBox.setText(expense.getDescription());

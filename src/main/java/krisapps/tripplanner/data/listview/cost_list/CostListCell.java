@@ -5,7 +5,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.layout.VBox;
-import krisapps.tripplanner.Application;
+import krisapps.tripplanner.PlannerApplication;
 import krisapps.tripplanner.data.TripManager;
 
 import java.io.IOException;
@@ -30,7 +30,7 @@ public class CostListCell extends ListCell<CategoryExpenseSummary> {
 
     private void loadFXML() {
         try {
-            FXMLLoader loader = new FXMLLoader(Application.class.getResource("listview/cost_list_cell.fxml"));
+            FXMLLoader loader = new FXMLLoader(PlannerApplication.class.getResource("listview/cost_list_cell.fxml"));
             loader.setController(this);
             rootPane = loader.load();
         } catch (IOException e) {

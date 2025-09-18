@@ -5,7 +5,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
-import krisapps.tripplanner.Application;
+import krisapps.tripplanner.PlannerApplication;
 import krisapps.tripplanner.data.trip.Trip;
 
 import java.io.IOException;
@@ -35,7 +35,8 @@ public class EditTripDetailsDialog extends Dialog<Void> {
         try {
             Double.parseDouble(change.getControlNewText());
             return change;
-        } catch (NumberFormatException ignored) {}
+        } catch (NumberFormatException ignored) {
+        }
 
         return null;
     };
@@ -45,11 +46,10 @@ public class EditTripDetailsDialog extends Dialog<Void> {
         this.trip = t;
 
         try {
-            FXMLLoader loader = new FXMLLoader(Application.class.getResource("dialogs/edit_trip_details.fxml"));
+            FXMLLoader loader = new FXMLLoader(PlannerApplication.class.getResource("dialogs/edit_trip_details.fxml"));
             loader.setController(this);
             rootPane = loader.load();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
         getDialogPane().setContent(rootPane);

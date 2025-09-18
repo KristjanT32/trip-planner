@@ -14,7 +14,10 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import krisapps.tripplanner.data.*;
+import krisapps.tripplanner.data.CountdownFormat;
+import krisapps.tripplanner.data.DayExpenses;
+import krisapps.tripplanner.data.ProgramSettings;
+import krisapps.tripplanner.data.TripManager;
 import krisapps.tripplanner.data.listview.cost_list.CategoryExpenseSummary;
 import krisapps.tripplanner.data.listview.cost_list.CostListCellFactory;
 import krisapps.tripplanner.data.listview.expense_linker.ExpenseLinkerCellFactory;
@@ -28,6 +31,8 @@ import krisapps.tripplanner.data.trip.PlannedExpense;
 import krisapps.tripplanner.data.trip.Trip;
 import krisapps.tripplanner.misc.AnimationUtils;
 import krisapps.tripplanner.misc.GoogleCalendarIntegration;
+import krisapps.tripplanner.misc.PlannerNotification;
+import krisapps.tripplanner.misc.PopupManager;
 
 import java.awt.*;
 import java.time.Duration;
@@ -199,10 +204,9 @@ public class TripPlanner {
     }
 
     /**
-     * TODO: Ensure UI sizing prioritises labels (ensure labels take the width they need)
+     * TODO: Implement 'Set reminders' (incl. integration with Google Calendar)
      * TODO: Link the google calendar panel to its internal CalendarSettings object (to allow data to be saved and retrieved)
      * TODO: Implement calendar event creation on save, based on the saved CalendarSettings.
-     * TODO: Implement 'Set reminders' (incl. integration with Google Calendar)
      * TODO: Implement plan document generation (also add menu for that)
      */
 
@@ -250,7 +254,7 @@ public class TripPlanner {
         tripStartBox.setValue(currentPlan.getTripStartDate().toLocalDate());
         tripEndBox.setValue(currentPlan.getTripEndDate().toLocalDate());
 
-        tripPartySizeBox.getValueFactory().setValue((int) currentPlan.getPartySize());
+        tripPartySizeBox.getEditor().setText(String.valueOf(currentPlan.getPartySize()));
 
         selectedExpenseLabel.setText("Nothing selected");
         selectedItineraryEntryLabel.setText("Nothing selected");
@@ -924,12 +928,12 @@ public class TripPlanner {
     }
 
     public void refreshWindowTitle(String title) {
-        if (Application.window != null) {
-            Application.window.setTitle(title);
+        if (PlannerApplication.window != null) {
+            PlannerApplication.window.setTitle(title);
         } else {
             Platform.runLater(() -> {
-                if (Application.window != null) {
-                    Application.window.setTitle(title);
+                if (PlannerApplication.window != null) {
+                    PlannerApplication.window.setTitle(title);
                 }
             });
         }

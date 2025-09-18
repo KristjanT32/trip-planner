@@ -6,7 +6,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
-import krisapps.tripplanner.Application;
+import krisapps.tripplanner.PlannerApplication;
 import krisapps.tripplanner.TripPlanner;
 
 import java.io.IOException;
@@ -38,7 +38,7 @@ public class LoadingDialog extends Dialog<Void> {
     private Task<Void> operation;
 
     public LoadingDialog(LoadingOperationType type) {
-        FXMLLoader fxmlLoader = new FXMLLoader(Application.class.getResource("dialogs/loading.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(PlannerApplication.class.getResource("dialogs/loading.fxml"));
         fxmlLoader.setController(this);
         try {
             rootPane = fxmlLoader.load();

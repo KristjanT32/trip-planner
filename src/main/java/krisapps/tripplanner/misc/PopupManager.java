@@ -1,11 +1,11 @@
-package krisapps.tripplanner.data;
+package krisapps.tripplanner.misc;
 
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import krisapps.tripplanner.Application;
+import krisapps.tripplanner.PlannerApplication;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
@@ -22,7 +22,7 @@ public class PopupManager {
 
     public static Optional<ButtonType> showPredefinedPopup(PopupType type) {
         Alert alert = new Alert(null);
-        alert.getDialogPane().getStylesheets().add(Application.class.getResource("styles/styles.css").toExternalForm());
+        alert.getDialogPane().getStylesheets().add(PlannerApplication.class.getResource("styles/styles.css").toExternalForm());
         switch (type) {
             case EXPENSE_NAME_MISSING -> {
                 alert.setTitle("Cannot add expense entry");
@@ -67,7 +67,7 @@ public class PopupManager {
         }
 
         Alert a = new Alert(Alert.AlertType.CONFIRMATION);
-        a.getDialogPane().getStylesheets().add(Application.class.getResource("styles/styles.css").toExternalForm());
+        a.getDialogPane().getStylesheets().add(PlannerApplication.class.getResource("styles/styles.css").toExternalForm());
         a.setTitle(title);
         a.setHeaderText(null);
         a.setContentText(message);
@@ -79,7 +79,7 @@ public class PopupManager {
     public static String showInputDialog(String title, String message, String inputLabel, @Nullable String inputValue) {
         Alert a = new Alert(Alert.AlertType.INFORMATION);
 
-        a.getDialogPane().getStylesheets().add(Application.class.getResource("styles/styles.css").toExternalForm());
+        a.getDialogPane().getStylesheets().add(PlannerApplication.class.getResource("styles/styles.css").toExternalForm());
         a.setTitle(title);
         a.setHeaderText(null);
 

@@ -9,9 +9,9 @@
 <?import javafx.scene.text.Font?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
 
-<VBox fx:id="rootPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefWidth="700.0" styleClass="itinerary-cell" stylesheets="@../styles/listview.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<VBox fx:id="rootPane" minWidth="-Infinity" styleClass="itinerary-cell" stylesheets="@../styles/listview.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1">
    <children>
-      <Label fx:id="descriptionLabel" maxWidth="1.7976931348623157E308" text="Activity description" VBox.vgrow="NEVER">
+      <Label fx:id="descriptionLabel" maxWidth="1.7976931348623157E308" minWidth="-Infinity" text="Activity description" VBox.vgrow="NEVER">
          <font>
             <Font name="Segoe UI Bold" size="16.0" />
          </font>
@@ -19,7 +19,7 @@
             <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
          </VBox.margin>
       </Label>
-      <Label fx:id="dayLabel" maxWidth="1.7976931348623157E308" text="Planned for Day 1">
+      <Label fx:id="dayLabel" maxWidth="1.7976931348623157E308" minWidth="-Infinity" text="Planned for Day 1">
          <font>
             <Font name="Segoe UI Italic" size="16.0" />
          </font>
@@ -40,12 +40,12 @@
                   <Font size="1.0" />
                </font>
             </FontIcon>
-            <Label fx:id="expenseSummaryLabel" maxWidth="1.7976931348623157E308" prefHeight="19.0" prefWidth="602.0" text="Total expenses: 500 units" HBox.hgrow="ALWAYS">
+            <Label fx:id="expenseSummaryLabel" maxWidth="1.7976931348623157E308" minWidth="-Infinity" text="Total expenses: 500 units" HBox.hgrow="ALWAYS">
                <font>
                   <Font name="Segoe UI" size="16.0" />
                </font>
                <HBox.margin>
-                  <Insets />
+                  <Insets right="20.0" />
                </HBox.margin>
             </Label>
             <Button fx:id="editActivityButton" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="-Infinity" mnemonicParsing="false" prefHeight="25.0" prefWidth="133.0" text="Edit activity" HBox.hgrow="SOMETIMES" />

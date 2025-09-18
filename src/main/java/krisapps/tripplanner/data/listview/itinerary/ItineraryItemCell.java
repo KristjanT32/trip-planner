@@ -6,7 +6,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.layout.VBox;
-import krisapps.tripplanner.Application;
+import krisapps.tripplanner.PlannerApplication;
 import krisapps.tripplanner.TripPlanner;
 import krisapps.tripplanner.data.TripManager;
 import krisapps.tripplanner.data.prompts.EditItineraryEntryDialog;
@@ -46,7 +46,7 @@ public class ItineraryItemCell extends ListCell<Itinerary.ItineraryItem> {
 
     private void loadFXML() {
         try {
-            FXMLLoader loader = new FXMLLoader(Application.class.getResource("listview/itinerary_item_cell.fxml"));
+            FXMLLoader loader = new FXMLLoader(PlannerApplication.class.getResource("listview/itinerary_item_cell.fxml"));
             loader.setController(this);
             rootPane = loader.load();
         } catch (IOException e) {

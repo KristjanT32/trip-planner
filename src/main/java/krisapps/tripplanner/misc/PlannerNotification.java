@@ -1,4 +1,4 @@
-package krisapps.tripplanner.data;
+package krisapps.tripplanner.misc;
 
 public enum PlannerNotification {
     UNSAVED_CHANGES,

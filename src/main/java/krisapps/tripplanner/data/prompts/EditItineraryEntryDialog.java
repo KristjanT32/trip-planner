@@ -5,7 +5,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
-import krisapps.tripplanner.Application;
+import krisapps.tripplanner.PlannerApplication;
 import krisapps.tripplanner.data.trip.Itinerary;
 import krisapps.tripplanner.data.trip.Trip;
 
@@ -31,11 +31,10 @@ public class EditItineraryEntryDialog extends Dialog<Void> {
         this.item = item;
 
         try {
-            FXMLLoader loader = new FXMLLoader(Application.class.getResource("dialogs/edit_itinerary_entry.fxml"));
+            FXMLLoader loader = new FXMLLoader(PlannerApplication.class.getResource("dialogs/edit_itinerary_entry.fxml"));
             loader.setController(this);
             rootPane = loader.load();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
         getDialogPane().setContent(rootPane);

@@ -6,7 +6,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.layout.HBox;
-import krisapps.tripplanner.Application;
+import krisapps.tripplanner.PlannerApplication;
 import krisapps.tripplanner.TripPlanner;
 import krisapps.tripplanner.data.TripManager;
 import krisapps.tripplanner.data.trip.Trip;
@@ -61,11 +61,10 @@ public class UpcomingTripCell extends ListCell<Trip> {
     @SuppressWarnings("ConstantConditions")
     private void loadFXML() {
         try {
-            FXMLLoader loader = new FXMLLoader(Application.class.getResource("listview/upcoming_trip_cell.fxml"));
+            FXMLLoader loader = new FXMLLoader(PlannerApplication.class.getResource("listview/upcoming_trip_cell.fxml"));
             loader.setController(this);
             rootPane = loader.load();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
 

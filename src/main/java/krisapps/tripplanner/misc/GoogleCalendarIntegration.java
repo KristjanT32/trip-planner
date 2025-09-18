@@ -16,7 +16,7 @@ import com.google.api.services.calendar.CalendarScopes;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.EventDateTime;
 import com.google.api.services.calendar.model.EventReminder;
-import krisapps.tripplanner.Application;
+import krisapps.tripplanner.PlannerApplication;
 import krisapps.tripplanner.data.TripManager;
 import krisapps.tripplanner.data.prompts.LoadingDialog;
 import krisapps.tripplanner.data.trip.Trip;
@@ -46,7 +46,7 @@ public class GoogleCalendarIntegration {
     private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT)
             throws IOException {
         // Load client secrets.
-        InputStream in = Application.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
+        InputStream in = PlannerApplication.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
         if (in == null) {
             throw new FileNotFoundException("Resource not found: " + CREDENTIALS_FILE_PATH);
         }

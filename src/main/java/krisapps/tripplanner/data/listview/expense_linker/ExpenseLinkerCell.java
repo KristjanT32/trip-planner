@@ -6,7 +6,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.layout.HBox;
-import krisapps.tripplanner.Application;
+import krisapps.tripplanner.PlannerApplication;
 import krisapps.tripplanner.TripPlanner;
 import krisapps.tripplanner.data.TripManager;
 import krisapps.tripplanner.data.prompts.EditExpenseDialog;
@@ -41,7 +41,7 @@ public class ExpenseLinkerCell extends ListCell<PlannedExpense> {
 
     private void loadFXML() {
         try {
-            FXMLLoader loader = new FXMLLoader(Application.class.getResource("listview/expense_linker_expense_cell.fxml"));
+            FXMLLoader loader = new FXMLLoader(PlannerApplication.class.getResource("listview/expense_linker_expense_cell.fxml"));
             loader.setController(this);
             rootPane = loader.load();
         } catch (IOException e) {

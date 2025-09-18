@@ -7,7 +7,7 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
-import krisapps.tripplanner.Application;
+import krisapps.tripplanner.PlannerApplication;
 import krisapps.tripplanner.TripPlanner;
 import krisapps.tripplanner.data.TripManager;
 import krisapps.tripplanner.data.listview.expense_linker.ExpenseLinkerCellFactory;
@@ -47,7 +47,7 @@ public class LinkExpensesDialog extends Dialog<Void> {
 
     public LinkExpensesDialog(Itinerary.ItineraryItem item) {
         try {
-            FXMLLoader loader = new FXMLLoader(Application.class.getResource("dialogs/link_expenses.fxml"));
+            FXMLLoader loader = new FXMLLoader(PlannerApplication.class.getResource("dialogs/link_expenses.fxml"));
             loader.setController(this);
             rootPane = loader.load();
             initialized = true;
