@@ -199,6 +199,7 @@ public class TripPlanner {
     }
 
     /**
+     * TODO: Ensure UI sizing prioritises labels (ensure labels take the width they need)
      * TODO: Link the google calendar panel to its internal CalendarSettings object (to allow data to be saved and retrieved)
      * TODO: Implement calendar event creation on save, based on the saved CalendarSettings.
      * TODO: Implement 'Set reminders' (incl. integration with Google Calendar)
