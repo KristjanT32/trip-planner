@@ -8,7 +8,7 @@ public class ProgramSettings {
 
     private boolean modified = false;
 
-    public static class CalendarSettings {
+    public static class TripSettings {
         private boolean integrationEnabled = false;
         private boolean reminderEnabled = false;
         private TimeUnit reminderUnit;
@@ -16,7 +16,7 @@ public class ProgramSettings {
         private String calendarEventID = null;
         private boolean modified = false;
 
-        public CalendarSettings() {
+        public TripSettings() {
             this.integrationEnabled = false;
             this.reminderEnabled = false;
             this.reminderUnit = TimeUnit.MINUTES;
@@ -25,7 +25,7 @@ public class ProgramSettings {
             this.modified = false;
         }
 
-        public CalendarSettings(boolean integrationEnabled, boolean reminderEnabled, TimeUnit reminderUnit, int reminderValue, String calendarEventID, boolean modified) {
+        public TripSettings(boolean integrationEnabled, boolean reminderEnabled, TimeUnit reminderUnit, int reminderValue, String calendarEventID, boolean modified) {
             this.integrationEnabled = integrationEnabled;
             this.reminderEnabled = reminderEnabled;
             this.reminderUnit = reminderUnit;
@@ -79,31 +79,35 @@ public class ProgramSettings {
         }
     }
 
-    private final HashMap<UUID, CalendarSettings> calendarSettings;
+    private final HashMap<UUID, TripSettings> tripSettings;
     private char currencySymbol;
 
     public ProgramSettings() {
         this.modified = false;
-        this.calendarSettings = new HashMap<>();
+        this.tripSettings = new HashMap<>();
         this.currencySymbol = '€';
     }
 
-    public HashMap<UUID, CalendarSettings> getCalendarSettings() {
-        return calendarSettings;
+    public HashMap<UUID, TripSettings> getTripSettings() {
+        return tripSettings;
     }
 
-    public void setCalendarSettings(UUID trip, CalendarSettings settings) {
+    public void setCalendarSettings(UUID trip, TripSettings settings) {
         if (settings == null) {
-            calendarSettings.remove(trip);
+            tripSettings.remove(trip);
             this.modified = true;
             return;
         }
-        if (calendarSettings.containsKey(trip)) {
-            calendarSettings.replace(trip, settings);
+        if (tripSettings.containsKey(trip)) {
+            tripSettings.replace(trip, settings);
         } else {
-            calendarSettings.put(trip, settings);
+            tripSettings.put(trip, settings);
         }
         this.modified = true;
+    }
+
+    public TripSettings getTripSettings(UUID trip) {
+        return getTripSettings().getOrDefault(trip, new TripSettings());
     }
 
     public char getCurrencySymbol() {
@@ -120,7 +124,7 @@ public class ProgramSettings {
     }
 
     public boolean haveBeenModified() {
-        this.modified = calendarSettings.values().stream().anyMatch(CalendarSettings::haveBeenModified) || this.modified;
+        this.modified = tripSettings.values().stream().anyMatch(TripSettings::haveBeenModified) || this.modified;
         return modified;
     }
 }

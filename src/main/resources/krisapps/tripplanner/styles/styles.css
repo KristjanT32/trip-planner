@@ -75,6 +75,7 @@
 .spinner > .increment-arrow-button:pressed, .spinner > .decrement-arrow-button:pressed {
     -fx-background-color: #787878;
 }
+
 /*</editor-fold>*/
 
 .list-view {
@@ -195,6 +196,12 @@
 
 .readonly-panel > .button:hover {
     -fx-background-color: #9c6363;
+}
+
+.error-panel {
+    -fx-background-color: #f65f5f;
+    -fx-border-radius: 10px;
+    -fx-background-radius: 10px;
 }
 
 .cost-chart {

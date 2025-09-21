@@ -29,10 +29,7 @@ import krisapps.tripplanner.data.trip.ExpenseCategory;
 import krisapps.tripplanner.data.trip.Itinerary;
 import krisapps.tripplanner.data.trip.PlannedExpense;
 import krisapps.tripplanner.data.trip.Trip;
-import krisapps.tripplanner.misc.AnimationUtils;
-import krisapps.tripplanner.misc.GoogleCalendarIntegration;
-import krisapps.tripplanner.misc.PlannerNotification;
-import krisapps.tripplanner.misc.PopupManager;
+import krisapps.tripplanner.misc.*;
 
 import java.awt.*;
 import java.time.Duration;
@@ -40,10 +37,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -55,6 +49,7 @@ public class TripPlanner {
     //<editor-fold desc="Globals">
     public static final ScheduledExecutorService scheduler = new ScheduledThreadPoolExecutor(2);
     private static Trip currentPlan = null;
+    private static ProgramSettings.TripSettings currentPlanSettings = null;
     private static ProgramSettings currentSettings;
     private static TripPlanner instance;
     private final TripManager trips = TripManager.getInstance();
@@ -197,6 +192,12 @@ public class TripPlanner {
     @FXML
     private HBox returnToPlannerNotification;
     //</editor-fold>
+    //<editor-fold desc="Error area">
+    @FXML
+    private HBox errorPanel;
+    @FXML
+    private Label errorText;
+    //</editor-fold>
 
 
     public static TripPlanner getInstance() {
@@ -204,6 +205,7 @@ public class TripPlanner {
     }
 
     /**
+     * TODO: Rework UI updating in a way that wouldn't reset everything when dates change. Also, there's something in the trip date box logic causing a StackOverflowException, so fix that.
      * TODO: Implement 'Set reminders' (incl. integration with Google Calendar)
      * TODO: Link the google calendar panel to its internal CalendarSettings object (to allow data to be saved and retrieved)
      * TODO: Implement calendar event creation on save, based on the saved CalendarSettings.
@@ -234,31 +236,26 @@ public class TripPlanner {
         currentSettings = TripManager.getInstance().getSettings();
     }
 
+    /**
+     * Ensures all UI elements reflect the data of the currently loaded trip plan.
+     * <br><b>Runs on the FX Application Thread.</b>
+     */
     public void updateUIForCurrentPlan() {
-        SpinnerValueFactory<Integer> expenseDayValueFactory;
-        SpinnerValueFactory<Integer> itineraryDayValueFactory;
-        if (currentPlan != null) {
-            expenseDayValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(-1, (int) currentPlan.getTripDuration().toDays(), -1);
-            itineraryDayValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(-1, (int) currentPlan.getTripDuration().toDays(), -1);
-            refreshItinerary();
+        refreshSpinners();
+        Platform.runLater(() -> {
+            tripStartBox.setValue(currentPlan.getTripStartDate().toLocalDate());
+            tripEndBox.setValue(currentPlan.getTripEndDate().toLocalDate());
 
+            selectedExpenseLabel.setText("Nothing selected");
+            selectedItineraryEntryLabel.setText("Nothing selected");
 
-        } else {
-            expenseDayValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(-1, Integer.MAX_VALUE, -1);
-            itineraryDayValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(-1, Integer.MAX_VALUE, -1);
-        }
-
-        expenseDayBox.setValueFactory(expenseDayValueFactory);
-        activityDayBox.setValueFactory(itineraryDayValueFactory);
-
-        tripStartBox.setValue(currentPlan.getTripStartDate().toLocalDate());
-        tripEndBox.setValue(currentPlan.getTripEndDate().toLocalDate());
-
-        tripPartySizeBox.getEditor().setText(String.valueOf(currentPlan.getPartySize()));
-
-        selectedExpenseLabel.setText("Nothing selected");
-        selectedItineraryEntryLabel.setText("Nothing selected");
-
+            // Initialize calendar integration panel
+            ProgramSettings.TripSettings calSettings = currentSettings.getTripSettings(currentPlan.getUniqueID());
+            calendarIntegrationToggle.setSelected(calSettings.isIntegrationEnabled());
+            reminderToggle.setSelected(calSettings.isReminderEnabled());
+            reminderOffsetBox.setText(String.valueOf(calSettings.getReminderValue() != -1 ? calSettings.getReminderValue() : ""));
+            reminderOffsetUnitSelector.getSelectionModel().select(calSettings.getReminderUnit());
+        });
         refreshViews();
     }
 
@@ -301,39 +298,53 @@ public class TripPlanner {
         expenseAmountBox.setTextFormatter(new TextFormatter<>(numbersOnlyFormatter));
         tripBudgetBox.setTextFormatter(new TextFormatter<>(numbersOnlyFormatter));
 
-        setNotificationVisible(PlannerNotification.READ_ONLY_MODE, false);
-        setNotificationVisible(PlannerNotification.UNSAVED_CHANGES, false);
+        setNotificationVisible(PlannerNotification.ALL, false);
+        displayError(PlannerError.ANY, false);
     }
 
+    /**
+     * Initializes everything on the reminder panel.
+     * <br><b>Runs on the FX Application Thread.</b>
+     */
     public void initReminderPanel() {
-        calendarIntegrationToggle.selectedProperty().addListener((observable, oldVal, newVal) -> {
-            calendarIntegrationToggle.setText(newVal ? "Enabled" : "Disabled");
-            calendarSettingsContent.setDisable(!newVal);
-        });
-        reminderToggle.selectedProperty().addListener((observable, oldVal, newVal) -> {
-            reminderOptions.setDisable(!newVal);
-        });
+        Platform.runLater(() -> {
+            calendarIntegrationToggle.selectedProperty().addListener((observable, oldVal, newVal) -> {
+                calendarIntegrationToggle.setText(newVal ? "Enabled" : "Disabled");
+                calendarSettingsContent.setDisable(!newVal);
+            });
+            reminderToggle.selectedProperty().addListener((observable, oldVal, newVal) -> {
+                reminderOptions.setDisable(!newVal);
+            });
 
-        reminderOffsetBox.setTextFormatter(new TextFormatter<>(numbersOnlyFormatter));
-        reminderOffsetUnitSelector.getItems().clear();
-        reminderOffsetUnitSelector.getItems().addAll(TimeUnit.MINUTES, TimeUnit.HOURS, TimeUnit.DAYS);
+            reminderOffsetBox.setTextFormatter(new TextFormatter<>(numbersOnlyFormatter));
+            reminderOffsetUnitSelector.getItems().clear();
+            reminderOffsetUnitSelector.getItems().addAll(TimeUnit.MINUTES, TimeUnit.HOURS, TimeUnit.DAYS);
 
-        countdownFormatSelector.getItems().clear();
-        for (CountdownFormat format : CountdownFormat.values()) {
-            countdownFormatSelector.getItems().add(format.getFormat());
-        }
+            countdownFormatSelector.getItems().clear();
+            for (CountdownFormat format : CountdownFormat.values()) {
+                countdownFormatSelector.getItems().add(format.getFormat());
+            }
+        });
     }
 
     public void setupSpinners() {
-        SpinnerValueFactory<Integer> partySizeValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(1, Short.MAX_VALUE, 1);
-        tripPartySizeBox.setValueFactory(partySizeValueFactory);
+        if (tripPartySizeBox.getValueFactory() == null) {
+            SpinnerValueFactory<Integer> partySizeValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(1, Short.MAX_VALUE, 1);
+            tripPartySizeBox.setValueFactory(partySizeValueFactory);
+        }
     }
 
+    /**
+     * Populates the dropdowns in the UI.
+     * <br><b>Runs on the FX Application Thread.</b>
+     */
     public void setupDropdowns() {
-        ObservableList<String> items = expenseTypeSelector.getItems();
-        items.clear();
-        items.addAll(Arrays.stream(ExpenseCategory.values()).map(ExpenseCategory::name).toList());
-        expenseTypeSelector.getSelectionModel().select(ExpenseCategory.UNCATEGORIZED.name());
+        Platform.runLater(() -> {
+            ObservableList<String> items = expenseTypeSelector.getItems();
+            items.clear();
+            items.addAll(Arrays.stream(ExpenseCategory.values()).map(ExpenseCategory::name).toList());
+            expenseTypeSelector.getSelectionModel().select(ExpenseCategory.UNCATEGORIZED.name());
+        });
     }
 
     public void setupListViews() {
@@ -342,6 +353,41 @@ public class TripPlanner {
         expenseList.setCellFactory(new ExpenseLinkerCellFactory(true));
         upcomingTripsList.setCellFactory(new UpcomingTripsCellFactory());
         categoryBreakdownList.setCellFactory(new CostListCellFactory());
+    }
+
+    /**
+     * Refreshes the various spinners to reflect current data, or initializes them if not initialized already.
+     * <br><b>Runs on the FX Application Thread.</b>
+     */
+    public void refreshSpinners() {
+        Platform.runLater(() -> {
+            SpinnerValueFactory<Integer> expenseDayValueFactory = expenseDayBox.getValueFactory();
+            SpinnerValueFactory<Integer> itineraryDayValueFactory = activityDayBox.getValueFactory();
+
+            if (expenseDayValueFactory == null) {
+                if (currentPlan == null) {
+                    expenseDayValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(-1, Integer.MAX_VALUE, -1);
+                } else {
+                    expenseDayValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(-1, (int) currentPlan.getTripDuration().toDays(), -1);
+                }
+                expenseDayBox.setValueFactory(expenseDayValueFactory);
+            } else {
+                ((SpinnerValueFactory.IntegerSpinnerValueFactory) expenseDayBox.getValueFactory()).setMax(currentPlan == null ? Integer.MAX_VALUE : (int) currentPlan.getTripDuration().toDays());
+            }
+
+            if (itineraryDayValueFactory == null) {
+                if (currentPlan == null) {
+                    itineraryDayValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(-1, Integer.MAX_VALUE, -1);
+                } else {
+                    itineraryDayValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(-1, (int) currentPlan.getTripDuration().toDays(), -1);
+                }
+                activityDayBox.setValueFactory(itineraryDayValueFactory);
+            } else {
+                ((SpinnerValueFactory.IntegerSpinnerValueFactory) activityDayBox.getValueFactory()).setMax(currentPlan == null ? Integer.MAX_VALUE : (int) currentPlan.getTripDuration().toDays());
+            }
+
+            tripPartySizeBox.getValueFactory().setValue((int) currentPlan.getPartySize());
+        });
     }
 
     public void registerListeners() {
@@ -355,7 +401,7 @@ public class TripPlanner {
                 currentPlan.setTripStartDate(newValue.atStartOfDay());
             }
             if (currentPlan.tripDatesSupplied()) {
-                updateUIForCurrentPlan();
+                refreshSpinners();
             }
         });
         tripEndBox.valueProperty().addListener((observable, oldValue, newValue) -> {
@@ -367,12 +413,15 @@ public class TripPlanner {
                 currentPlan.setTripEndDate(newValue.atStartOfDay());
             }
             if (currentPlan.tripDatesSupplied()) {
-                updateUIForCurrentPlan();
+                refreshSpinners();
             }
         });
         tripPartySizeBox.valueProperty().addListener((observable, oldValue, newValue) -> {
             if (currentPlan == null) return;
             if (launchedInReadOnly) return;
+            if (Objects.equals(newValue, oldValue)) {
+                return;
+            }
             currentPlan.setPartySize(newValue.shortValue());
         });
 
@@ -431,10 +480,17 @@ public class TripPlanner {
                 if (!currentPlan.tripDatesSupplied()) {
                     tripWizard.getTabs().get(4).setDisable(true);
                     return;
+                } else {
+                    if (currentPlan.getTripStartDate().isAfter(currentPlan.getTripEndDate())) {
+                        displayError(PlannerError.TRIP_START_AFTER_END, true);
+                    } else {
+                        displayError(PlannerError.TRIP_START_AFTER_END, false);
+                    }
                 }
                 tripWizard.getTabs().get(4).setDisable(false);
             } else {
                 setNotificationVisible(PlannerNotification.ALL, false);
+                displayError(PlannerError.ANY, false);
             }
         }, 0L, 100L, TimeUnit.MILLISECONDS);
     }
@@ -447,37 +503,83 @@ public class TripPlanner {
         }, 0, 1, TimeUnit.SECONDS);
     }
 
+    /**
+     * Changes which part of the program is rendered based on ProgramState
+     * <br><b>Runs on the Application FX Thread.</b>
+     *
+     * @param changeTo The new state to render.
+     */
     private void changeProgramState(ProgramState changeTo) {
-        tripWizard.setVisible(false);
-        upcomingTripsPanel.setVisible(false);
-        tripSetupPanel.setVisible(false);
+        Platform.runLater(() -> {
+            tripWizard.setVisible(false);
+            upcomingTripsPanel.setVisible(false);
+            tripSetupPanel.setVisible(false);
 
-        switch (changeTo) {
-            case CREATE_NEW_TRIP -> tripSetupPanel.setVisible(true);
-            case PLAN_TRIP -> {
-                tripWizard.setVisible(true);
-                if (launchedInReadOnly) {
-                    setNotificationVisible(PlannerNotification.READ_ONLY_MODE, true);
-                } else {
-                    setNotificationVisible(PlannerNotification.READ_ONLY_MODE, false);
+            switch (changeTo) {
+                case CREATE_NEW_TRIP -> tripSetupPanel.setVisible(true);
+                case PLAN_TRIP -> {
+                    tripWizard.setVisible(true);
+                    if (launchedInReadOnly) {
+                        setNotificationVisible(PlannerNotification.READ_ONLY_MODE, true);
+                    } else {
+                        setNotificationVisible(PlannerNotification.READ_ONLY_MODE, false);
+                    }
                 }
+                case SHOW_DASHBOARD -> upcomingTripsPanel.setVisible(true);
             }
-            case SHOW_DASHBOARD -> upcomingTripsPanel.setVisible(true);
-        }
+        });
     }
 
+    /**
+     * Shows or hides the supplied notification at the bottom of the window.
+     * <br><b>Runs on the FX Application Thread.</b>
+     *
+     * @param notification The notification to show/hide
+     * @param visible      Whether to show or hide the notification.
+     */
     private void setNotificationVisible(PlannerNotification notification, boolean visible) {
-        switch (notification) {
-            case UNSAVED_CHANGES -> handleNotificationVisibilityChange(visible, unsavedChangesNotification);
-            case READ_ONLY_MODE -> handleNotificationVisibilityChange(visible, readOnlyNotification);
-            case RETURN_TO_PLANNER -> handleNotificationVisibilityChange(visible, returnToPlannerNotification);
-            case ALL -> {
-                for (PlannerNotification notif : PlannerNotification.values()) {
-                    if (notif == PlannerNotification.ALL) continue;
-                    setNotificationVisible(notif, visible);
+        Platform.runLater(() -> {
+            switch (notification) {
+                case UNSAVED_CHANGES -> handleNotificationVisibilityChange(visible, unsavedChangesNotification);
+                case READ_ONLY_MODE -> handleNotificationVisibilityChange(visible, readOnlyNotification);
+                case RETURN_TO_PLANNER -> handleNotificationVisibilityChange(visible, returnToPlannerNotification);
+                case ALL -> {
+                    for (PlannerNotification notif : PlannerNotification.values()) {
+                        if (notif == PlannerNotification.ALL) continue;
+                        setNotificationVisible(notif, visible);
+                    }
                 }
             }
-        }
+        });
+    }
+
+    /**
+     * Displays an error at the bottom of the program window.
+     * <br><b>Runs on the FX Application Thread.</b>
+     *
+     * @param error The error message to display. You may pass an empty string to clear the error message (hiding it)
+     */
+    private void displayError(PlannerError error, boolean display) {
+        Platform.runLater(() -> {
+            if (error == PlannerError.ANY) {
+                errorPanel.setVisible(display);
+                errorPanel.setManaged(display);
+            } else {
+                // If display is false, check if the currently shown error is of type 'error', and if so, clear the error text.
+                // If display is true, replace the current error with the one supplied.
+                if (!display) {
+                    if (errorText.getText().equals(error.getMessage())) {
+                        errorText.setText("");
+                        errorPanel.setVisible(false);
+                        errorPanel.setManaged(false);
+                    }
+                } else {
+                    errorText.setText(error.getMessage());
+                    errorPanel.setVisible(true);
+                    errorPanel.setManaged(true);
+                }
+            }
+        });
     }
 
     private void handleNotificationVisibilityChange(boolean visible, HBox notificationContainer) {
@@ -509,18 +611,52 @@ public class TripPlanner {
         CompletableFuture<Void> future = new CompletableFuture<>();
         refreshWindowTitle("KrisApps Trip Planner - loading " + t.getTripName());
 
+        // Reload settings to ensure all trip settings are current
+        currentSettings = TripManager.getInstance().getSettings();
+
         currentPlan = t;
-        /*
-        if (!currentSettings.getCalendarSettings().containsKey(t.getUniqueID())) {
-            currentSettings.setCalendarSettings(t.getUniqueID(), new ProgramSettings.CalendarSettings());
-        }
-         */
-        t.resetModifiedFlag();
+        currentPlanSettings = currentSettings.getTripSettings(t.getUniqueID());
+
+        currentPlan.resetModifiedFlag();
+        currentPlanSettings.resetModifiedFlag();
 
         setNotificationVisible(PlannerNotification.READ_ONLY_MODE, false);
 
         future.complete(null);
         return future;
+    }
+
+    public void reloadData() {
+        Optional<ButtonType> response = PopupManager.showConfirmation("Reload active plan data",
+                "Are you sure you wish to reload the data for the currently open trip plan from the disk? This will discard all changes and apply all the saved data.\nThis might take a bit to finish.",
+                new ButtonType("Yes, reload", ButtonBar.ButtonData.APPLY),
+                new ButtonType("No, cancel", ButtonBar.ButtonData.CANCEL_CLOSE)
+        );
+
+        if (response.isPresent()) {
+            if (response.get().getButtonData() == ButtonBar.ButtonData.APPLY) {
+                TripManager.log("Reloading data for open trip plan");
+                long start = System.currentTimeMillis();
+
+                LoadingDialog dlg = new LoadingDialog(LoadingDialog.LoadingOperationType.INDETERMINATE_SPINNER);
+                dlg.setPrimaryLabel("Reloading plan data");
+                dlg.setSecondaryLabel("Please wait while the data is reloaded");
+                dlg.show("Reloading", () -> {
+                    loadTrip(currentPlan).join();
+                    enableReadOnly(launchedInReadOnly);
+                    changeProgramState(ProgramState.PLAN_TRIP);
+                    updateUIForCurrentPlan();
+
+                    // Create some much-needed artificial tension
+                    try {
+                        Thread.sleep(200);
+                    } catch (InterruptedException e) {
+                    }
+                    refreshWindowTitle("KrisApps Trip Planner - planning " + currentPlan.getTripName());
+                });
+                TripManager.log("Data reloaded in " + (System.currentTimeMillis() - start - 200) + " ms");
+            }
+        }
     }
 
     public void refreshViews() {
@@ -530,16 +666,22 @@ public class TripPlanner {
         refreshUpcomingTrips();
     }
 
+    /**
+     * Repopulates the itinerary.
+     * <br><b>Runs on the FX Application Thread.</b>
+     */
     public void refreshItinerary() {
         if (currentPlan == null) return;
 
-        itineraryListView.getItems().clear();
-        for (Itinerary.ItineraryItem item : currentPlan.getItinerary().getItems().values().stream().sorted(Comparator.comparingInt((i) -> {
-            if (i.getDay() == -1 || i.getDay() == 0) return Integer.MAX_VALUE;
-            else return i.getDay();
-        })).toList()) {
-            itineraryListView.getItems().add(item);
-        }
+        Platform.runLater(() -> {
+            itineraryListView.getItems().clear();
+            for (Itinerary.ItineraryItem item : currentPlan.getItinerary().getItems().values().stream().sorted(Comparator.comparingInt((i) -> {
+                if (i.getDay() == -1 || i.getDay() == 0) return Integer.MAX_VALUE;
+                else return i.getDay();
+            })).toList()) {
+                itineraryListView.getItems().add(item);
+            }
+        });
     }
 
     public void refreshExpensePlanner() {
@@ -548,116 +690,134 @@ public class TripPlanner {
         refreshExpenseList();
     }
 
+    /**
+     * Repopulates the expense list.
+     * <br><b>Runs on the FX Application Thread.</b>
+     */
     public void refreshExpenseList() {
-        expenseList.getItems().clear();
-        if (currentPlan != null) {
-            for (PlannedExpense exp : currentPlan.getExpenseData().getPlannedExpenses().values()) {
-                expenseList.getItems().add(exp);
+        Platform.runLater(() -> {
+            expenseList.getItems().clear();
+            if (currentPlan != null) {
+                for (PlannedExpense exp : currentPlan.getExpenseData().getPlannedExpenses().values()) {
+                    expenseList.getItems().add(exp);
+                }
             }
-        }
+        });
     }
 
+    /**
+     * Refreshes the Trip Overview UI to reflect current data.
+     * <br><b>Runs on the FX Application Thread.</b>
+     */
     public void refreshTripOverview() {
-        if (currentPlan == null) return;
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        long tripDuration = Duration.between(currentPlan.getTripStartDate(), currentPlan.getTripEndDate()).toDays();
-        tripDatesLabel.setText(
-                formatter.format(currentPlan.getTripStartDate().toLocalDate()) + " - " + formatter.format(currentPlan.getTripEndDate().toLocalDate())
-                        + " (duration: " + tripDuration + (tripDuration == 1 ? " day" : " days") + ")"
-        );
-        peopleInvolvedLabel.setText(String.valueOf(currentPlan.getPartySize()));
+        Platform.runLater(() -> {
+            if (currentPlan == null) return;
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            long tripDuration = Duration.between(currentPlan.getTripStartDate(), currentPlan.getTripEndDate()).toDays();
+            tripDatesLabel.setText(
+                    formatter.format(currentPlan.getTripStartDate().toLocalDate()) + " - " + formatter.format(currentPlan.getTripEndDate().toLocalDate())
+                            + " (duration: " + tripDuration + (tripDuration == 1 ? " day" : " days") + ")"
+            );
+            peopleInvolvedLabel.setText(String.valueOf(currentPlan.getPartySize()));
 
-        destinationLabel.setText(currentPlan.getTripDestination());
+            destinationLabel.setText(currentPlan.getTripDestination());
 
-        categoryBreakdownList.getItems().clear();
-        ArrayList<CategoryExpenseSummary> categorySummaries = new ArrayList<>();
+            categoryBreakdownList.getItems().clear();
+            ArrayList<CategoryExpenseSummary> categorySummaries = new ArrayList<>();
 
-        double totalExpenses = 0.0;
+            double totalExpenses = 0.0;
 
-        // Group all expenses into summary objects
-        for (PlannedExpense e : currentPlan.getExpenseData().getPlannedExpenses().values()) {
+            // Group all expenses into summary objects
+            for (PlannedExpense e : currentPlan.getExpenseData().getPlannedExpenses().values()) {
 
-            // Get the existing summary object or create a new one for the expense category if missing.
-            CategoryExpenseSummary summary = categorySummaries.stream().filter(sum -> sum.getCategory().equals(e.getCategory())).findFirst().orElse(new CategoryExpenseSummary(e.getCategory()));
+                // Get the existing summary object or create a new one for the expense category if missing.
+                CategoryExpenseSummary summary = categorySummaries.stream().filter(sum -> sum.getCategory().equals(e.getCategory())).findFirst().orElse(new CategoryExpenseSummary(e.getCategory()));
 
-            summary.addExpense(e);
-            if (categorySummaries.stream().noneMatch(sum -> sum.getCategory().equals(e.getCategory()))) {
-                categorySummaries.add(summary);
+                summary.addExpense(e);
+                if (categorySummaries.stream().noneMatch(sum -> sum.getCategory().equals(e.getCategory()))) {
+                    categorySummaries.add(summary);
+                }
+                totalExpenses += e.getAmount();
             }
-            totalExpenses += e.getAmount();
-        }
 
-        ArrayList<DayExpenses> dayExpenseSummaries = new ArrayList<>();
+            ArrayList<DayExpenses> dayExpenseSummaries = new ArrayList<>();
 
-        for (PlannedExpense e : currentPlan.getExpenseData().getPlannedExpenses().values()) {
-            if (e.getDay() == -1) continue;
-            DayExpenses expenses = dayExpenseSummaries.stream().filter(dayExpenses -> dayExpenses.getDayIndex() == e.getDay()).findFirst().orElse(new DayExpenses(e.getDay()));
+            for (PlannedExpense e : currentPlan.getExpenseData().getPlannedExpenses().values()) {
+                if (e.getDay() == -1) continue;
+                DayExpenses expenses = dayExpenseSummaries.stream().filter(dayExpenses -> dayExpenses.getDayIndex() == e.getDay()).findFirst().orElse(new DayExpenses(e.getDay()));
 
-            expenses.addExpense(e);
-            if (dayExpenseSummaries.stream().noneMatch(dayExpenses -> dayExpenses.getDayIndex() == e.getDay())) {
-                dayExpenseSummaries.add(expenses);
+                expenses.addExpense(e);
+                if (dayExpenseSummaries.stream().noneMatch(dayExpenses -> dayExpenses.getDayIndex() == e.getDay())) {
+                    dayExpenseSummaries.add(expenses);
+                }
             }
-        }
 
-        double minExpenses = Double.MAX_VALUE;
-        double maxExpenses = 0.0d;
-        double dailyAverage = 0.0d;
-        for (DayExpenses expenseSummary : dayExpenseSummaries) {
-            if (expenseSummary.getTotalExpenses() < minExpenses) {
-                minExpenses = expenseSummary.getTotalExpenses();
+            double minExpenses = Double.MAX_VALUE;
+            double maxExpenses = 0.0d;
+            double dailyAverage = 0.0d;
+            for (DayExpenses expenseSummary : dayExpenseSummaries) {
+                if (expenseSummary.getTotalExpenses() < minExpenses) {
+                    minExpenses = expenseSummary.getTotalExpenses();
+                }
+                if (expenseSummary.getTotalExpenses() > maxExpenses) {
+                    maxExpenses = expenseSummary.getTotalExpenses();
+                }
+                dailyAverage += expenseSummary.getTotalExpenses();
             }
-            if (expenseSummary.getTotalExpenses() > maxExpenses) {
-                maxExpenses = expenseSummary.getTotalExpenses();
+
+            dailyAverage = dailyAverage / dayExpenseSummaries.size();
+
+            if (currentPlan.getExpenseData().getPlannedExpenses().isEmpty()) {
+                minExpenses = 0.0d;
+                maxExpenses = 0.0d;
+                dailyAverage = 0.0d;
             }
-            dailyAverage += expenseSummary.getTotalExpenses();
-        }
+            totalExpensesLabel.setText(totalExpenses + Character.toString(currentSettings.getCurrencySymbol()));
+            dailyExpensesLabel.setText(minExpenses + Character.toString(currentSettings.getCurrencySymbol()) + " - " + maxExpenses + Character.toString(currentSettings.getCurrencySymbol()));
+            dailyAverageLabel.setText(TripManager.Formatting.decimalFormatter.format(dailyAverage) + Character.toString(currentSettings.getCurrencySymbol()));
 
-        dailyAverage = dailyAverage / dayExpenseSummaries.size();
+            // Sort by total amount, descending
+            categorySummaries.sort(Comparator.comparingDouble(CategoryExpenseSummary::getTotalAmount).reversed());
+            categoryBreakdownList.getItems().addAll(categorySummaries);
 
-        if (currentPlan.getExpenseData().getPlannedExpenses().isEmpty()) {
-            minExpenses = 0.0d;
-            maxExpenses = 0.0d;
-            dailyAverage = 0.0d;
-        }
-        totalExpensesLabel.setText(totalExpenses + Character.toString(currentSettings.getCurrencySymbol()));
-        dailyExpensesLabel.setText(minExpenses + Character.toString(currentSettings.getCurrencySymbol()) + " - " + maxExpenses + Character.toString(currentSettings.getCurrencySymbol()));
-        dailyAverageLabel.setText(TripManager.Formatting.decimalFormatter.format(dailyAverage) + Character.toString(currentSettings.getCurrencySymbol()));
+            ObservableList<Itinerary.ItineraryItem> itineraryItems = summaryItinerary.getItems();
+            itineraryItems.clear();
+            itineraryItems.addAll(currentPlan.getItinerary().getItems().values().stream().sorted(Comparator.comparingInt((i) -> {
+                if (i.getDay() == -1 || i.getDay() == 0) return Integer.MAX_VALUE;
+                else return i.getDay();
+            })).toList());
+            summaryItinerary.setItems(itineraryItems);
 
-        // Sort by total amount, descending
-        categorySummaries.sort(Comparator.comparingDouble(CategoryExpenseSummary::getTotalAmount).reversed());
-        categoryBreakdownList.getItems().addAll(categorySummaries);
+            expenseChart.getData().clear();
+            for (CategoryExpenseSummary sum : categorySummaries) {
+                expenseChart.getData().add(new PieChart.Data(sum.getCategory().getDisplayName(), sum.getTotalAmount()));
+            }
 
-        ObservableList<Itinerary.ItineraryItem> itineraryItems = summaryItinerary.getItems();
-        itineraryItems.clear();
-        itineraryItems.addAll(currentPlan.getItinerary().getItems().values().stream().sorted(Comparator.comparingInt((i) -> {
-            if (i.getDay() == -1 || i.getDay() == 0) return Integer.MAX_VALUE;
-            else return i.getDay();
-        })).toList());
-        summaryItinerary.setItems(itineraryItems);
-
-        expenseChart.getData().clear();
-        for (CategoryExpenseSummary sum : categorySummaries) {
-            expenseChart.getData().add(new PieChart.Data(sum.getCategory().getDisplayName(), sum.getTotalAmount()));
-        }
-
-        budgetLabel.setText(currentPlan.getExpenseData().getBudget() + Character.toString(currentSettings.getCurrencySymbol()));
-        if (currentPlan.getExpenseData().getTotalExpenses() <= currentPlan.getExpenseData().getBudget()) {
-            budgetInfoLabel.setVisible(false);
-            budgetInfoLabel.setManaged(false);
-            budgetStatusLabel.setText("Within budget!");
-        } else {
-            budgetInfoLabel.setVisible(true);
-            budgetInfoLabel.setManaged(true);
-            budgetStatusLabel.setText("Over budget!");
-            budgetInfoLabel.setText("+" + Math.abs(currentPlan.getExpenseData().getBudget() - currentPlan.getExpenseData().getTotalExpenses()) + Character.toString(currentSettings.getCurrencySymbol()));
-        }
+            budgetLabel.setText(currentPlan.getExpenseData().getBudget() + Character.toString(currentSettings.getCurrencySymbol()));
+            if (currentPlan.getExpenseData().getTotalExpenses() <= currentPlan.getExpenseData().getBudget()) {
+                budgetInfoLabel.setVisible(false);
+                budgetInfoLabel.setManaged(false);
+                budgetStatusLabel.setText("Within budget!");
+            } else {
+                budgetInfoLabel.setVisible(true);
+                budgetInfoLabel.setManaged(true);
+                budgetStatusLabel.setText("Over budget!");
+                budgetInfoLabel.setText("+" + Math.abs(currentPlan.getExpenseData().getBudget() - currentPlan.getExpenseData().getTotalExpenses()) + Character.toString(currentSettings.getCurrencySymbol()));
+            }
+        });
     }
 
+    /**
+     * Repopulates the upcoming trips list.
+     * <br><b>Runs on the FX Application Thread.</b>
+     */
     public void refreshUpcomingTrips() {
-        upcomingTripsList.getItems().clear();
-        for (Trip t : trips.getTrips().stream().sorted(Comparator.comparingLong(t -> Duration.between(LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault()), t.getTripStartDate()).toHours())).toList()) {
-            upcomingTripsList.getItems().add(t);
-        }
+        Platform.runLater(() -> {
+            upcomingTripsList.getItems().clear();
+            for (Trip t : trips.getTrips().stream().sorted(Comparator.comparingLong(t -> Duration.between(LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault()), t.getTripStartDate()).toHours())).toList()) {
+                upcomingTripsList.getItems().add(t);
+            }
+        });
     }
 
     public void promptEditTripDetails() {
@@ -727,18 +887,23 @@ public class TripPlanner {
         dlg.setPrimaryLabel("Opening plan");
         dlg.setSecondaryLabel("Please wait while the trip is opened in the Planner...");
         dlg.show("Loading", () -> {
-            Platform.runLater(() -> {
-                loadTrip(tripToOpen).join();
-                enableReadOnly(openInReadOnly);
-                changeProgramState(ProgramState.PLAN_TRIP);
-                updateUIForCurrentPlan();
-                refreshWindowTitle("KrisApps Trip Planner - planning " + tripToOpen.getTripName());
-            });
+            loadTrip(tripToOpen).join();
+            enableReadOnly(openInReadOnly);
+            updateUIForCurrentPlan();
+            changeProgramState(ProgramState.PLAN_TRIP);
+
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+            }
+            refreshWindowTitle("KrisApps Trip Planner - planning " + tripToOpen.getTripName());
         });
     }
 
-    /***
+    /**
      * Reloads the active trip from the file, resetting all changes.
+     *
+     * @param silent If true, the changes are discarded without confirmation.
      */
     public void discardChanges(boolean silent) {
         if (currentPlan == null) {
@@ -927,9 +1092,17 @@ public class TripPlanner {
         }
     }
 
+    /**
+     * Sets the window title.
+     * <br><b>Runs on the FX Application Thread.</b>
+     *
+     * @param title The title to set.
+     */
     public void refreshWindowTitle(String title) {
         if (PlannerApplication.window != null) {
-            PlannerApplication.window.setTitle(title);
+            Platform.runLater(() -> {
+                PlannerApplication.window.setTitle(title);
+            });
         } else {
             Platform.runLater(() -> {
                 if (PlannerApplication.window != null) {
