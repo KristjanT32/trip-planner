@@ -106,6 +106,22 @@ public class TripManager {
         }
     }
 
+    public void updateTripSettings(Trip trip, ProgramSettings.TripSettings tripSettings) {
+        Data data = getData();
+        ProgramSettings programSettings = data.getSettings();
+
+        boolean updated = programSettings.setTripSettings(trip.getUniqueID(), tripSettings);
+
+        data.setSettings(programSettings);
+        saveData(data);
+
+        if (updated) {
+            log("Updated trip settings for '" + trip.getTripName() + "' (" + trip.getUniqueID() + ")");
+        } else {
+            log("Added trip settings for '" + trip.getTripName() + "' (" + trip.getUniqueID() + ")");
+        }
+    }
+
     public void addExpense(Trip trip, PlannedExpense expense) {
         trip.getExpenseData().addExpense(expense);
     }

@@ -1,5 +1,6 @@
 package krisapps.tripplanner.data.prompts;
 
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -57,22 +58,33 @@ public class LoadingDialog extends Dialog<Void> {
     }
 
     public void setProgress(double progress) {
-        this.progressbar.setProgress(progress);
+        Platform.runLater(() -> {
+            this.progressbar.setProgress(progress);
+        });
     }
 
     public void setPrimaryLabel(String text) {
-        this.primaryLabel.setText(text);
+        Platform.runLater(() -> {
+            this.primaryLabel.setText(text);
+        });
     }
 
     public void setSecondaryLabel(String text) {
-        this.secondaryLabel.setText(text);
+        Platform.runLater(() -> {
+            this.secondaryLabel.setText(text);
+        });
     }
 
     public void show(String title, Runnable task) {
         this.operation = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
-                task.run();
+                try {
+                    task.run();
+                    return null;
+                } catch (Throwable t) {
+                    t.printStackTrace();
+                }
                 return null;
             }
         };

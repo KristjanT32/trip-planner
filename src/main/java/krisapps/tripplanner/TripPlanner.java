@@ -1,6 +1,7 @@
 package krisapps.tripplanner;
 
 import com.google.api.services.calendar.model.Event;
+import com.google.api.services.calendar.model.EventReminder;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -205,10 +206,8 @@ public class TripPlanner {
     }
 
     /**
-     * TODO: Rework UI updating in a way that wouldn't reset everything when dates change. Also, there's something in the trip date box logic causing a StackOverflowException, so fix that.
      * TODO: Implement 'Set reminders' (incl. integration with Google Calendar)
-     * TODO: Link the google calendar panel to its internal CalendarSettings object (to allow data to be saved and retrieved)
-     * TODO: Implement calendar event creation on save, based on the saved CalendarSettings.
+     * TODO: Test Calendar Event creation, ensure no weird bugs are present
      * TODO: Implement plan document generation (also add menu for that)
      */
 
@@ -241,7 +240,6 @@ public class TripPlanner {
      * <br><b>Runs on the FX Application Thread.</b>
      */
     public void updateUIForCurrentPlan() {
-        refreshSpinners();
         Platform.runLater(() -> {
             tripStartBox.setValue(currentPlan.getTripStartDate().toLocalDate());
             tripEndBox.setValue(currentPlan.getTripEndDate().toLocalDate());
@@ -251,7 +249,7 @@ public class TripPlanner {
 
             // Initialize calendar integration panel
             ProgramSettings.TripSettings calSettings = currentSettings.getTripSettings(currentPlan.getUniqueID());
-            calendarIntegrationToggle.setSelected(calSettings.isIntegrationEnabled());
+            calendarIntegrationToggle.setSelected(calSettings.isCalendarIntegrationEnabled());
             reminderToggle.setSelected(calSettings.isReminderEnabled());
             reminderOffsetBox.setText(String.valueOf(calSettings.getReminderValue() != -1 ? calSettings.getReminderValue() : ""));
             reminderOffsetUnitSelector.getSelectionModel().select(calSettings.getReminderUnit());
@@ -311,9 +309,15 @@ public class TripPlanner {
             calendarIntegrationToggle.selectedProperty().addListener((observable, oldVal, newVal) -> {
                 calendarIntegrationToggle.setText(newVal ? "Enabled" : "Disabled");
                 calendarSettingsContent.setDisable(!newVal);
+
+                if (launchedInReadOnly) return;
+                currentPlanSettings.setCalendarIntegrationEnabled(newVal);
             });
             reminderToggle.selectedProperty().addListener((observable, oldVal, newVal) -> {
                 reminderOptions.setDisable(!newVal);
+
+                if (launchedInReadOnly) return;
+                currentPlanSettings.setReminderEnabled(newVal);
             });
 
             reminderOffsetBox.setTextFormatter(new TextFormatter<>(numbersOnlyFormatter));
@@ -324,6 +328,29 @@ public class TripPlanner {
             for (CountdownFormat format : CountdownFormat.values()) {
                 countdownFormatSelector.getItems().add(format.getFormat());
             }
+
+            // Register listeners
+            reminderOffsetBox.textProperty().addListener((observable, oldVal, newVal) -> {
+                if (launchedInReadOnly) return;
+                if (newVal != null) {
+                    if (Integer.parseInt(newVal) > 0) {
+                        currentPlanSettings.setReminderValue(Integer.parseInt(newVal));
+                    }
+                }
+            });
+            reminderOffsetUnitSelector.getSelectionModel().selectedItemProperty().addListener((observable, oldVal, newVal) -> {
+                if (launchedInReadOnly) return;
+                if (newVal != null) {
+                    currentPlanSettings.setReminderUnit(newVal);
+                }
+            });
+
+            // Init UI to reflect current plan, unless current plan has no settings
+            if (currentPlanSettings == null) return;
+            calendarIntegrationToggle.setSelected(currentPlanSettings.isCalendarIntegrationEnabled());
+            reminderToggle.setSelected(currentPlanSettings.isReminderEnabled());
+            reminderOffsetBox.setText(String.valueOf(currentPlanSettings.getReminderValue()));
+            reminderOffsetUnitSelector.getSelectionModel().select(currentPlanSettings.getReminderUnit());
         });
     }
 
@@ -386,7 +413,9 @@ public class TripPlanner {
                 ((SpinnerValueFactory.IntegerSpinnerValueFactory) activityDayBox.getValueFactory()).setMax(currentPlan == null ? Integer.MAX_VALUE : (int) currentPlan.getTripDuration().toDays());
             }
 
-            tripPartySizeBox.getValueFactory().setValue((int) currentPlan.getPartySize());
+            if (tripPartySizeBox.getValue() != currentPlan.getPartySize()) {
+                tripPartySizeBox.getValueFactory().setValue((int) currentPlan.getPartySize());
+            }
         });
     }
 
@@ -470,11 +499,7 @@ public class TripPlanner {
                 } else {
                     setNotificationVisible(PlannerNotification.READ_ONLY_MODE, false);
 
-                    if (currentPlan.hasBeenModified() && !launchedInReadOnly) {
-                        setNotificationVisible(PlannerNotification.UNSAVED_CHANGES, true);
-                    } else {
-                        setNotificationVisible(PlannerNotification.UNSAVED_CHANGES, false);
-                    }
+                    setNotificationVisible(PlannerNotification.UNSAVED_CHANGES, (currentPlan.hasBeenModified() || currentPlanSettings.haveBeenModified()) && !launchedInReadOnly);
                 }
 
                 if (!currentPlan.tripDatesSupplied()) {
@@ -965,6 +990,85 @@ public class TripPlanner {
         refreshWindowTitle("KrisApps Trip Planner");
     }
 
+    /**
+     * Checks if the current trip needs to have its calendar events generated.
+     */
+    public void createCalendarEvents(boolean removeExisting) {
+        if (removeExisting) {
+            if (currentPlanSettings.calendarEventsCreated()) {
+                boolean success = GoogleCalendarIntegration.deleteCalendarEventsForTrip(currentPlan);
+                if (success) {
+                    currentPlanSettings.setCalendarEventID(null);
+                    trips.updateTripSettings(currentPlan, currentPlanSettings);
+                    TripManager.log("Deleted old calendar events for '" + currentPlan.getTripName() + "'");
+                }
+            }
+        }
+        if (!currentPlanSettings.calendarEventsCreated()) {
+            TripManager.log("Starting calendar event generation...");
+            LoadingDialog dlg = new LoadingDialog(LoadingDialog.LoadingOperationType.INDETERMINATE_PROGRESSBAR);
+            dlg.setPrimaryLabel("Creating calendar events, hold on...");
+            dlg.setSecondaryLabel("This will only take a moment.");
+            dlg.show("Creating calendar events for trip", () -> {
+                EventReminder reminder = new EventReminder();
+                if (!currentPlanSettings.isReminderEnabled()) {
+                    reminder = null;
+                } else {
+                    TimeUnit unit = currentPlanSettings.getReminderUnit();
+                    reminder.setMinutes((int) unit.toMinutes(currentPlanSettings.getReminderValue()));
+                }
+                String id = GoogleCalendarIntegration.createCalendarEventForTrip(currentPlan, reminder, "");
+                if (id == null) {
+                    PopupManager.showPredefinedPopup(PopupManager.PopupType.CALENDAR_EVENTS_NOT_CREATED);
+                } else {
+                    TripManager.log(String.format("Event created - ID: %s, updating settings", id));
+                    dlg.setPrimaryLabel("Events created!");
+                    dlg.setSecondaryLabel("Finishing up...");
+                    currentPlanSettings.setCalendarEventID(id);
+                    trips.updateTripSettings(currentPlan, currentPlanSettings);
+                    TripManager.log("Done. Closing planner.");
+                }
+            });
+        }
+    }
+
+    public void deleteCalendarEvents() {
+        if (!currentPlanSettings.calendarEventsCreated()) {
+            PopupManager.showPredefinedPopup(PopupManager.PopupType.NO_EVENTS);
+        } else {
+            LoadingDialog dlg = new LoadingDialog(LoadingDialog.LoadingOperationType.INDETERMINATE_SPINNER);
+            dlg.setTitle("Deleting events");
+            dlg.setPrimaryLabel("Talking to Google Calendar");
+            dlg.setSecondaryLabel("This will only take a moment.");
+            dlg.show("Delete events", () -> {
+                boolean success = GoogleCalendarIntegration.deleteCalendarEventsForTrip(currentPlan);
+                if (success) {
+                    Platform.runLater(() -> {
+                        PopupManager.showPredefinedPopup(PopupManager.PopupType.EVENTS_DELETED);
+                    });
+                } else {
+                    Platform.runLater(() -> {
+                        PopupManager.showPredefinedPopup(PopupManager.PopupType.EVENTS_NOT_DELETED);
+                    });
+                }
+            });
+        }
+    }
+
+    public void regenerateCalendarEvents() {
+        Optional<ButtonType> response = PopupManager.showConfirmation(
+                "Regenerate calendar events for '" + currentPlan.getTripName() + "'?",
+                "Are you sure you wish to regenerate the calendar events for this trip?\nThis will delete the existing events from the calendar and replace them with new ones.",
+                new ButtonType("Yes, regenerate", ButtonBar.ButtonData.APPLY),
+                new ButtonType("No, cancel", ButtonBar.ButtonData.CANCEL_CLOSE)
+        );
+        if (response.isPresent()) {
+            if (response.get().getButtonData() == ButtonBar.ButtonData.APPLY) {
+                createCalendarEvents(true);
+            }
+        }
+    }
+
     public void promptClosePlanner() {
         if (currentPlan == null) {
             return;
@@ -992,6 +1096,16 @@ public class TripPlanner {
             );
             if (response.isPresent()) {
                 if (response.get().getButtonData() == ButtonBar.ButtonData.APPLY) {
+                    Optional<ButtonType> r = PopupManager.showConfirmation("Create events?",
+                            "Would you like the Planner to create calendar events for your trip? You can always regenerate them later.\nThis will only take a moment.",
+                            new ButtonType("Sure, create events", ButtonBar.ButtonData.YES),
+                            new ButtonType("Not now, thanks", ButtonBar.ButtonData.CANCEL_CLOSE)
+                    );
+                    if (r.isPresent()) {
+                        if (r.get().getButtonData() == ButtonBar.ButtonData.YES) {
+                            createCalendarEvents(false);
+                        }
+                    }
                     resetPlanner();
                     changeProgramState(ProgramState.SHOW_DASHBOARD);
                 }
@@ -1032,7 +1146,9 @@ public class TripPlanner {
 
         loadingDialog.show("Saving trip data", () -> {
             currentPlan.resetModifiedFlag();
+            currentPlanSettings.resetModifiedFlag();
             trips.updateTrip(currentPlan);
+            trips.updateTripSettings(currentPlan, currentPlanSettings);
             if (closePlanner) {
                 Platform.runLater(() -> {
                     changeProgramState(ProgramState.SHOW_DASHBOARD);

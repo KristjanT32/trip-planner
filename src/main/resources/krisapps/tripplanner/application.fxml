@@ -41,14 +41,16 @@
                     <items>
                         <MenuItem mnemonicParsing="false" onAction="#promptEditTripDetails" text="Change trip details" />
                       <MenuItem mnemonicParsing="false" onAction="#promptDiscardChanges" text="Discard all changes" />
+                        <MenuItem mnemonicParsing="false" text="Generate plan document" />
                         <MenuItem mnemonicParsing="false" onAction="#promptClosePlanner" text="Close planner" />
                     </items>
                   </Menu>
                   <Menu mnemonicParsing="false" text="Special options">
                     <items>
-                      <MenuItem mnemonicParsing="false" text="Generate plan document" />
                         <MenuItem mnemonicParsing="false" onAction="#refreshViews" text="Refresh views" />
                         <MenuItem mnemonicParsing="false" onAction="#reloadData" text="Reload data" />
+                        <MenuItem fx:id="regenerateCalendarEvents" mnemonicParsing="false" onAction="#regenerateCalendarEvents" text="Regenerate calendar events" />
+                        <MenuItem mnemonicParsing="false" onAction="#deleteCalendarEvents" text="Delete calendar events" />
                         <MenuItem fx:id="debugAction" mnemonicParsing="false" text="Debug action" />
                     </items>
                   </Menu>
@@ -470,9 +472,9 @@
                         </Tab>
                         <Tab id="4" onSelectionChanged="#refreshTripOverview" text="Trip overview">
                            <content>
-                              <VBox alignment="TOP_CENTER" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity">
+                              <VBox alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity">
                                  <children>
-                                    <ScrollPane fitToWidth="true" hbarPolicy="NEVER" maxWidth="1200.0" minWidth="734.0" vbarPolicy="NEVER" VBox.vgrow="ALWAYS">
+                                    <ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" maxHeight="1.7976931348623157E308" maxWidth="1200.0" minWidth="734.0" vbarPolicy="NEVER" VBox.vgrow="ALWAYS">
                                        <content>
                                           <VBox alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="709.0" prefWidth="614.0">
                                              <children>
@@ -839,7 +841,7 @@
             </StackPane>
             <VBox>
                <children>
-                  <HBox prefHeight="150.0" spacing="10.0">
+                  <HBox fillHeight="false" spacing="10.0">
                      <children>
                         <HBox fx:id="errorPanel" alignment="CENTER_LEFT" maxHeight="35.0" prefHeight="35.0" styleClass="error-panel" HBox.hgrow="SOMETIMES">
                            <children>

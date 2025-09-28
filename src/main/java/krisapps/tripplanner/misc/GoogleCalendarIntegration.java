@@ -18,7 +18,6 @@ import com.google.api.services.calendar.model.EventDateTime;
 import com.google.api.services.calendar.model.EventReminder;
 import krisapps.tripplanner.PlannerApplication;
 import krisapps.tripplanner.data.TripManager;
-import krisapps.tripplanner.data.prompts.LoadingDialog;
 import krisapps.tripplanner.data.trip.Trip;
 
 import java.io.*;
@@ -26,9 +25,7 @@ import java.security.GeneralSecurityException;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 public class GoogleCalendarIntegration {
     private static final String APPLICATION_NAME = "Trip Planner";
@@ -80,7 +77,15 @@ public class GoogleCalendarIntegration {
         }
     }
 
-    public static void createCalendarEventForTrip(Trip t, EventReminder reminder, String description) {
+    /**
+     * Configures and creates the calendar event for the supplied trip, with the supplied reminder and the description.
+     *
+     * @param t           The trip to create the calendar events for.
+     * @param reminder    Optional reminder for the calendar event.
+     * @param description The event description, or if blank, will default to "Trip to [tripDestination]"
+     * @return The ID for the newly created event.
+     */
+    public static String createCalendarEventForTrip(Trip t, EventReminder reminder, String description) {
         Event tripEvent = new Event();
         EventDateTime startTime = new EventDateTime();
         startTime.setDateTime(DateTime.parseRfc3339(GOOGLE_DATE_FORMATTER.format(t.getTripStartDate().atZone(ZoneId.systemDefault()))));
@@ -89,7 +94,7 @@ public class GoogleCalendarIntegration {
         endTime.setDateTime(DateTime.parseRfc3339(GOOGLE_DATE_FORMATTER.format(t.getTripEndDate().atZone(ZoneId.systemDefault()))));
 
         Event.ExtendedProperties ext = new Event.ExtendedProperties();
-        ext.set("eventType", "trip-planner-event");
+        ext.setShared(Map.of("eventType", "trip-planner-event", "plannerEventId", t.getUniqueID().toString()));
 
         tripEvent.setSummary(t.getTripName());
         tripEvent.setDescription(description.isEmpty() ? String.format("Trip to %s\n", t.getTripDestination()) : description);
@@ -103,27 +108,55 @@ public class GoogleCalendarIntegration {
         reminders.put("reminder", reminder);
         tripEvent.setReminders(reminders);
 
-        LoadingDialog dlg = new LoadingDialog(LoadingDialog.LoadingOperationType.INDETERMINATE_PROGRESSBAR);
-        dlg.setPrimaryLabel("Hold on!");
-        dlg.setSecondaryLabel("Creating the event in Google Calendar...");
-        dlg.show("Processing...", () -> {
-            try {
-                calendarService.events().insert("primary", tripEvent).execute();
-                Thread.sleep(1000);
-            } catch (IOException e) {
-                TripManager.log("Failed to create calendar event for trip: " + e.getMessage());
-            } catch (InterruptedException _) {
-            }
-        });
+        try {
+            return calendarService.events().insert("primary", tripEvent).execute().getId();
+        } catch (IOException e) {
+            TripManager.log("Failed to create calendar event for trip: " + e.getMessage());
+        }
         TripManager.log("Trip calendar event created successfully.");
+        return null;
     }
 
+    /**
+     * Gets the eventID for the supplied trip's calendar events.
+     *
+     * @param t The trip whose calendar events' ID to query.
+     * @return The eventID for the supplied trip's calendar events.
+     */
+    public static Optional<Event> getEventIdForTripEvent(Trip t) {
+        List<Event> events = getTripPlannerCalendarEvents();
+        return events.stream().filter(ev -> ev.getExtendedProperties().containsKey("plannerEventId") && ev.getExtendedProperties().get("plannerEventId").equals(t.getUniqueID().toString())).findFirst();
+    }
+
+    /**
+     * Gets all calendar events created by the Planner.
+     *
+     * @return A list of {@link Event}s created by the Planner.
+     */
     public static List<Event> getTripPlannerCalendarEvents() {
         try {
-            return calendarService.events().list("primary").setPrivateExtendedProperty(List.of("eventType=trip-planner-event")).execute().getItems();
+            return calendarService.events().list("primary").setSharedExtendedProperty(List.of("eventType=trip-planner-event")).execute().getItems();
         } catch (IOException e) {
             TripManager.log("Failed to retrieve calendar events: " + e.getMessage());
             return List.of();
+        }
+    }
+
+    /**
+     * Deletes the calendar events created for the supplied trip.
+     * This will first load the calendar event ID from the saved data, and then interface with Google's Calendar API.
+     *
+     * @param currentPlan The trip object whose calendar events to wipe.
+     * @return True if successful, false otherwise.
+     */
+    public static boolean deleteCalendarEventsForTrip(Trip currentPlan) {
+        String eventId = TripManager.getInstance().getSettings().getTripSettings(currentPlan.getUniqueID()).getCalendarEventID();
+        try {
+            calendarService.events().delete("primary", eventId).execute();
+            return true;
+        } catch (IOException e) {
+            TripManager.log("Failed to delete calendar events for: " + currentPlan.getTripName() + " (" + currentPlan.getUniqueID() + ") - supplied ID: " + eventId);
+            return false;
         }
     }
 }
