@@ -104,6 +104,25 @@
     -fx-text-fill: white;
 }
 
+/*<editor-fold desc="Toggle Button (Mode)">*/
+.toggle-button.mode:selected {
+    -fx-background-color: #0068df;
+}
+
+.toggle-button.mode {
+    -fx-background-radius: 20px;
+    -fx-border-radius: 20px;
+
+    -fx-border-color: #c8c8c8;
+    -fx-border-width: 1px;
+    -fx-border-style: solid;
+    -fx-background-color: #da0000;
+
+    -fx-text-fill: white;
+}
+
+/*</editor-fold>*/
+
 /*<editor-fold desc=Tab Pane>*/
 .tab-pane .tab {
     -fx-background-color: #c8c8c8;
@@ -130,6 +149,16 @@
 
 .tab-pane > .tab-header-area {
     -fx-padding: 5px 5px 5px 5px;
+}
+
+/*</editor-fold>*/
+
+/*<editor-fold desc="Checkbox">*/
+.check-box > .box {
+    -fx-background-color: #c8c8c8;
+}
+
+.check-box > .text {
 }
 
 /*</editor-fold>*/

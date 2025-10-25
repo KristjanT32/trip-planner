@@ -116,9 +116,8 @@ public class LinkExpensesDialog extends Dialog<Void> {
                         .collect(Collectors.toList())
         );
 
-        // TODO: Implement settings for the currency symbol
         recalculateTotal();
-        expenseTotalLabel.setText(TripManager.Formatting.formatMoney(totalExpenses, Character.toString(TripManager.getInstance().getSettings().getCurrencySymbol()), false));
+        expenseTotalLabel.setText(TripManager.Formatting.formatMoney(totalExpenses, TripManager.getInstance().getSettings().getCurrencySymbol(), TripManager.getInstance().getSettings().currencySymbolPrefixed()));
     }
 
     public void linkSelectedExpense() {

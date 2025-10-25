@@ -46,7 +46,7 @@ public class CostListCell extends ListCell<CategoryExpenseSummary> {
             categoryNameLabel.setText(item.getCategory().getDisplayName());
             entryCountLabel.setText("Total expenses: " + item.getExpenseCount());
 
-            totalLabel.setText(item.getTotalAmount() + Character.toString(TripManager.getInstance().getSettings().getCurrencySymbol()));
+            totalLabel.setText(TripManager.Formatting.formatMoney(item.getTotalAmount(), TripManager.getInstance().getSettings().getCurrencySymbol(), TripManager.getInstance().getSettings().currencySymbolPrefixed()));
 
             categoryNameLabel.setStyle("-fx-text-fill: black");
             entryCountLabel.setStyle("-fx-text-fill: black");

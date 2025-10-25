@@ -93,7 +93,7 @@ public class ItineraryItemCell extends ListCell<Itinerary.ItineraryItem> {
                 totalExpenses += TripPlanner.getInstance().getOpenPlan().getExpenseData().getPlannedExpenses().get(expenseID).getAmount();
             }
 
-            expenseSummaryLabel.setText(TripManager.Formatting.formatMoney(totalExpenses, Character.toString(TripManager.getInstance().getSettings().getCurrencySymbol()), false));
+            expenseSummaryLabel.setText(TripManager.Formatting.formatMoney(totalExpenses, TripManager.getInstance().getSettings().getCurrencySymbol(), TripManager.getInstance().getSettings().currencySymbolPrefixed()));
         }
     }
 }

@@ -16,7 +16,7 @@ public class PopupManager {
         EXPENSE_NAME_MISSING,
         EXPENSE_AMOUNT_MISSING,
         NOT_IMPLEMENTED,
-        NEW_TRIP_WIZARD_EMPTY, NO_OPEN_PLAN, CALENDAR_EVENTS_NOT_CREATED, EVENTS_NOT_DELETED, EVENTS_DELETED, PLANNING_IN_PROGRESS, NO_EVENTS
+        NEW_TRIP_WIZARD_EMPTY, NO_OPEN_PLAN, CALENDAR_EVENTS_NOT_CREATED, EVENTS_NOT_DELETED, EVENTS_DELETED, PLANNING_IN_PROGRESS, CALENDAR_INTEGRATION_DISABLED, NO_EVENTS
     }
 
     public static Optional<ButtonType> showPredefinedPopup(PopupType type) {
@@ -69,6 +69,11 @@ public class PopupManager {
                 alert.setTitle("Delete events");
                 alert.setContentText("Couldn't delete calendar events. This might be due to there not being any events to delete, or an internal error.");
                 alert.setAlertType(Alert.AlertType.ERROR);
+            }
+            case CALENDAR_INTEGRATION_DISABLED -> {
+                alert.setTitle("Integration disabled");
+                alert.setContentText("The Planner couldn't generate any calendar events, since the calendar integration is disabled.\nIf you wish to enable it, toggle the feature on the 'Set reminders' page of the Planner.");
+                alert.setAlertType(Alert.AlertType.WARNING);
             }
             case NOT_IMPLEMENTED -> {
                 alert.setTitle("Uh-oh!");

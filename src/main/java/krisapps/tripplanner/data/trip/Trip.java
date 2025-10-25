@@ -57,7 +57,7 @@ public class Trip {
         if (tripEndDate == null) {
             throw new IllegalStateException("Cannot get trip duration. The end date for this trip has not been initialized.");
         }
-        return Duration.between(tripStartDate, tripEndDate);
+        return Duration.between(tripStartDate, tripEndDate.plusDays(1));
     }
 
     public ExpenseData getExpenseData() {

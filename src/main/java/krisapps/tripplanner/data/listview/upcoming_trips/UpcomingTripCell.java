@@ -8,6 +8,7 @@ import javafx.scene.control.ListCell;
 import javafx.scene.layout.HBox;
 import krisapps.tripplanner.PlannerApplication;
 import krisapps.tripplanner.TripPlanner;
+import krisapps.tripplanner.data.ProgramSettings;
 import krisapps.tripplanner.data.TripManager;
 import krisapps.tripplanner.data.trip.Trip;
 import org.apache.commons.lang3.time.DurationFormatUtils;
@@ -107,13 +108,14 @@ public class UpcomingTripCell extends ListCell<Trip> {
         } else {
             if (item.tripDatesSupplied()) {
                 Duration duration = Duration.between(LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault()), item.getTripStartDate());
+                ProgramSettings.TripSettings tripSettings = TripManager.getInstance().getSettings().getSettingsForTrip(item.getUniqueID());
 
                 tripDateLabel.setText(formatter.format(item.getTripStartDate()));
 
                 if (duration.isNegative() || duration.isZero()) {
                     countdownLabel.setText("");
                 } else {
-                    countdownLabel.setText(DurationFormatUtils.formatDuration(duration.toMillis(), "dd'd' : HH'h' : mm'm' : ss's'", true));
+                    countdownLabel.setText(DurationFormatUtils.formatDuration(duration.toMillis(), tripSettings.getCountdownFormat().getFormat(), true));
                 }
             } else {
                 tripDateLabel.setText("date TBD");

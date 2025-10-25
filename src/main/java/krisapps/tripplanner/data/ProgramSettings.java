@@ -1,5 +1,6 @@
 package krisapps.tripplanner.data;
 
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -15,6 +16,9 @@ public class ProgramSettings {
         private int reminderValue;
         private String calendarEventID = "";
         private boolean modified = false;
+
+        private boolean countdownEnabled = false;
+        private CountdownFormat countdownFormat = CountdownFormat.DEFAULT;
 
         public TripSettings() {
             this.calendarIntegrationEnabled = false;
@@ -77,6 +81,28 @@ public class ProgramSettings {
             this.modified = true;
         }
 
+        public void setCountdownEnabled(boolean countdownEnabled) {
+            this.countdownEnabled = countdownEnabled;
+            this.modified = true;
+        }
+
+        public void setCountdownFormat(CountdownFormat countdownFormat) {
+            this.countdownFormat = countdownFormat;
+            this.modified = true;
+        }
+
+        public boolean isCountdownEnabled() {
+            return countdownEnabled;
+        }
+
+        public CountdownFormat getCountdownFormat() {
+            return countdownFormat;
+        }
+
+        public boolean hasReminder() {
+            return this.reminderValue != -1 && this.reminderValue != 0;
+        }
+
         public void resetModifiedFlag() {
             this.modified = false;
         }
@@ -100,12 +126,14 @@ public class ProgramSettings {
     }
 
     private final HashMap<UUID, TripSettings> tripSettings;
-    private char currencySymbol;
+    private String currencySymbol;
+    private boolean currencySymbolPrefix = false;
+    private Path documentGeneratorOutputFolder;
 
     public ProgramSettings() {
         this.modified = false;
         this.tripSettings = new HashMap<>();
-        this.currencySymbol = '€';
+        this.currencySymbol = "€";
     }
 
     public HashMap<UUID, TripSettings> getTripSettings() {
@@ -136,15 +164,15 @@ public class ProgramSettings {
         }
     }
 
-    public TripSettings getTripSettings(UUID trip) {
+    public TripSettings getSettingsForTrip(UUID trip) {
         return getTripSettings().getOrDefault(trip, new TripSettings());
     }
 
-    public char getCurrencySymbol() {
+    public String getCurrencySymbol() {
         return currencySymbol;
     }
 
-    public void setCurrencySymbol(char currencySymbol) {
+    public void setCurrencySymbol(String currencySymbol) {
         this.currencySymbol = currencySymbol;
         this.modified = true;
     }
@@ -156,5 +184,23 @@ public class ProgramSettings {
     public boolean haveBeenModified() {
         this.modified = tripSettings.values().stream().anyMatch(TripSettings::haveBeenModified) || this.modified;
         return modified;
+    }
+
+    public boolean currencySymbolPrefixed() {
+        return currencySymbolPrefix;
+    }
+
+    public void setCurrencySymbolPrefixed(boolean prefixed) {
+        this.currencySymbolPrefix = prefixed;
+        this.modified = true;
+    }
+
+    public Path getDocumentGeneratorOutputFolder() {
+        return documentGeneratorOutputFolder;
+    }
+
+    public void setDocumentGeneratorOutputFolder(Path documentGeneratorOutputFolder) {
+        this.documentGeneratorOutputFolder = documentGeneratorOutputFolder;
+        this.modified = true;
     }
 }

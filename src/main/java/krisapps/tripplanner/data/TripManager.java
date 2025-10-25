@@ -313,9 +313,9 @@ public class TripManager {
         public static String formatMoney(double money, String symbol, boolean symbolIsPrefix) {
             String[] doubleString = String.valueOf(money).split("\\.");
             if (symbolIsPrefix) {
-                return symbol + " " + doubleString[0] + "." + (Integer.parseInt(doubleString[1]) <= 9 ? "0" + Integer.parseInt(doubleString[1]) : Integer.parseInt(doubleString[1]));
+                return symbol + " " + doubleString[0] + "." + (Long.parseLong(doubleString[1]) <= 9 ? "0" + Long.parseLong(doubleString[1]) : Long.parseLong(doubleString[1]));
             } else {
-                return doubleString[0] + "." + (Integer.parseInt(doubleString[1]) <= 9 ? "0" + Integer.parseInt(doubleString[1]) : Integer.parseInt(doubleString[1])) + " " + symbol;
+                return doubleString[0] + "." + (Long.parseLong(doubleString[1]) <= 9 ? "0" + Long.parseLong(doubleString[1]) : Long.parseLong(doubleString[1])) + " " + symbol;
             }
         }
 

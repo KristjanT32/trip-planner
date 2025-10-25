@@ -150,7 +150,7 @@ public class GoogleCalendarIntegration {
      * @return True if successful, false otherwise.
      */
     public static boolean deleteCalendarEventsForTrip(Trip currentPlan) {
-        String eventId = TripManager.getInstance().getSettings().getTripSettings(currentPlan.getUniqueID()).getCalendarEventID();
+        String eventId = TripManager.getInstance().getSettings().getSettingsForTrip(currentPlan.getUniqueID()).getCalendarEventID();
         try {
             calendarService.events().delete("primary", eventId).execute();
             return true;

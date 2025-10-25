@@ -26,6 +26,7 @@ import krisapps.tripplanner.data.listview.itinerary.ItineraryCellFactory;
 import krisapps.tripplanner.data.listview.upcoming_trips.UpcomingTripsCellFactory;
 import krisapps.tripplanner.data.prompts.EditTripDetailsDialog;
 import krisapps.tripplanner.data.prompts.LoadingDialog;
+import krisapps.tripplanner.data.prompts.ProgramSettingsDialog;
 import krisapps.tripplanner.data.trip.ExpenseCategory;
 import krisapps.tripplanner.data.trip.Itinerary;
 import krisapps.tripplanner.data.trip.PlannedExpense;
@@ -50,7 +51,7 @@ public class TripPlanner {
     //<editor-fold desc="Globals">
     public static final ScheduledExecutorService scheduler = new ScheduledThreadPoolExecutor(2);
     private static Trip currentPlan = null;
-    private static ProgramSettings.TripSettings currentPlanSettings = null;
+    private static ProgramSettings.TripSettings currentPlanSettings;
     private static ProgramSettings currentSettings;
     private static TripPlanner instance;
     private final TripManager trips = TripManager.getInstance();
@@ -184,6 +185,9 @@ public class TripPlanner {
 
     @FXML
     private ChoiceBox<String> countdownFormatSelector;
+
+    @FXML
+    private ToggleButton countdownToggle;
     //</editor-fold>
     //<editor-fold desc="Notification area">
     @FXML
@@ -248,13 +252,17 @@ public class TripPlanner {
             selectedItineraryEntryLabel.setText("Nothing selected");
 
             // Initialize calendar integration panel
-            ProgramSettings.TripSettings calSettings = currentSettings.getTripSettings(currentPlan.getUniqueID());
+            ProgramSettings.TripSettings calSettings = currentSettings.getSettingsForTrip(currentPlan.getUniqueID());
             calendarIntegrationToggle.setSelected(calSettings.isCalendarIntegrationEnabled());
             reminderToggle.setSelected(calSettings.isReminderEnabled());
             reminderOffsetBox.setText(String.valueOf(calSettings.getReminderValue() != -1 ? calSettings.getReminderValue() : ""));
             reminderOffsetUnitSelector.getSelectionModel().select(calSettings.getReminderUnit());
+            countdownToggle.setSelected(currentPlanSettings.isCountdownEnabled());
+            countdownFormatSelector.setDisable(!currentPlanSettings.isCountdownEnabled());
+            countdownFormatSelector.getSelectionModel().select(CountdownFormat.DEFAULT.getPreview());
         });
         refreshViews();
+        refreshSpinners();
     }
 
     public void initUI() {
@@ -326,8 +334,22 @@ public class TripPlanner {
 
             countdownFormatSelector.getItems().clear();
             for (CountdownFormat format : CountdownFormat.values()) {
-                countdownFormatSelector.getItems().add(format.getFormat());
+                countdownFormatSelector.getItems().add(format.getPreview());
             }
+
+            countdownFormatSelector.getSelectionModel().selectedItemProperty().addListener((observable, oldVal, newVal) -> {
+                if (currentPlan == null) return;
+                if (launchedInReadOnly) return;
+                currentPlanSettings.setCountdownFormat(CountdownFormat.of(newVal));
+            });
+
+            countdownToggle.selectedProperty().addListener((observable, oldVal, newVal) -> {
+                countdownToggle.setText(newVal ? "Enabled" : "Disabled");
+                countdownFormatSelector.setDisable(!newVal);
+                if (currentPlan == null) return;
+                if (launchedInReadOnly) return;
+                currentPlanSettings.setCountdownEnabled(newVal);
+            });
 
             // Register listeners
             reminderOffsetBox.textProperty().addListener((observable, oldVal, newVal) -> {
@@ -351,6 +373,9 @@ public class TripPlanner {
             reminderToggle.setSelected(currentPlanSettings.isReminderEnabled());
             reminderOffsetBox.setText(String.valueOf(currentPlanSettings.getReminderValue()));
             reminderOffsetUnitSelector.getSelectionModel().select(currentPlanSettings.getReminderUnit());
+            countdownToggle.setSelected(currentPlanSettings.isCountdownEnabled());
+            countdownFormatSelector.setDisable(!currentPlanSettings.isCountdownEnabled());
+            countdownFormatSelector.getSelectionModel().select(CountdownFormat.DEFAULT.getPreview());
         });
     }
 
@@ -456,7 +481,7 @@ public class TripPlanner {
 
         expenseList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
-                selectedExpenseLabel.setText(newValue.getDescription() + " - " + TripManager.Formatting.formatMoney(newValue.getAmount(), Character.toString(currentSettings.getCurrencySymbol()), false) + (newValue.getDay() != -1 ? " (Day #" + newValue.getDay() + ")" : ""));
+                selectedExpenseLabel.setText(newValue.getDescription() + " - " + TripManager.Formatting.formatMoney(newValue.getAmount(), currentSettings.getCurrencySymbol(), currentSettings.currencySymbolPrefixed()) + (newValue.getDay() != -1 ? " (Day #" + newValue.getDay() + ")" : ""));
             }
         });
 
@@ -522,7 +547,7 @@ public class TripPlanner {
 
     public void launchCountdownRefresh() {
         scheduler.scheduleAtFixedRate(() -> {
-            if (upcomingTripsPanel.isVisible()) {
+            if (upcomingTripsPanel.isVisible() && !upcomingTripsList.getItems().isEmpty()) {
                 upcomingTripsList.refresh();
             }
         }, 0, 1, TimeUnit.SECONDS);
@@ -640,7 +665,8 @@ public class TripPlanner {
         currentSettings = TripManager.getInstance().getSettings();
 
         currentPlan = t;
-        currentPlanSettings = currentSettings.getTripSettings(t.getUniqueID());
+
+        currentPlanSettings = currentSettings.getSettingsForTrip(t.getUniqueID());
 
         currentPlan.resetModifiedFlag();
         currentPlanSettings.resetModifiedFlag();
@@ -652,6 +678,7 @@ public class TripPlanner {
     }
 
     public void reloadData() {
+        if (currentPlan == null) return;
         Optional<ButtonType> response = PopupManager.showConfirmation("Reload active plan data",
                 "Are you sure you wish to reload the data for the currently open trip plan from the disk? This will discard all changes and apply all the saved data.\nThis might take a bit to finish.",
                 new ButtonType("Yes, reload", ButtonBar.ButtonData.APPLY),
@@ -738,7 +765,7 @@ public class TripPlanner {
         Platform.runLater(() -> {
             if (currentPlan == null) return;
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-            long tripDuration = Duration.between(currentPlan.getTripStartDate(), currentPlan.getTripEndDate()).toDays();
+            long tripDuration = Duration.between(currentPlan.getTripStartDate(), currentPlan.getTripEndDate().plusDays(1)).toDays();
             tripDatesLabel.setText(
                     formatter.format(currentPlan.getTripStartDate().toLocalDate()) + " - " + formatter.format(currentPlan.getTripEndDate().toLocalDate())
                             + " (duration: " + tripDuration + (tripDuration == 1 ? " day" : " days") + ")"
@@ -797,9 +824,9 @@ public class TripPlanner {
                 maxExpenses = 0.0d;
                 dailyAverage = 0.0d;
             }
-            totalExpensesLabel.setText(totalExpenses + Character.toString(currentSettings.getCurrencySymbol()));
-            dailyExpensesLabel.setText(minExpenses + Character.toString(currentSettings.getCurrencySymbol()) + " - " + maxExpenses + Character.toString(currentSettings.getCurrencySymbol()));
-            dailyAverageLabel.setText(TripManager.Formatting.decimalFormatter.format(dailyAverage) + Character.toString(currentSettings.getCurrencySymbol()));
+            totalExpensesLabel.setText(TripManager.Formatting.formatMoney(Math.floor(totalExpenses), currentSettings.getCurrencySymbol(), currentSettings.currencySymbolPrefixed()));
+            dailyExpensesLabel.setText(TripManager.Formatting.formatMoney(Math.floor(minExpenses), currentSettings.getCurrencySymbol(), currentSettings.currencySymbolPrefixed()) + " - " + TripManager.Formatting.formatMoney(maxExpenses, currentSettings.getCurrencySymbol(), currentSettings.currencySymbolPrefixed()));
+            dailyAverageLabel.setText(TripManager.Formatting.decimalFormatter.format(dailyAverage) + currentSettings.getCurrencySymbol());
 
             // Sort by total amount, descending
             categorySummaries.sort(Comparator.comparingDouble(CategoryExpenseSummary::getTotalAmount).reversed());
@@ -818,7 +845,7 @@ public class TripPlanner {
                 expenseChart.getData().add(new PieChart.Data(sum.getCategory().getDisplayName(), sum.getTotalAmount()));
             }
 
-            budgetLabel.setText(currentPlan.getExpenseData().getBudget() + Character.toString(currentSettings.getCurrencySymbol()));
+            budgetLabel.setText(TripManager.Formatting.formatMoney(currentPlan.getExpenseData().getBudget(), currentSettings.getCurrencySymbol(), currentSettings.currencySymbolPrefixed()));
             if (currentPlan.getExpenseData().getTotalExpenses() <= currentPlan.getExpenseData().getBudget()) {
                 budgetInfoLabel.setVisible(false);
                 budgetInfoLabel.setManaged(false);
@@ -827,7 +854,7 @@ public class TripPlanner {
                 budgetInfoLabel.setVisible(true);
                 budgetInfoLabel.setManaged(true);
                 budgetStatusLabel.setText("Over budget!");
-                budgetInfoLabel.setText("+" + Math.abs(currentPlan.getExpenseData().getBudget() - currentPlan.getExpenseData().getTotalExpenses()) + Character.toString(currentSettings.getCurrencySymbol()));
+                budgetInfoLabel.setText("+" + TripManager.Formatting.formatMoney(Math.floor(Math.abs(currentPlan.getExpenseData().getBudget() - currentPlan.getExpenseData().getTotalExpenses())), currentSettings.getCurrencySymbol(), currentSettings.currencySymbolPrefixed()));
             }
         });
     }
@@ -852,6 +879,12 @@ public class TripPlanner {
         EditTripDetailsDialog editDialog = new EditTripDetailsDialog(currentPlan);
         editDialog.showAndWait();
         refreshViews();
+    }
+
+    public void promptShowSettings() {
+        ProgramSettingsDialog settingsDialog = new ProgramSettingsDialog(currentSettings);
+        Optional<ProgramSettings> changed = settingsDialog.showAndWait();
+        changed.ifPresent(programSettings -> currentSettings = programSettings);
     }
 
     public void showTripSetup() {
@@ -994,6 +1027,10 @@ public class TripPlanner {
      * Checks if the current trip needs to have its calendar events generated.
      */
     public void createCalendarEvents(boolean removeExisting) {
+        if (!currentPlanSettings.isCalendarIntegrationEnabled()) {
+            PopupManager.showPredefinedPopup(PopupManager.PopupType.CALENDAR_INTEGRATION_DISABLED);
+            return;
+        }
         if (removeExisting) {
             if (currentPlanSettings.calendarEventsCreated()) {
                 boolean success = GoogleCalendarIntegration.deleteCalendarEventsForTrip(currentPlan);
@@ -1011,7 +1048,7 @@ public class TripPlanner {
             dlg.setSecondaryLabel("This will only take a moment.");
             dlg.show("Creating calendar events for trip", () -> {
                 EventReminder reminder = new EventReminder();
-                if (!currentPlanSettings.isReminderEnabled()) {
+                if (!currentPlanSettings.isReminderEnabled() || !currentPlanSettings.hasReminder()) {
                     reminder = null;
                 } else {
                     TimeUnit unit = currentPlanSettings.getReminderUnit();
@@ -1026,13 +1063,14 @@ public class TripPlanner {
                     dlg.setSecondaryLabel("Finishing up...");
                     currentPlanSettings.setCalendarEventID(id);
                     trips.updateTripSettings(currentPlan, currentPlanSettings);
-                    TripManager.log("Done. Closing planner.");
+                    TripManager.log("Done.");
                 }
             });
         }
     }
 
     public void deleteCalendarEvents() {
+        if (currentPlan == null) return;
         if (!currentPlanSettings.calendarEventsCreated()) {
             PopupManager.showPredefinedPopup(PopupManager.PopupType.NO_EVENTS);
         } else {
@@ -1056,6 +1094,11 @@ public class TripPlanner {
     }
 
     public void regenerateCalendarEvents() {
+        if (currentPlan == null) return;
+        if (!currentPlanSettings.isCalendarIntegrationEnabled()) {
+            PopupManager.showPredefinedPopup(PopupManager.PopupType.CALENDAR_INTEGRATION_DISABLED);
+            return;
+        }
         Optional<ButtonType> response = PopupManager.showConfirmation(
                 "Regenerate calendar events for '" + currentPlan.getTripName() + "'?",
                 "Are you sure you wish to regenerate the calendar events for this trip?\nThis will delete the existing events from the calendar and replace them with new ones.",
@@ -1096,14 +1139,16 @@ public class TripPlanner {
             );
             if (response.isPresent()) {
                 if (response.get().getButtonData() == ButtonBar.ButtonData.APPLY) {
-                    Optional<ButtonType> r = PopupManager.showConfirmation("Create events?",
-                            "Would you like the Planner to create calendar events for your trip? You can always regenerate them later.\nThis will only take a moment.",
-                            new ButtonType("Sure, create events", ButtonBar.ButtonData.YES),
-                            new ButtonType("Not now, thanks", ButtonBar.ButtonData.CANCEL_CLOSE)
-                    );
-                    if (r.isPresent()) {
-                        if (r.get().getButtonData() == ButtonBar.ButtonData.YES) {
-                            createCalendarEvents(false);
+                    if (currentPlanSettings.isCalendarIntegrationEnabled() && !currentPlanSettings.calendarEventsCreated()) {
+                        Optional<ButtonType> r = PopupManager.showConfirmation("Create events?",
+                                "Would you like the Planner to create calendar events for your trip? You can always regenerate them later.\nThis will only take a moment.",
+                                new ButtonType("Sure, create events", ButtonBar.ButtonData.YES),
+                                new ButtonType("Not now, thanks", ButtonBar.ButtonData.CANCEL_CLOSE)
+                        );
+                        if (r.isPresent()) {
+                            if (r.get().getButtonData() == ButtonBar.ButtonData.YES) {
+                                createCalendarEvents(false);
+                            }
                         }
                     }
                     resetPlanner();
