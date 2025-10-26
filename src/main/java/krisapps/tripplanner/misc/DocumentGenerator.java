@@ -17,6 +17,8 @@ import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -67,6 +69,12 @@ public class DocumentGenerator {
 
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final DecimalFormat decimalFormat = new DecimalFormat("0.00");
+
+    private static int getTimeInMinutes(Date date) {
+        if (date == null) return -1;
+        LocalDateTime ldt = LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
+        return ldt.getHour() * 60 + ldt.getMinute();
+    }
 
     /**
      * Generates a trip plan PDF document for the supplied trip instance.
@@ -145,7 +153,18 @@ public class DocumentGenerator {
                     daysToActivities.put(itineraryItem.getDay(), itineraryItems);
                 });
 
+                for (Map.Entry<Integer, LinkedList<Itinerary.ItineraryItem>> entry : daysToActivities.entrySet()) {
+                    entry.getValue().sort(Comparator.comparing((e) -> {
+                        if (e.getStartTime() != null) {
+                            return getTimeInMinutes(e.getStartTime());
+                        } else {
+                            return getTimeInMinutes(e.getEndTime());
+                        }
+                    }));
+                }
+
                 int index = 0;
+
                 for (Map.Entry<Integer, LinkedList<Itinerary.ItineraryItem>> item : daysToActivities.sequencedEntrySet()) {
                     StringBuilder dayActivities = new StringBuilder();
                     for (Itinerary.ItineraryItem itineraryItem : item.getValue()) {

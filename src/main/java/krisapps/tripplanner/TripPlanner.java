@@ -662,6 +662,12 @@ public class TripPlanner {
         }
     }
 
+    public int getTimeInMinutes(Date date) {
+        if (date == null) return -1;
+        LocalDateTime ldt = LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
+        return ldt.getHour() * 60 + ldt.getMinute();
+    }
+
     private CompletableFuture<Void> loadTrip(Trip t) {
         CompletableFuture<Void> future = new CompletableFuture<>();
         refreshWindowTitle("KrisApps Trip Planner - loading " + t.getTripName());
@@ -721,12 +727,6 @@ public class TripPlanner {
         refreshTripOverview();
         refreshExpensePlanner();
         refreshUpcomingTrips();
-    }
-
-    public int getTimeInMinutes(Date date) {
-        if (date == null) return -1;
-        LocalDateTime ldt = LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
-        return ldt.getHour() * 60 + ldt.getMinute();
     }
 
     /**
