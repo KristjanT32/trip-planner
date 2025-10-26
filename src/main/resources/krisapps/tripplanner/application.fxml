@@ -41,7 +41,7 @@
                     <items>
                         <MenuItem mnemonicParsing="false" onAction="#promptEditTripDetails" text="Change trip details" />
                       <MenuItem mnemonicParsing="false" onAction="#promptDiscardChanges" text="Discard all changes" />
-                        <MenuItem mnemonicParsing="false" text="Generate plan document" />
+                        <MenuItem mnemonicParsing="false" onAction="#generatePlanDocument" text="Generate plan document" />
                         <MenuItem mnemonicParsing="false" onAction="#promptClosePlanner" text="Close planner" />
                     </items>
                   </Menu>

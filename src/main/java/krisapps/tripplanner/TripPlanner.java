@@ -1115,6 +1115,10 @@ public class TripPlanner {
         }
     }
 
+    public void generatePlanDocument() {
+        DocumentGenerator.generateTripPlan(currentPlan, trips.getSettings().getDocumentGeneratorOutputFolder());
+    }
+
     public void promptClosePlanner() {
         if (currentPlan == null) {
             return;

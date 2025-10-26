@@ -134,6 +134,7 @@ public class ProgramSettings {
         this.modified = false;
         this.tripSettings = new HashMap<>();
         this.currencySymbol = "€";
+        this.documentGeneratorOutputFolder = Path.of(System.getProperty("user.home") + "/Desktop");
     }
 
     public HashMap<UUID, TripSettings> getTripSettings() {

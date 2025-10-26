@@ -318,11 +318,11 @@ public class TripManager {
         }
 
         public static String formatMoney(double money, String symbol, boolean symbolIsPrefix) {
-            String[] doubleString = String.valueOf(money).split("\\.");
+            DecimalFormat decimalFormat = new DecimalFormat("0.00");
             if (symbolIsPrefix) {
-                return symbol + " " + doubleString[0] + "." + (Long.parseLong(doubleString[1]) <= 9 ? "0" + Long.parseLong(doubleString[1]) : Long.parseLong(doubleString[1]));
+                return symbol + decimalFormat.format(money);
             } else {
-                return doubleString[0] + "." + (Long.parseLong(doubleString[1]) <= 9 ? "0" + Long.parseLong(doubleString[1]) : Long.parseLong(doubleString[1])) + " " + symbol;
+                return decimalFormat.format(money) + symbol;
             }
         }
 
