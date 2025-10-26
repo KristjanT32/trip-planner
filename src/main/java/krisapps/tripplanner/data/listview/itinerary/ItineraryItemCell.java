@@ -15,6 +15,7 @@ import krisapps.tripplanner.data.prompts.LinkExpensesDialog;
 import krisapps.tripplanner.data.trip.Itinerary;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.UUID;
 
 public class ItineraryItemCell extends ListCell<Itinerary.ItineraryItem> {
@@ -27,6 +28,9 @@ public class ItineraryItemCell extends ListCell<Itinerary.ItineraryItem> {
 
     @FXML
     private Label dayLabel;
+
+    @FXML
+    private Label timeLabel;
 
     @FXML
     private Label expenseSummaryLabel;
@@ -60,6 +64,7 @@ public class ItineraryItemCell extends ListCell<Itinerary.ItineraryItem> {
         descriptionLabel.setStyle("-fx-text-fill: black");
         dayLabel.setStyle("-fx-text-fill: black");
         expenseSummaryLabel.setStyle("-fx-text-fill: black");
+        timeLabel.setStyle("-fx-text-fill: black");
 
         viewDetailsButton.setVisible(!editable);
         viewDetailsButton.setManaged(!editable);
@@ -80,11 +85,20 @@ public class ItineraryItemCell extends ListCell<Itinerary.ItineraryItem> {
         } else {
             descriptionLabel.setText(item.getDescription());
             dayLabel.setText(item.getDay() == -1 ? "No day assigned" : "Planned for Day " + item.getDay());
+
+            String startSection = (item.getStartTime() != null ? new SimpleDateFormat("HH:mm").format(item.getStartTime()) : "...");
+            String endSection = (item.getEndTime() != null ? new SimpleDateFormat("HH:mm").format(item.getEndTime()) : "...");
+            if (startSection.equals("...") && endSection.equals("...")) {
+                timeLabel.setText("");
+            } else {
+                timeLabel.setText(startSection + (!startSection.isBlank() && !endSection.isBlank() ? " - " : "") + endSection);
+            }
+
             setText(null);
             setGraphic(rootPane);
 
             viewDetailsButton.setVisible(isSelected() && !editable);
-            
+
             linkExpensesButton.setVisible(isSelected() && editable);
             editActivityButton.setVisible(isSelected() && editable);
 

@@ -9,29 +9,37 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-
-<VBox fx:id="rootPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="500.0" styleClass="expense-linker-listview" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1">
+<VBox fx:id="rootPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="598.0" styleClass="expense-linker-listview" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <HBox>
          <children>
             <VBox>
                <children>
-                  <Label fx:id="descLabel" text="Itinerary entry description">
+                  <Label fx:id="descLabel" maxWidth="1.7976931348623157E308" text="Itinerary entry description">
                      <font>
                         <Font name="Segoe UI Bold" size="18.0" />
                      </font>
                   </Label>
-                  <Label fx:id="dayLabel" text="Planned for Day #0">
+                  <Label fx:id="dayLabel" maxWidth="1.7976931348623157E308" text="Planned for Day #0">
+                     <font>
+                        <Font name="Segoe UI" size="18.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="expenseTotalLabel" maxWidth="1.7976931348623157E308" text="Total expenses: 0.00€">
                      <font>
                         <Font name="Segoe UI" size="18.0" />
                      </font>
                   </Label>
                </children>
             </VBox>
-            <Label fx:id="expenseTotalLabel" alignment="CENTER_RIGHT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="0.00€" textAlignment="RIGHT" HBox.hgrow="ALWAYS">
+            <Separator maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" visible="false" HBox.hgrow="ALWAYS" />
+            <Label fx:id="timeLabel" alignment="CENTER_RIGHT" maxHeight="1.7976931348623157E308" styleClass="options-panel" text="10:00 - 12:00" textAlignment="RIGHT" HBox.hgrow="SOMETIMES">
                <font>
                   <Font name="Segoe UI Bold" size="36.0" />
                </font>
+               <padding>
+                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+               </padding>
             </Label>
          </children>
       </HBox>

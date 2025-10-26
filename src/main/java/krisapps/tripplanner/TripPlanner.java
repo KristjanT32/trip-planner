@@ -15,10 +15,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import krisapps.tripplanner.data.CountdownFormat;
-import krisapps.tripplanner.data.DayExpenses;
-import krisapps.tripplanner.data.ProgramSettings;
-import krisapps.tripplanner.data.TripManager;
+import krisapps.tripplanner.data.*;
 import krisapps.tripplanner.data.listview.cost_list.CategoryExpenseSummary;
 import krisapps.tripplanner.data.listview.cost_list.CostListCellFactory;
 import krisapps.tripplanner.data.listview.expense_linker.ExpenseLinkerCellFactory;
@@ -51,8 +48,8 @@ public class TripPlanner {
     //<editor-fold desc="Globals">
     public static final ScheduledExecutorService scheduler = new ScheduledThreadPoolExecutor(2);
     private static Trip currentPlan = null;
-    private static ProgramSettings.TripSettings currentPlanSettings;
-    private static ProgramSettings currentSettings;
+    private static TripSettings currentPlanSettings;
+    private static ProgramSettings currentProgramSettings;
     private static TripPlanner instance;
     private final TripManager trips = TripManager.getInstance();
     private final UnaryOperator<TextFormatter.Change> numbersOnlyFormatter = (change) -> {
@@ -238,7 +235,7 @@ public class TripPlanner {
         TripManager.log("Initialization completed in " + (System.currentTimeMillis() - startTime) + "ms");
         TripManager.log("Initializing Calendar Service");
         GoogleCalendarIntegration.initialize();
-        currentSettings = TripManager.getInstance().getSettings();
+        currentProgramSettings = TripManager.getInstance().getSettings();
     }
 
     /**
@@ -247,14 +244,18 @@ public class TripPlanner {
      */
     public void updateUIForCurrentPlan() {
         Platform.runLater(() -> {
-            tripStartBox.setValue(currentPlan.getTripStartDate().toLocalDate());
-            tripEndBox.setValue(currentPlan.getTripEndDate().toLocalDate());
+            if (currentPlan.getTripStartDate() != null) {
+                tripStartBox.setValue(currentPlan.getTripStartDate().toLocalDate());
+            }
+            if (currentPlan.getTripEndDate() != null) {
+                tripEndBox.setValue(currentPlan.getTripEndDate().toLocalDate());
+            }
 
             selectedExpenseLabel.setText("Nothing selected");
             selectedItineraryEntryLabel.setText("Nothing selected");
 
             // Initialize calendar integration panel
-            ProgramSettings.TripSettings calSettings = currentSettings.getSettingsForTrip(currentPlan.getUniqueID());
+            TripSettings calSettings = trips.getSettingsForTrip(currentPlan.getUniqueID());
             calendarIntegrationToggle.setSelected(calSettings.isCalendarIntegrationEnabled());
             reminderToggle.setSelected(calSettings.isReminderEnabled());
             reminderOffsetBox.setText(String.valueOf(calSettings.getReminderValue() != -1 ? calSettings.getReminderValue() : ""));
@@ -415,6 +416,7 @@ public class TripPlanner {
      */
     public void refreshSpinners() {
         Platform.runLater(() -> {
+            if (!currentPlan.tripDatesSupplied()) return;
             SpinnerValueFactory<Integer> expenseDayValueFactory = expenseDayBox.getValueFactory();
             SpinnerValueFactory<Integer> itineraryDayValueFactory = activityDayBox.getValueFactory();
 
@@ -483,7 +485,7 @@ public class TripPlanner {
 
         expenseList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
-                selectedExpenseLabel.setText(newValue.getDescription() + " - " + TripManager.Formatting.formatMoney(newValue.getAmount(), currentSettings.getCurrencySymbol(), currentSettings.currencySymbolPrefixed()) + (newValue.getDay() != -1 ? " (Day #" + newValue.getDay() + ")" : ""));
+                selectedExpenseLabel.setText(newValue.getDescription() + " - " + TripManager.Formatting.formatMoney(newValue.getAmount(), currentProgramSettings.getCurrencySymbol(), currentProgramSettings.currencySymbolPrefixed()) + (newValue.getDay() != -1 ? " (Day #" + newValue.getDay() + ")" : ""));
             }
         });
 
@@ -665,11 +667,11 @@ public class TripPlanner {
         refreshWindowTitle("KrisApps Trip Planner - loading " + t.getTripName());
 
         // Reload settings to ensure all trip settings are current
-        currentSettings = TripManager.getInstance().getSettings();
+        currentProgramSettings = TripManager.getInstance().getSettings();
 
         currentPlan = t;
 
-        currentPlanSettings = currentSettings.getSettingsForTrip(t.getUniqueID());
+        currentPlanSettings = trips.getSettingsForTrip(t.getUniqueID());
 
         currentPlan.resetModifiedFlag();
         currentPlanSettings.resetModifiedFlag();
@@ -721,6 +723,12 @@ public class TripPlanner {
         refreshUpcomingTrips();
     }
 
+    public int getTimeInMinutes(Date date) {
+        if (date == null) return -1;
+        LocalDateTime ldt = LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
+        return ldt.getHour() * 60 + ldt.getMinute();
+    }
+
     /**
      * Repopulates the itinerary.
      * <br><b>Runs on the FX Application Thread.</b>
@@ -733,7 +741,7 @@ public class TripPlanner {
             for (Itinerary.ItineraryItem item : currentPlan.getItinerary().getItems().values().stream().sorted(Comparator.comparingInt((i) -> {
                 if (i.getDay() == -1 || i.getDay() == 0) return Integer.MAX_VALUE;
                 else return i.getDay();
-            })).toList()) {
+            })).sorted(Comparator.comparingLong((i) -> getTimeInMinutes(i.getStartTime()))).toList()) {
                 itineraryListView.getItems().add(item);
             }
         });
@@ -767,12 +775,14 @@ public class TripPlanner {
     public void refreshTripOverview() {
         Platform.runLater(() -> {
             if (currentPlan == null) return;
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-            long tripDuration = Duration.between(currentPlan.getTripStartDate(), currentPlan.getTripEndDate().plusDays(1)).toDays();
-            tripDatesLabel.setText(
-                    formatter.format(currentPlan.getTripStartDate().toLocalDate()) + " - " + formatter.format(currentPlan.getTripEndDate().toLocalDate())
-                            + " (duration: " + tripDuration + (tripDuration == 1 ? " day" : " days") + ")"
-            );
+            if (currentPlan.tripDatesSupplied()) {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+                long tripDuration = Duration.between(currentPlan.getTripStartDate(), currentPlan.getTripEndDate().plusDays(1)).toDays();
+                tripDatesLabel.setText(
+                        formatter.format(currentPlan.getTripStartDate().toLocalDate()) + " - " + formatter.format(currentPlan.getTripEndDate().toLocalDate())
+                                + " (duration: " + tripDuration + (tripDuration == 1 ? " day" : " days") + ")"
+                );
+            }
             peopleInvolvedLabel.setText(String.valueOf(currentPlan.getPartySize()));
 
             destinationLabel.setText(currentPlan.getTripDestination());
@@ -827,9 +837,9 @@ public class TripPlanner {
                 maxExpenses = 0.0d;
                 dailyAverage = 0.0d;
             }
-            totalExpensesLabel.setText(TripManager.Formatting.formatMoney(Math.floor(totalExpenses), currentSettings.getCurrencySymbol(), currentSettings.currencySymbolPrefixed()));
-            dailyExpensesLabel.setText(TripManager.Formatting.formatMoney(Math.floor(minExpenses), currentSettings.getCurrencySymbol(), currentSettings.currencySymbolPrefixed()) + " - " + TripManager.Formatting.formatMoney(maxExpenses, currentSettings.getCurrencySymbol(), currentSettings.currencySymbolPrefixed()));
-            dailyAverageLabel.setText(TripManager.Formatting.decimalFormatter.format(dailyAverage) + currentSettings.getCurrencySymbol());
+            totalExpensesLabel.setText(TripManager.Formatting.formatMoney(Math.floor(totalExpenses), currentProgramSettings.getCurrencySymbol(), currentProgramSettings.currencySymbolPrefixed()));
+            dailyExpensesLabel.setText(TripManager.Formatting.formatMoney(Math.floor(minExpenses), currentProgramSettings.getCurrencySymbol(), currentProgramSettings.currencySymbolPrefixed()) + " - " + TripManager.Formatting.formatMoney(maxExpenses, currentProgramSettings.getCurrencySymbol(), currentProgramSettings.currencySymbolPrefixed()));
+            dailyAverageLabel.setText(TripManager.Formatting.decimalFormatter.format(dailyAverage) + currentProgramSettings.getCurrencySymbol());
 
             // Sort by total amount, descending
             categorySummaries.sort(Comparator.comparingDouble(CategoryExpenseSummary::getTotalAmount).reversed());
@@ -840,7 +850,7 @@ public class TripPlanner {
             itineraryItems.addAll(currentPlan.getItinerary().getItems().values().stream().sorted(Comparator.comparingInt((i) -> {
                 if (i.getDay() == -1 || i.getDay() == 0) return Integer.MAX_VALUE;
                 else return i.getDay();
-            })).toList());
+            })).sorted(Comparator.comparingLong((i) -> getTimeInMinutes(i.getStartTime()))).toList());
             summaryItinerary.setItems(itineraryItems);
 
             expenseChart.getData().clear();
@@ -848,7 +858,7 @@ public class TripPlanner {
                 expenseChart.getData().add(new PieChart.Data(sum.getCategory().getDisplayName(), sum.getTotalAmount()));
             }
 
-            budgetLabel.setText(TripManager.Formatting.formatMoney(currentPlan.getExpenseData().getBudget(), currentSettings.getCurrencySymbol(), currentSettings.currencySymbolPrefixed()));
+            budgetLabel.setText(TripManager.Formatting.formatMoney(currentPlan.getExpenseData().getBudget(), currentProgramSettings.getCurrencySymbol(), currentProgramSettings.currencySymbolPrefixed()));
             if (currentPlan.getExpenseData().getTotalExpenses() <= currentPlan.getExpenseData().getBudget()) {
                 budgetInfoLabel.setVisible(false);
                 budgetInfoLabel.setManaged(false);
@@ -857,7 +867,7 @@ public class TripPlanner {
                 budgetInfoLabel.setVisible(true);
                 budgetInfoLabel.setManaged(true);
                 budgetStatusLabel.setText("Over budget!");
-                budgetInfoLabel.setText("+" + TripManager.Formatting.formatMoney(Math.floor(Math.abs(currentPlan.getExpenseData().getBudget() - currentPlan.getExpenseData().getTotalExpenses())), currentSettings.getCurrencySymbol(), currentSettings.currencySymbolPrefixed()));
+                budgetInfoLabel.setText("+" + TripManager.Formatting.formatMoney(Math.floor(Math.abs(currentPlan.getExpenseData().getBudget() - currentPlan.getExpenseData().getTotalExpenses())), currentProgramSettings.getCurrencySymbol(), currentProgramSettings.currencySymbolPrefixed()));
             }
         });
     }
@@ -885,9 +895,9 @@ public class TripPlanner {
     }
 
     public void promptShowSettings() {
-        ProgramSettingsDialog settingsDialog = new ProgramSettingsDialog(currentSettings);
+        ProgramSettingsDialog settingsDialog = new ProgramSettingsDialog(currentProgramSettings);
         Optional<ProgramSettings> changed = settingsDialog.showAndWait();
-        changed.ifPresent(programSettings -> currentSettings = programSettings);
+        changed.ifPresent(trips::updateProgramSettings);
     }
 
     public void showTripSetup() {
@@ -1116,6 +1126,7 @@ public class TripPlanner {
     }
 
     public void generatePlanDocument() {
+        if (currentPlan == null) return;
         DocumentGenerator.generateTripPlan(currentPlan, trips.getSettings().getDocumentGeneratorOutputFolder());
     }
 

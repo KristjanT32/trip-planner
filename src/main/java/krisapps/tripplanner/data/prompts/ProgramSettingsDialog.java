@@ -2,10 +2,7 @@ package krisapps.tripplanner.data.prompts;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.TextField;
-import javafx.scene.control.ToggleButton;
+import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import krisapps.tripplanner.PlannerApplication;
@@ -30,24 +27,31 @@ public class ProgramSettingsDialog extends Dialog<ProgramSettings> {
     private ToggleButton autoOpenLastToggle;
 
     @FXML
+    private ToggleButton breakPageForDaysToggle;
+
+    @FXML
     private TextField pathBox;
+
+    private final ProgramSettings settings;
 
     public ProgramSettingsDialog(ProgramSettings settings) {
         try {
             FXMLLoader loader = new FXMLLoader(PlannerApplication.class.getResource("dialogs/program_settings.fxml"));
             loader.setController(this);
-            rootPane = loader.load();
+            this.settings = settings;
+            this.rootPane = loader.load();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-//        setResultConverter((buttonType, _settings) -> {
-//            if (buttonType.getButtonData() == ButtonBar.ButtonData.APPLY) {
-//                return _settings;
-//            } else {
-//                return settings;
-//            }
-//        });
+
+        setResultConverter((buttonType) -> {
+            if (buttonType.getButtonData() == ButtonBar.ButtonData.APPLY) {
+                return this.settings;
+            } else {
+                return null;
+            }
+        });
 
 
         getDialogPane().setContent(rootPane);
@@ -57,18 +61,38 @@ public class ProgramSettingsDialog extends Dialog<ProgramSettings> {
         getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
         getDialogPane().getButtonTypes().add(ButtonType.APPLY);
 
-        symbolPositionToggle.setSelected(settings.currencySymbolPrefixed());
         symbolPositionToggle.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            symbolPositionToggle.setText(!newValue ? "Mode: Suffix" : "Mode: Prefix");
+            symbolPositionToggle.setText(newValue ? "Mode: Prefix" : "Mode: Suffix");
+            this.settings.setCurrencySymbolPrefixed(newValue);
         });
+        symbolPositionToggle.setText(settings.currencySymbolPrefixed() ? "Mode: Prefix" : "Mode: Suffix");
+        symbolPositionToggle.setSelected(settings.currencySymbolPrefixed());
 
+        autoOpenLastToggle.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            autoOpenLastToggle.setText(newValue ? "Enabled" : "Disabled");
+            this.settings.setOpenLastTrip(newValue);
+        });
+        autoOpenLastToggle.setSelected(this.settings.shouldOpenLastTrip());
+
+        breakPageForDaysToggle.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            breakPageForDaysToggle.setText(newValue ? "Enabled" : "Disabled");
+            this.settings.setBreakPageForDays(newValue);
+        });
+        breakPageForDaysToggle.setSelected(this.settings.shouldBreakPageForEachDay());
+
+        symbolField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.isEmpty()) {
+                this.settings.setCurrencySymbol(newValue);
+            }
+        });
         symbolField.setText(settings.getCurrencySymbol());
-        pathBox.setText(settings.getDocumentGeneratorOutputFolder() == null ? "" : settings.getDocumentGeneratorOutputFolder().toString());
 
+        pathBox.setText(settings.getDocumentGeneratorOutputFolder() == null ? "" : settings.getDocumentGeneratorOutputFolder().toString());
         pathBox.textProperty().addListener((observable, oldVal, newVal) -> {
             try {
                 Path.of(pathBox.getText());
                 pathBox.setStyle("-fx-text-fill: black");
+                this.settings.setDocumentGeneratorOutputFolder(Path.of(pathBox.getText()));
             } catch (InvalidPathException e) {
                 pathBox.setStyle("-fx-text-fill: red");
             }

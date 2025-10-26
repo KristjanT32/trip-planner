@@ -13,7 +13,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -24,7 +23,7 @@ import java.util.*;
 public class DocumentGenerator {
 
     private static final String EXPENSE_ROW_TEMPLATE = """
-                  <tr id="{{id}}">
+                  <tr>
                     <td>{{description}}</td>
                     <td>{{category}}</td>
                     <td>{{amount}}</td>
@@ -33,7 +32,7 @@ public class DocumentGenerator {
             """;
 
     private static final String ITINERARY_ROW_TEMPLATE = """
-                  <div class="day">
+                  <div class="day{{shouldBreak}}">
                          <h3>Day {{dayNumber}}</h3>
                          <ul>
                            {{activities}}
@@ -42,7 +41,8 @@ public class DocumentGenerator {
             """;
 
     private static final String ITINERARY_ACTIVITY_TEMPLATE = """
-                <li>{{description}}
+                <li>
+                  <strong class="{{align}}">{{period}}</strong> {{description}}
                   {{linkedExpenses}}
                 </li>
             """;
@@ -93,7 +93,7 @@ public class DocumentGenerator {
             String htmlTemplate = "";
             try {
                 dlg.setSecondaryLabel("Reading template...");
-                htmlTemplate = Files.readString(new File(PlannerApplication.class.getResource("pdf_generator/trip_plan_template.html").getFile()).toPath());
+                htmlTemplate = new String(PlannerApplication.class.getResourceAsStream("pdf_generator/trip_plan_template.html").readAllBytes());
             } catch (IOException e) {
                 TripManager.log("--------------------------------------");
                 TripManager.log("Error reading trip_plan_template.html");
@@ -105,7 +105,6 @@ public class DocumentGenerator {
             try (OutputStream os = new FileOutputStream(output + File.separator + "%s-trip-plan.pdf".formatted(trip.getTripName().toLowerCase().replaceAll(" ", "")))) {
                 PdfRendererBuilder builder = new PdfRendererBuilder();
                 dlg.setSecondaryLabel("Generating plan...");
-                TripManager.log("Generated pdf output will go into: " + output + File.separator + "%s-trip-plan.pdf".formatted(trip.getTripName().toLowerCase().replaceAll(" ", "")));
 
                 // Fill metadata
                 htmlTemplate = htmlTemplate.replace("{{tripName}}", trip.getTripName());
@@ -127,7 +126,6 @@ public class DocumentGenerator {
                 for (Map.Entry<UUID, PlannedExpense> entry : trip.getExpenseData().getPlannedExpenses().entrySet()) {
                     expenseTableContent.append(
                             EXPENSE_ROW_TEMPLATE
-                                    .replace("{{id}}", entry.getKey().toString())
                                     .replace("{{description}}", entry.getValue().getDescription())
                                     .replace("{{category}}", entry.getValue().getCategory().getDisplayName())
                                     .replace("{{amount}}", decimalFormat.format(entry.getValue().getAmount()))
@@ -147,6 +145,7 @@ public class DocumentGenerator {
                     daysToActivities.put(itineraryItem.getDay(), itineraryItems);
                 });
 
+                int index = 0;
                 for (Map.Entry<Integer, LinkedList<Itinerary.ItineraryItem>> item : daysToActivities.sequencedEntrySet()) {
                     StringBuilder dayActivities = new StringBuilder();
                     for (Itinerary.ItineraryItem itineraryItem : item.getValue()) {
@@ -161,9 +160,20 @@ public class DocumentGenerator {
                             );
                         }
 
+                        String timePeriod = "";
+                        String startSection = (itineraryItem.getStartTime() != null ? new SimpleDateFormat("HH:mm").format(itineraryItem.getStartTime()) : "...");
+                        String endSection = (itineraryItem.getEndTime() != null ? new SimpleDateFormat("HH:mm").format(itineraryItem.getEndTime()) : "...");
+                        if (startSection.equals("...") && endSection.equals("...")) {
+                            timePeriod = "";
+                        } else {
+                            timePeriod = (startSection + (!startSection.isBlank() && !endSection.isBlank() ? " - " : "") + endSection);
+                        }
+
                         // Build day activities entry
                         dayActivities.append(
                                 ITINERARY_ACTIVITY_TEMPLATE
+                                        .replace("{{align}}", timePeriod.startsWith("...") ? "right" : "left")
+                                        .replace("{{period}}", timePeriod)
                                         .replace("{{description}}", itineraryItem.getDescription())
                                         .replace("{{linkedExpenses}}",
                                                 !itineraryItem.getLinkedExpenses().isEmpty()
@@ -176,9 +186,11 @@ public class DocumentGenerator {
                     }
                     itineraryTableContent.append(
                             ITINERARY_ROW_TEMPLATE
+                                    .replace("{{shouldBreak}}", TripManager.getInstance().getSettings().shouldBreakPageForEachDay() && index > 0 ? " break" : "")
                                     .replace("{{dayNumber}}", String.valueOf(item.getKey()))
                                     .replace("{{activities}}", dayActivities.toString())
                     ).append("\n");
+                    index++;
                 }
                 htmlTemplate = htmlTemplate.replace("{{itineraryDays}}", itineraryTableContent.toString());
 
