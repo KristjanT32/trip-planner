@@ -53,6 +53,14 @@ public class Itinerary {
             linkedExpenses.addLast(expenseID);
         }
 
+        public double getExpenseTotal(Trip trip) {
+            double totalExpenses = 0.0d;
+            for (PlannedExpense exp : linkedExpenses.stream().map(exp -> trip.getExpenseData().getPlannedExpenses().get(exp)).toList()) {
+                totalExpenses += exp.getAmount();
+            }
+            return Math.floor(totalExpenses);
+        }
+
         public void unlinkExpense(UUID expenseID) {
             linkedExpenses.removeIf(p -> p.equals(expenseID));
         }

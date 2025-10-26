@@ -13,11 +13,11 @@ public class PlannerApplication extends javafx.application.Application {
     @Override
     public void start(Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(PlannerApplication.class.getResource("application.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 926, 734);
+        Scene scene = new Scene(fxmlLoader.load(), 1100, 860);
         stage.setTitle("KrisApps Trip Planner");
         stage.setScene(scene);
-        stage.setMinWidth(926);
-        stage.setMinHeight(734);
+        stage.setMinWidth(1050);
+        stage.setMinHeight(800);
         window = stage;
         stage.show();
     }

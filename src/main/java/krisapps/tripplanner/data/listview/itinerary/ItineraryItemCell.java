@@ -10,6 +10,7 @@ import krisapps.tripplanner.PlannerApplication;
 import krisapps.tripplanner.TripPlanner;
 import krisapps.tripplanner.data.TripManager;
 import krisapps.tripplanner.data.prompts.EditItineraryEntryDialog;
+import krisapps.tripplanner.data.prompts.ItineraryEntryDetailsDialog;
 import krisapps.tripplanner.data.prompts.LinkExpensesDialog;
 import krisapps.tripplanner.data.trip.Itinerary;
 
@@ -36,6 +37,9 @@ public class ItineraryItemCell extends ListCell<Itinerary.ItineraryItem> {
     @FXML
     private Button editActivityButton;
 
+    @FXML
+    private Button viewDetailsButton;
+
     final TripManager util = TripManager.getInstance();
     private final boolean editable;
 
@@ -57,6 +61,9 @@ public class ItineraryItemCell extends ListCell<Itinerary.ItineraryItem> {
         dayLabel.setStyle("-fx-text-fill: black");
         expenseSummaryLabel.setStyle("-fx-text-fill: black");
 
+        viewDetailsButton.setVisible(!editable);
+        viewDetailsButton.setManaged(!editable);
+
         if (!editable) {
             editActivityButton.setVisible(false);
             linkExpensesButton.setVisible(false);
@@ -76,6 +83,11 @@ public class ItineraryItemCell extends ListCell<Itinerary.ItineraryItem> {
             setText(null);
             setGraphic(rootPane);
 
+            viewDetailsButton.setVisible(isSelected() && !editable);
+            
+            linkExpensesButton.setVisible(isSelected() && editable);
+            editActivityButton.setVisible(isSelected() && editable);
+
             linkExpensesButton.setOnAction((_event) -> {
                 LinkExpensesDialog dlg = new LinkExpensesDialog(item);
                 dlg.showAndWait();
@@ -86,6 +98,11 @@ public class ItineraryItemCell extends ListCell<Itinerary.ItineraryItem> {
                 EditItineraryEntryDialog editDialog = new EditItineraryEntryDialog(TripPlanner.getInstance().getOpenPlan(), item);
                 editDialog.showAndWait();
                 this.updateItem(item, false);
+            }));
+
+            viewDetailsButton.setOnAction((event -> {
+                ItineraryEntryDetailsDialog detailsDialog = new ItineraryEntryDetailsDialog(TripPlanner.getInstance().getOpenPlan(), item);
+                detailsDialog.showAndWait();
             }));
 
             double totalExpenses = 0.0d;

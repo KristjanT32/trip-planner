@@ -26,6 +26,9 @@ public class ExpenseLinkerCell extends ListCell<PlannedExpense> {
     private Label expenseVal;
 
     @FXML
+    private Label expenseDay;
+
+    @FXML
     private Label expenseType;
 
     @FXML
@@ -51,6 +54,7 @@ public class ExpenseLinkerCell extends ListCell<PlannedExpense> {
         expenseDesc.setStyle("-fx-text-fill: black");
         expenseVal.setStyle("-fx-text-fill: black");
         expenseType.setStyle("-fx-text-fill: black");
+        expenseDay.setStyle("-fx-text-fill: black");
         editExpenseButton.setVisible(false);
 
         selectedProperty().addListener((observable, oldValue, newValue) -> {
@@ -81,6 +85,11 @@ public class ExpenseLinkerCell extends ListCell<PlannedExpense> {
             expenseDesc.setText(item.getDescription());
             expenseVal.setText(TripManager.Formatting.formatMoney(item.getAmount(), TripManager.getInstance().getSettings().getCurrencySymbol(), TripManager.getInstance().getSettings().currencySymbolPrefixed()));
             expenseType.setText("#" + item.getCategory().name());
+            if (item.getDay() != -1) {
+                expenseDay.setText("Day #" + item.getDay());
+            } else {
+                expenseDay.setText("");
+            }
             setText(null);
             setGraphic(rootPane);
         }

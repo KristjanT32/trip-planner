@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.URL?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+
+<VBox fx:id="rootPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="500.0" styleClass="expense-linker-listview" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <HBox>
+         <children>
+            <VBox>
+               <children>
+                  <Label fx:id="descLabel" text="Itinerary entry description">
+                     <font>
+                        <Font name="Segoe UI Bold" size="18.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="dayLabel" text="Planned for Day #0">
+                     <font>
+                        <Font name="Segoe UI" size="18.0" />
+                     </font>
+                  </Label>
+               </children>
+            </VBox>
+            <Label fx:id="expenseTotalLabel" alignment="CENTER_RIGHT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="0.00€" textAlignment="RIGHT" HBox.hgrow="ALWAYS">
+               <font>
+                  <Font name="Segoe UI Bold" size="36.0" />
+               </font>
+            </Label>
+         </children>
+      </HBox>
+      <Separator orientation="VERTICAL" prefHeight="20.0" visible="false" />
+      <Label text="Planned expenses for entry">
+         <font>
+            <Font name="Segoe UI Bold" size="16.0" />
+         </font>
+      </Label>
+      <ListView fx:id="expenseList" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="expense-linker-listview" VBox.vgrow="ALWAYS">
+         <VBox.margin>
+            <Insets top="5.0" />
+         </VBox.margin>
+      </ListView>
+   </children>
+   <padding>
+      <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+   </padding>
+   <stylesheets>
+      <URL value="@../styles/styles.css" />
+      <URL value="@../styles/dialogs.css" />
+      <URL value="@../styles/listview.css" />
+   </stylesheets>
+</VBox>

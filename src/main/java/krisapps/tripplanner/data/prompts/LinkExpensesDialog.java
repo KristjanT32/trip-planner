@@ -83,20 +83,19 @@ public class LinkExpensesDialog extends Dialog<Void> {
         b.setManaged(false);
 
         setTitle(trips.isReadOnlyEnabled() ? "Link expenses (preview; read-only mode active)" : "Link expenses");
-        activityNameLabel.setText(item.getDescription());
+        activityNameLabel.setText(item.getDescription() + (item.getDay() != -1 ? " (Day #" + item.getDay() + ")" : ""));
         closeButton.setOnAction(e -> {
             close();
         });
     }
 
     private void recalculateTotal() {
-        totalExpenses = 0.0d;
-        for (PlannedExpense exp : item.getLinkedExpenses().stream().map(exp -> trips.getOpenPlan().getExpenseData().getPlannedExpenses().get(exp)).toList()) {
-            totalExpenses += exp.getAmount();
-        }
+        totalExpenses = item.getExpenseTotal(trips.getOpenPlan());
     }
 
     private void refreshUI() {
+
+        // Populate expense list
         ObservableList<PlannedExpense> expenses = expenseList.getItems();
         expenses.clear();
 
@@ -106,6 +105,7 @@ public class LinkExpensesDialog extends Dialog<Void> {
             expenses.add(exp);
         }
 
+        // Populate linked expense list
         ObservableList<PlannedExpense> linkedExpenses = linkedExpenseList.getItems();
         linkedExpenses.clear();
 
@@ -136,5 +136,30 @@ public class LinkExpensesDialog extends Dialog<Void> {
             TripManager.log("Unlinked expense #" + expense.getSelectedItem().getId() + " from " + item.getDescription());
             refreshUI();
         }
+    }
+
+    public void linkAll() {
+        for (PlannedExpense exp : trips.getOpenPlan().getExpenseData().getPlannedExpenses().values()) {
+            if (item.getLinkedExpenses().contains(exp.getId())) continue;
+            if (TripManager.getInstance().isExpenseLinked(trips.getOpenPlan(), exp.getId())) continue;
+            item.linkExpense(exp);
+        }
+        refreshUI();
+    }
+
+    public void unlinkAll() {
+        item.getLinkedExpenses().clear();
+        refreshUI();
+    }
+
+    public void linkMatching() {
+        for (PlannedExpense exp : trips.getOpenPlan().getExpenseData().getPlannedExpenses().values()) {
+            if (item.getLinkedExpenses().contains(exp.getId())) continue;
+            if (TripManager.getInstance().isExpenseLinked(trips.getOpenPlan(), exp.getId())) continue;
+            if (exp.getDay() == item.getDay()) {
+                item.linkExpense(exp);
+            }
+        }
+        refreshUI();
     }
 }

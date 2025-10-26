@@ -17,6 +17,8 @@ module krisapps.tripplanner {
     requires com.google.api.client;
     requires java.sql;
     requires openhtmltopdf.pdfbox;
+    requires javafx.graphics;
+    requires javafx.base;
 
     opens krisapps.tripplanner to javafx.fxml;
     opens krisapps.tripplanner.data.listview.itinerary to javafx.fxml;

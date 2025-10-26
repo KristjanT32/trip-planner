@@ -7,15 +7,23 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<HBox alignment="CENTER_LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="50.0" styleClass="expense-linker-cell" stylesheets="@../styles/listview.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<HBox alignment="CENTER_LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="50.0" prefHeight="50.0" prefWidth="317.0" styleClass="expense-linker-cell" stylesheets="@../styles/listview.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <VBox alignment="CENTER_LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS">
          <children>
             <HBox alignment="CENTER_LEFT" maxWidth="1.7976931348623157E308">
                <children>
-                  <Label fx:id="expenseDesc" maxWidth="1.7976931348623157E308" text="Expense description" HBox.hgrow="ALWAYS">
+                  <Label fx:id="expenseDesc" maxWidth="1.7976931348623157E308" text="Expense description" HBox.hgrow="SOMETIMES">
                      <font>
                         <Font name="Segoe UI" size="12.0" />
+                     </font>
+                     <HBox.margin>
+                        <Insets right="5.0" />
+                     </HBox.margin>
+                  </Label>
+                  <Label fx:id="expenseDay" maxWidth="1.7976931348623157E308" text="Day #0" HBox.hgrow="ALWAYS">
+                     <font>
+                        <Font name="Segoe UI Bold" size="12.0" />
                      </font>
                      <HBox.margin>
                         <Insets right="5.0" />

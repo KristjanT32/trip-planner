@@ -149,6 +149,13 @@ public class TripManager {
         return t.getExpenseData().getPlannedExpenses().getOrDefault(id, null);
     }
 
+    /**
+     * Checks whether the supplied expense is linked to any itinerary entries.
+     *
+     * @param t         The trip whose expense is supplied
+     * @param expenseID The unique ID of the expense to check
+     * @return <code>true</code> if the expense is linked, <code>false</code> otherwise
+     */
     public boolean isExpenseLinked(Trip t, UUID expenseID) {
         return t.getItinerary().getItems().values().stream().anyMatch(item -> item.getLinkedExpenses().contains(expenseID));
     }

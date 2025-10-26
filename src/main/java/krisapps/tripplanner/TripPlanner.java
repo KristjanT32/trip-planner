@@ -191,6 +191,8 @@ public class TripPlanner {
     //</editor-fold>
     //<editor-fold desc="Notification area">
     @FXML
+    private VBox notificationArea;
+    @FXML
     private HBox readOnlyNotification;
     @FXML
     private HBox unsavedChangesNotification;
@@ -259,7 +261,7 @@ public class TripPlanner {
             reminderOffsetUnitSelector.getSelectionModel().select(calSettings.getReminderUnit());
             countdownToggle.setSelected(currentPlanSettings.isCountdownEnabled());
             countdownFormatSelector.setDisable(!currentPlanSettings.isCountdownEnabled());
-            countdownFormatSelector.getSelectionModel().select(CountdownFormat.DEFAULT.getPreview());
+            countdownFormatSelector.getSelectionModel().select(currentPlanSettings.getCountdownFormat().getPreview());
         });
         refreshViews();
         refreshSpinners();
@@ -600,6 +602,7 @@ public class TripPlanner {
                     }
                 }
             }
+            notificationArea.setManaged(!(!readOnlyNotification.isVisible() && !returnToPlannerNotification.isVisible() && !unsavedChangesNotification.isVisible() && !errorPanel.isVisible()));
         });
     }
 

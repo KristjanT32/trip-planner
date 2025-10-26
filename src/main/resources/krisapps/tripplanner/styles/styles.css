@@ -3,6 +3,10 @@
     -fx-background-insets: 0;
 }
 
+.list-view .scroll-bar .thumb {
+    -fx-background-color: #a5a5a5;
+}
+
 .button {
     -fx-background-color: #c8c8c8;
     -fx-background-radius: 20px;
