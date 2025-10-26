@@ -106,13 +106,10 @@ public class TripManager {
         }
     }
 
-    public void updateTripSettings(Trip trip, ProgramSettings.TripSettings tripSettings) {
+    public void updateTripSettings(Trip trip, TripSettings tripSettings) {
         Data data = getData();
-        ProgramSettings programSettings = data.getSettings();
 
-        boolean updated = programSettings.setTripSettings(trip.getUniqueID(), tripSettings);
-
-        data.setSettings(programSettings);
+        boolean updated = data.setTripSettings(trip.getUniqueID(), tripSettings);
         saveData(data);
 
         if (updated) {
@@ -120,6 +117,13 @@ public class TripManager {
         } else {
             log("Added trip settings for '" + trip.getTripName() + "' (" + trip.getUniqueID() + ")");
         }
+    }
+
+    public void updateProgramSettings(ProgramSettings programSettings) {
+        Data data = getData();
+        data.setSettings(programSettings);
+        saveData(data);
+        log("Updated program settings");
     }
 
     public void addExpense(Trip trip, PlannedExpense expense) {
@@ -147,6 +151,15 @@ public class TripManager {
 
     public PlannedExpense getExpenseByID(Trip t, UUID id) {
         return t.getExpenseData().getPlannedExpenses().getOrDefault(id, null);
+    }
+
+    public TripSettings getTripSettings(UUID tripID) {
+        Data data = getData();
+        return data.getTripSettings(tripID);
+    }
+
+    public TripSettings getSettingsForTrip(UUID tripID) {
+        return getTripSettings(tripID);
     }
 
     /**

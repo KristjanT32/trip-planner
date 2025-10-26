@@ -1,5 +1,6 @@
 package krisapps.tripplanner.data.trip;
 
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.UUID;
@@ -13,12 +14,15 @@ public class Itinerary {
     public static class ItineraryItem {
         private String description;
         private int day;
+        private Date startTime;
+        private Date endTime;
         private final LinkedList<UUID> linkedExpenses;
         private final UUID id;
 
         public ItineraryItem(String description, int day) {
             this.description = description;
             this.day = day;
+            this.startTime = null;
             this.linkedExpenses = new LinkedList<>();
             this.id = UUID.randomUUID();
         }
@@ -41,6 +45,22 @@ public class Itinerary {
 
         public void setDay(int day) {
             this.day = day;
+        }
+
+        public void setStartTime(Date startTime) {
+            this.startTime = startTime;
+        }
+
+        public Date getStartTime() {
+            return startTime;
+        }
+
+        public Date getEndTime() {
+            return endTime;
+        }
+
+        public void setEndTime(Date endTime) {
+            this.endTime = endTime;
         }
 
         public void linkExpense(PlannedExpense expense) {

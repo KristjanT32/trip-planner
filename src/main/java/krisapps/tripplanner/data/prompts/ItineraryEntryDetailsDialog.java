@@ -15,6 +15,7 @@ import krisapps.tripplanner.data.trip.PlannedExpense;
 import krisapps.tripplanner.data.trip.Trip;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.stream.Collectors;
 
 public class ItineraryEntryDetailsDialog extends Dialog<Void> {
@@ -27,6 +28,9 @@ public class ItineraryEntryDetailsDialog extends Dialog<Void> {
 
     @FXML
     private Label dayLabel;
+
+    @FXML
+    private Label timeLabel;
 
     @FXML
     private Label expenseTotalLabel;
@@ -57,7 +61,17 @@ public class ItineraryEntryDetailsDialog extends Dialog<Void> {
 
         descLabel.setText(item.getDescription());
         dayLabel.setText(item.getDay() != -1 ? "Planned for Day #" + item.getDay() : "No day assigned");
-        expenseTotalLabel.setText(TripManager.Formatting.formatMoney(item.getExpenseTotal(trip), TripManager.getInstance().getSettings().getCurrencySymbol(), TripManager.getInstance().getSettings().currencySymbolPrefixed()));
+        expenseTotalLabel.setText("Total expenses: " + TripManager.Formatting.formatMoney(item.getExpenseTotal(trip), TripManager.getInstance().getSettings().getCurrencySymbol(), TripManager.getInstance().getSettings().currencySymbolPrefixed()));
+
+        String startSection = (item.getStartTime() != null ? new SimpleDateFormat("HH:mm").format(item.getStartTime()) : "...");
+        String endSection = (item.getEndTime() != null ? new SimpleDateFormat("HH:mm").format(item.getEndTime()) : "...");
+        if (startSection.equals("...") && endSection.equals("...")) {
+            timeLabel.setText("");
+        } else {
+            timeLabel.setText(startSection + (!startSection.isBlank() && !endSection.isBlank() ? " - " : "") + endSection);
+        }
+        timeLabel.setVisible(!timeLabel.getText().isEmpty());
+        timeLabel.setManaged(timeLabel.isVisible());
 
         expenseList.setCellFactory(new ExpenseLinkerCellFactory(false));
 
