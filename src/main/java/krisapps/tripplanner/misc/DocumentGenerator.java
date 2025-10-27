@@ -244,6 +244,8 @@ public class DocumentGenerator {
                 htmlTemplate = htmlTemplate.replace("{{categoryExpenses}}", costDistributionContent.toString());
 
                 builder.useFastMode();
+                builder.useFont(new File(PlannerApplication.class.getResource("pdf_generator/fonts/Arial.ttf").getFile()), "Arial");
+                builder.useFont(new File(PlannerApplication.class.getResource("pdf_generator/fonts/SegoeUI.ttf").getFile()), "Segoe UI");
                 builder.withHtmlContent(htmlTemplate, PlannerApplication.class.getResource("pdf_generator/").toExternalForm());
                 builder.toStream(os);
                 builder.run();

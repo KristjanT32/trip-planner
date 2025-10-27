@@ -1,5 +1,8 @@
+* {
+    font-family: "Segoe UI", "Arial", sans-serif;
+}
+
 body {
-    font-family: "Segoe UI", Arial, sans-serif;
     margin: 2cm;
     background-color: #fff;
     color: #222;

@@ -19,6 +19,7 @@ module krisapps.tripplanner {
     requires openhtmltopdf.pdfbox;
     requires javafx.graphics;
     requires javafx.base;
+    requires org.apache.pdfbox;
 
     opens krisapps.tripplanner to javafx.fxml;
     opens krisapps.tripplanner.data.listview.itinerary to javafx.fxml;
