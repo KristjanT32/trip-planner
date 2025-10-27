@@ -1,5 +1,10 @@
+@font-face {
+    font-family: "Segoe UI";
+    -fs-font-subset: complete-font
+}
+
 * {
-    font-family: "Segoe UI", "Arial", sans-serif;
+    font-family: "Noto Sans", sans-serif;
 }
 
 body {

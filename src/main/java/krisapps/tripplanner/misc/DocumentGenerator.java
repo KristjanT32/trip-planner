@@ -1,6 +1,8 @@
 package krisapps.tripplanner.misc;
 
+import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
+import javafx.scene.text.FontWeight;
 import krisapps.tripplanner.PlannerApplication;
 import krisapps.tripplanner.data.TripManager;
 import krisapps.tripplanner.data.prompts.LoadingDialog;
@@ -13,7 +15,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -243,12 +247,16 @@ public class DocumentGenerator {
 
                 htmlTemplate = htmlTemplate.replace("{{categoryExpenses}}", costDistributionContent.toString());
 
+                // Load font
+                Path fontFile = Files.createTempFile("noto", ".ttf");
+                Files.copy(PlannerApplication.class.getResourceAsStream("pdf_generator/fonts/NotoSans.ttf"), fontFile, StandardCopyOption.REPLACE_EXISTING);
+
                 builder.useFastMode();
-                builder.useFont(new File(PlannerApplication.class.getResource("pdf_generator/fonts/Arial.ttf").getFile()), "Arial");
-                builder.useFont(new File(PlannerApplication.class.getResource("pdf_generator/fonts/SegoeUI.ttf").getFile()), "Segoe UI");
+                builder.useFont(fontFile.toFile(), "Noto Sans", FontWeight.NORMAL.getWeight(), BaseRendererBuilder.FontStyle.NORMAL, false);
                 builder.withHtmlContent(htmlTemplate, PlannerApplication.class.getResource("pdf_generator/").toExternalForm());
                 builder.toStream(os);
                 builder.run();
+                fontFile.toFile().deleteOnExit();
                 TripManager.log("Done");
             } catch (Throwable t) {
                 TripManager.log("Error generating trip plan: " + t.getMessage());
