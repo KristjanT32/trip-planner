@@ -1,0 +1,140 @@
+body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    margin: 2cm;
+    background-color: #fff;
+    color: #222;
+    line-height: 1.5;
+}
+
+header {
+    text-align: center;
+    border-bottom: 2px solid #4A90E2;
+    padding-bottom: 0.5em;
+    margin-bottom: 1.5em;
+}
+
+header h1 {
+    font-size: 2.2em;
+    margin-bottom: 0.2em;
+}
+
+header p {
+    margin: 0.2em 0;
+    color: #555;
+}
+
+section {
+    margin-bottom: 2em;
+}
+
+section.break {
+    page-break-before: always;
+}
+
+.day.break {
+    page-break-before: always;
+}
+
+h2 {
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 0.2em;
+    color: #4A90E2;
+}
+
+.financial-summary {
+    margin-bottom: 1em;
+}
+
+.expense-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1em;
+}
+
+.expense-table th,
+.expense-table td {
+    border: 1px solid #ccc;
+    padding: 0.5em;
+    text-align: left;
+}
+
+.expense-table th {
+    background-color: #f0f4fa;
+}
+
+.itinerary .day {
+    margin-bottom: 1em;
+    border-left: 3px solid #4A90E2;
+    padding-left: 1em;
+}
+
+.itinerary li strong {
+    display: inline-block;
+    width: 100px;
+    color: #4A90E2;
+    font-weight: 600;
+    margin-right: 0.3em;
+    white-space: nowrap;
+}
+
+.itinerary li strong.left {
+    text-align: left;
+}
+
+.itinerary li strong.right {
+    text-align: right;
+}
+
+.itinerary h3 {
+    color: #333;
+    margin-bottom: 0.4em;
+}
+
+ul {
+    margin: 0;
+    padding-left: 1.2em;
+}
+
+.linked-expenses {
+    margin-top: 0.3em;
+    font-size: 0.9em;
+    color: #555;
+}
+
+/* Category Cost Table */
+.category-costs {
+    margin-top: 2em;
+}
+
+.category-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.5em;
+    font-family: inherit;
+    font-size: 0.95em;
+}
+
+.category-table th,
+.category-table td {
+    border: 1px solid #ccc;
+    padding: 8px 12px;
+    text-align: left;
+}
+
+.category-table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+.category-table tbody tr:nth-child(even) {
+    background-color: #fafafa;
+}
+
+
+footer {
+    text-align: center;
+    border-top: 1px solid #ccc;
+    padding-top: 0.5em;
+    font-size: 0.9em;
+    color: #666;
+}
