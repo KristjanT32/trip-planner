@@ -1,6 +1,5 @@
 package krisapps.tripplanner;
 
-import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.EventReminder;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
@@ -29,7 +28,9 @@ import krisapps.tripplanner.data.trip.ExpenseCategory;
 import krisapps.tripplanner.data.trip.Itinerary;
 import krisapps.tripplanner.data.trip.PlannedExpense;
 import krisapps.tripplanner.data.trip.Trip;
-import krisapps.tripplanner.misc.*;
+import krisapps.tripplanner.misc.DocumentGenerator;
+import krisapps.tripplanner.misc.PlannerError;
+import krisapps.tripplanner.misc.PlannerNotification;
 import krisapps.tripplanner.misc.utils.AnimationUtils;
 import krisapps.tripplanner.misc.utils.GoogleCalendarIntegration;
 import krisapps.tripplanner.misc.utils.PopupManager;
@@ -1049,6 +1050,20 @@ public class TripPlanner {
                     currentPlanSettings.setCalendarEventID(null);
                     trips.updateTripSettings(currentPlan, currentPlanSettings);
                     TripManager.log("Deleted old calendar events for '" + currentPlan.getTripName() + "'");
+                } else {
+                    Optional<ButtonType> response = PopupManager.showConfirmation(
+                            "Reset internal state?",
+                            "The Planner has stored an event ID, but cannot find a Calendar Event with it. Would you like to reset this ID?\nThis can lead to duplicate events, for example if the operation failed due to a network error.",
+                            new ButtonType("Yes, reset", ButtonBar.ButtonData.APPLY),
+                            new ButtonType("No, cancel", ButtonBar.ButtonData.CANCEL_CLOSE)
+                    );
+                    if (response.isPresent()) {
+                        if (response.get().getButtonData() == ButtonBar.ButtonData.APPLY) {
+                            currentPlanSettings.setCalendarEventID(null);
+                            trips.updateTripSettings(currentPlan, currentPlanSettings);
+                            TripManager.log("Reset calendar event ID for '" + currentPlan.getTripName() + "'");
+                        }
+                    }
                 }
             }
         }
@@ -1067,7 +1082,9 @@ public class TripPlanner {
                 }
                 String id = GoogleCalendarIntegration.createCalendarEventForTrip(currentPlan, reminder, "");
                 if (id == null) {
-                    PopupManager.showPredefinedPopup(PopupManager.PopupType.CALENDAR_EVENTS_NOT_CREATED);
+                    Platform.runLater(() -> {
+                        PopupManager.showPredefinedPopup(PopupManager.PopupType.CALENDAR_EVENTS_NOT_CREATED);
+                    });
                 } else {
                     TripManager.log(String.format("Event created - ID: %s, updating settings", id));
                     dlg.setPrimaryLabel("Events created!");

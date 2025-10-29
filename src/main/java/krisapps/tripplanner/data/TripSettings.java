@@ -114,6 +114,9 @@ public class TripSettings {
     }
 
     public boolean calendarEventsCreated() {
+        if (this.calendarEventID == null) {
+            return false;
+        }
         return !this.calendarEventID.isBlank();
     }
 }

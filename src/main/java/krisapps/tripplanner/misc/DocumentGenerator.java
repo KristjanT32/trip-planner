@@ -2,6 +2,7 @@ package krisapps.tripplanner.misc;
 
 import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
+import javafx.application.Platform;
 import javafx.scene.text.FontWeight;
 import krisapps.tripplanner.PlannerApplication;
 import krisapps.tripplanner.data.TripManager;
@@ -10,6 +11,7 @@ import krisapps.tripplanner.data.trip.ExpenseCategory;
 import krisapps.tripplanner.data.trip.Itinerary;
 import krisapps.tripplanner.data.trip.PlannedExpense;
 import krisapps.tripplanner.data.trip.Trip;
+import krisapps.tripplanner.misc.utils.PopupManager;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -96,6 +98,23 @@ public class DocumentGenerator {
         if (!output.toFile().isDirectory()) {
             throw new IllegalArgumentException("The output path must point to a directory");
         }
+
+        if (trip.getItinerary().getItems().isEmpty() && trip.getExpenseData().getPlannedExpenses().isEmpty()) {
+            Platform.runLater(() -> {
+                PopupManager.showPredefinedPopup(PopupManager.PopupType.PLAN_DATA_MISSING);
+            });
+            return;
+        }
+
+        if (!trip.tripDatesSupplied()) {
+            Platform.runLater(() -> {
+                PopupManager.showPredefinedPopup(PopupManager.PopupType.PLAN_DATA_MISSING);
+            });
+            return;
+        }
+
+        TripManager.log("Generating trip plan document for '" + trip.getTripName() + "'...");
+        long start = System.currentTimeMillis();
 
         LoadingDialog dlg = new LoadingDialog(LoadingDialog.LoadingOperationType.INDETERMINATE_PROGRESSBAR);
         dlg.setPrimaryLabel("Creating document...");
@@ -256,7 +275,7 @@ public class DocumentGenerator {
                 builder.toStream(os);
                 builder.run();
                 fontFile.toFile().deleteOnExit();
-                TripManager.log("Done");
+                TripManager.log("Trip plan generated in " + (System.currentTimeMillis() - start) + "ms");
             } catch (Throwable t) {
                 TripManager.log("Error generating trip plan: " + t.getMessage());
             }

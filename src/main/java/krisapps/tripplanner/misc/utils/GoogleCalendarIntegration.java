@@ -105,7 +105,9 @@ public class GoogleCalendarIntegration {
         tripEvent.setCreated(new DateTime(Date.from(Instant.now())));
 
         Event.Reminders reminders = new Event.Reminders();
-        reminders.put("reminder", reminder);
+        reminders.setUseDefault(false);
+        reminder.setMethod("popup");
+        reminders.setOverrides(List.of(reminder));
         tripEvent.setReminders(reminders);
 
         try {
