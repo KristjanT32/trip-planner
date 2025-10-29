@@ -1,4 +1,4 @@
-package krisapps.tripplanner.misc;
+package krisapps.tripplanner.misc.utils;
 
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -16,7 +16,16 @@ public class PopupManager {
         EXPENSE_NAME_MISSING,
         EXPENSE_AMOUNT_MISSING,
         NOT_IMPLEMENTED,
-        NEW_TRIP_WIZARD_EMPTY, NO_OPEN_PLAN, CALENDAR_EVENTS_NOT_CREATED, EVENTS_NOT_DELETED, EVENTS_DELETED, PLANNING_IN_PROGRESS, CALENDAR_INTEGRATION_DISABLED, NO_EVENTS
+        NEW_TRIP_WIZARD_EMPTY,
+        NO_OPEN_PLAN,
+        CALENDAR_EVENTS_NOT_CREATED,
+        EVENTS_NOT_DELETED,
+        EVENTS_DELETED,
+        PLANNING_IN_PROGRESS,
+        CALENDAR_INTEGRATION_DISABLED,
+        NO_EVENTS,
+        DOCUMENT_TEMPLATE_MISSING,
+        PLAN_DATA_MISSING
     }
 
     public static Optional<ButtonType> showPredefinedPopup(PopupType type) {
@@ -74,6 +83,16 @@ public class PopupManager {
                 alert.setTitle("Integration disabled");
                 alert.setContentText("The Planner couldn't generate any calendar events, since the calendar integration is disabled.\nIf you wish to enable it, toggle the feature on the 'Set reminders' page of the Planner.");
                 alert.setAlertType(Alert.AlertType.WARNING);
+            }
+            case DOCUMENT_TEMPLATE_MISSING -> {
+                alert.setTitle("Document generation failed");
+                alert.setContentText("No plan document template was found - please make sure the plan document is included in the resource folder of the program and try again.");
+                alert.setAlertType(Alert.AlertType.ERROR);
+            }
+            case PLAN_DATA_MISSING -> {
+                alert.setTitle("Document generation failed");
+                alert.setContentText("There is not enough trip data for a planning document to be generated.");
+                alert.setAlertType(Alert.AlertType.ERROR);
             }
             case NOT_IMPLEMENTED -> {
                 alert.setTitle("Uh-oh!");

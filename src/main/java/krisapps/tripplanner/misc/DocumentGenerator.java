@@ -85,9 +85,8 @@ public class DocumentGenerator {
      *
      * @param trip   The trip to generate the plan document for.
      * @param output The location where the file will be generated.
-     * @return Whether the generation was successful
      */
-    public static boolean generateTripPlan(Trip trip, Path output) {
+    public static void generateTripPlan(Trip trip, Path output) {
         if (trip == null) {
             throw new IllegalArgumentException("Cannot generate trip plan for null trip");
         }
@@ -262,7 +261,6 @@ public class DocumentGenerator {
                 TripManager.log("Error generating trip plan: " + t.getMessage());
             }
         });
-        return true;
     }
 
 }

@@ -21,6 +21,7 @@ import krisapps.tripplanner.data.listview.cost_list.CostListCellFactory;
 import krisapps.tripplanner.data.listview.expense_linker.ExpenseLinkerCellFactory;
 import krisapps.tripplanner.data.listview.itinerary.ItineraryCellFactory;
 import krisapps.tripplanner.data.listview.upcoming_trips.UpcomingTripsCellFactory;
+import krisapps.tripplanner.data.prompts.DebugActionsDialog;
 import krisapps.tripplanner.data.prompts.EditTripDetailsDialog;
 import krisapps.tripplanner.data.prompts.LoadingDialog;
 import krisapps.tripplanner.data.prompts.ProgramSettingsDialog;
@@ -29,6 +30,9 @@ import krisapps.tripplanner.data.trip.Itinerary;
 import krisapps.tripplanner.data.trip.PlannedExpense;
 import krisapps.tripplanner.data.trip.Trip;
 import krisapps.tripplanner.misc.*;
+import krisapps.tripplanner.misc.utils.AnimationUtils;
+import krisapps.tripplanner.misc.utils.GoogleCalendarIntegration;
+import krisapps.tripplanner.misc.utils.PopupManager;
 
 import java.awt.*;
 import java.time.Duration;
@@ -290,18 +294,6 @@ public class TripPlanner {
                     }
                 });
             }
-        });
-        debugAction.setOnAction((e) -> {
-            if (currentPlan == null) return;
-            // GoogleCalendarIntegration.createCalendarEventForTrip(currentPlan, null, "_test32");
-            LoadingDialog dlg = new LoadingDialog(LoadingDialog.LoadingOperationType.INDETERMINATE_PROGRESSBAR);
-            dlg.setPrimaryLabel("Please wait");
-            dlg.setSecondaryLabel("Querying the Calendar API...");
-            dlg.show("Hold on!", () -> {
-                for (Event ev : GoogleCalendarIntegration.getTripPlannerCalendarEvents()) {
-                    TripManager.log(ev.getDescription());
-                }
-            });
         });
 
         expenseAmountBox.setTextFormatter(new TextFormatter<>(numbersOnlyFormatter));
@@ -879,7 +871,13 @@ public class TripPlanner {
     public void refreshUpcomingTrips() {
         Platform.runLater(() -> {
             upcomingTripsList.getItems().clear();
-            for (Trip t : trips.getTrips().stream().sorted(Comparator.comparingLong(t -> Duration.between(LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault()), t.getTripStartDate()).toHours())).toList()) {
+            for (Trip t : trips.getTrips().stream().sorted(Comparator.comparingLong(t -> {
+                if (t.getTripStartDate() != null) {
+                    return Duration.between(LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault()), t.getTripStartDate()).toHours();
+                } else {
+                    return -1;
+                }
+            })).toList()) {
                 upcomingTripsList.getItems().add(t);
             }
         });
@@ -1128,6 +1126,11 @@ public class TripPlanner {
     public void generatePlanDocument() {
         if (currentPlan == null) return;
         DocumentGenerator.generateTripPlan(currentPlan, trips.getSettings().getDocumentGeneratorOutputFolder());
+    }
+
+    public void promptDisplayDebugMenu() {
+        DebugActionsDialog dlg = new DebugActionsDialog();
+        dlg.showAndWait();
     }
 
     public void promptClosePlanner() {

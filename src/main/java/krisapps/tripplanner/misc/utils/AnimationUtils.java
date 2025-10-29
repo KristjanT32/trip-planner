@@ -1,4 +1,4 @@
-package krisapps.tripplanner.misc;
+package krisapps.tripplanner.misc.utils;
 
 import javafx.animation.Interpolator;
 import javafx.animation.ScaleTransition;

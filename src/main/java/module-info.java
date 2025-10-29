@@ -38,4 +38,6 @@ module krisapps.tripplanner {
 
     opens krisapps.tripplanner.data to com.google.gson, javafx.fxml;
     opens krisapps.tripplanner.misc to com.google.gson, javafx.fxml;
+    exports krisapps.tripplanner.misc.utils;
+    opens krisapps.tripplanner.misc.utils to com.google.gson, javafx.fxml;
 }
