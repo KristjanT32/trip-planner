@@ -9,10 +9,11 @@ import javafx.scene.layout.HBox;
 import krisapps.tripplanner.PlannerApplication;
 import krisapps.tripplanner.TripPlanner;
 import krisapps.tripplanner.data.TripManager;
-import krisapps.tripplanner.data.prompts.EditExpenseDialog;
+import krisapps.tripplanner.data.prompts.AddOrEditExpenseDialog;
 import krisapps.tripplanner.data.trip.PlannedExpense;
 
 import java.io.IOException;
+import java.util.Optional;
 
 public class ExpenseLinkerCell extends ListCell<PlannedExpense> {
 
@@ -72,8 +73,9 @@ public class ExpenseLinkerCell extends ListCell<PlannedExpense> {
 
         editExpenseButton.setOnAction(event -> {
             if (editable) {
-                EditExpenseDialog editDialog = new EditExpenseDialog(TripPlanner.getInstance().getOpenPlan(), item);
-                editDialog.showAndWait();
+                AddOrEditExpenseDialog editDialog = new AddOrEditExpenseDialog(item, (int) TripPlanner.getInstance().getOpenPlan().getTripDuration().toDays(), true);
+                Optional<PlannedExpense> updated = editDialog.showAndWait();
+                updated.ifPresent(expense -> TripPlanner.getInstance().getOpenPlan().getExpenseData().updateExpense(expense.getId(), expense));
                 this.updateItem(item, false);
             }
         });

@@ -9,13 +9,14 @@ import javafx.scene.layout.VBox;
 import krisapps.tripplanner.PlannerApplication;
 import krisapps.tripplanner.TripPlanner;
 import krisapps.tripplanner.data.TripManager;
-import krisapps.tripplanner.data.prompts.EditItineraryEntryDialog;
+import krisapps.tripplanner.data.prompts.AddOrEditItineraryEntryDialog;
 import krisapps.tripplanner.data.prompts.ItineraryEntryDetailsDialog;
 import krisapps.tripplanner.data.prompts.LinkExpensesDialog;
 import krisapps.tripplanner.data.trip.Itinerary;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Optional;
 import java.util.UUID;
 
 public class ItineraryItemCell extends ListCell<Itinerary.ItineraryItem> {
@@ -109,8 +110,10 @@ public class ItineraryItemCell extends ListCell<Itinerary.ItineraryItem> {
             });
 
             editActivityButton.setOnAction((event -> {
-                EditItineraryEntryDialog editDialog = new EditItineraryEntryDialog(TripPlanner.getInstance().getOpenPlan(), item);
-                editDialog.showAndWait();
+                AddOrEditItineraryEntryDialog editDialog = new AddOrEditItineraryEntryDialog(item, (int) TripPlanner.getInstance().getOpenPlan().getTripDuration().toDays(), true);
+                Optional<Itinerary.ItineraryItem> updated = editDialog.showAndWait();
+                updated.ifPresent(itineraryItem -> TripPlanner.getInstance().getOpenPlan().getItinerary().updateItem(item.getId(), itineraryItem));
+
                 this.updateItem(item, false);
             }));
 

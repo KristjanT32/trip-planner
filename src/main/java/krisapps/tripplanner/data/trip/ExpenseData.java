@@ -33,6 +33,11 @@ public class ExpenseData {
         this.modified = true;
     }
 
+    public void updateExpense(UUID expenseID, PlannedExpense expense) {
+        plannedExpenses.replace(expenseID, expense);
+        this.modified = true;
+    }
+
     public void removeExpense(UUID expenseID) {
         plannedExpenses.remove(expenseID);
         this.modified = true;

@@ -108,6 +108,11 @@ public class Itinerary {
         this.modified = true;
     }
 
+    public void updateItem(UUID itemID, ItineraryItem item) {
+        items.replace(itemID, item);
+        this.modified = true;
+    }
+
     public void removeItem(UUID itemID) {
         items.remove(itemID);
         this.modified = true;

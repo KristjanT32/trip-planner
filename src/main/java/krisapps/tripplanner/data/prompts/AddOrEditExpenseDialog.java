@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.function.UnaryOperator;
 
-public class EditExpenseDialog extends Dialog<Void> {
+public class AddOrEditExpenseDialog extends Dialog<PlannedExpense> {
 
     private final UnaryOperator<TextFormatter.Change> numbersOnlyFormatter = (change) -> {
         if (change.getControlNewText().isEmpty()) {
@@ -31,7 +31,6 @@ public class EditExpenseDialog extends Dialog<Void> {
         return null;
     };
 
-    private final Trip trip;
     private final PlannedExpense expense;
 
     @FXML
@@ -49,8 +48,16 @@ public class EditExpenseDialog extends Dialog<Void> {
     @FXML
     private ChoiceBox<String> categoryBox;
 
+    @FXML
+    private Label title;
 
-    public EditExpenseDialog(Trip t, PlannedExpense expense) {
+
+    /**
+     * Creates an Expense Entry Edit Dialog.
+     * @param expense The expense to edit, or null, if creating a new one.
+     * @param edit If <code>true</code>, the dialog will open in edit mode, otherwise a new entry will be created.
+     */
+    public AddOrEditExpenseDialog(PlannedExpense expense, int tripDuration, boolean edit) {
         try {
             FXMLLoader loader = new FXMLLoader(PlannerApplication.class.getResource("dialogs/edit_expense.fxml"));
             loader.setController(this);
@@ -59,16 +66,16 @@ public class EditExpenseDialog extends Dialog<Void> {
             throw new RuntimeException(e);
         }
 
-        this.expense = expense;
-        this.trip = t;
+        this.expense = (expense == null ? new PlannedExpense("", 0.0d) : expense);
 
         getDialogPane().setContent(rootPane);
         initModality(Modality.APPLICATION_MODAL);
-        setTitle("Edit expense details");
+        setTitle(edit ? "Edit expense details" : "Add expense");
+        title.setText(edit ? "Edit expense details" : "Add expense");
 
         // Trickery to be able to close the dialog manually
         getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
-        getDialogPane().getButtonTypes().add(ButtonType.APPLY);
+        getDialogPane().getButtonTypes().add(new ButtonType(edit ? "Apply" : "Add", ButtonBar.ButtonData.APPLY));
 
         setResultConverter((response) -> {
             if (response.getButtonData() == ButtonBar.ButtonData.APPLY) {
@@ -77,16 +84,14 @@ public class EditExpenseDialog extends Dialog<Void> {
                 }
 
                 // Apply all data changes
-                expense.setAmount(Double.parseDouble(valueBox.getText()));
+                this.expense.setAmount(Double.parseDouble(valueBox.getText()));
                 if (!descriptionBox.getText().isEmpty()) {
-                    expense.setDescription(descriptionBox.getText());
+                    this.expense.setDescription(descriptionBox.getText());
                 }
-                expense.setCategory(ExpenseCategory.valueOf(categoryBox.getSelectionModel().getSelectedItem()));
-                expense.setDay(dayBox.getValue());
+                this.expense.setCategory(ExpenseCategory.valueOf(categoryBox.getSelectionModel().getSelectedItem()));
+                this.expense.setDay(dayBox.getValue());
 
-                // Refresh the expense entry in the expense data for the trip
-                t.getExpenseData().removeExpense(expense.getId());
-                t.getExpenseData().addExpense(expense);
+                return this.expense;
             }
             return null;
         });
@@ -103,7 +108,7 @@ public class EditExpenseDialog extends Dialog<Void> {
 
         descriptionBox.setText(expense.getDescription());
 
-        dayBox.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(-1, (int) t.getTripDuration().toDays()));
+        dayBox.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(-1, tripDuration));
         dayBox.getValueFactory().setValue(expense.getDay());
 
         ObservableList<String> items = categoryBox.getItems();

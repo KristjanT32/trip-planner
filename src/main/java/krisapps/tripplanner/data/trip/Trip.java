@@ -51,11 +51,8 @@ public class Trip {
     }
 
     public Duration getTripDuration() {
-        if (tripStartDate == null) {
-            throw new IllegalStateException("Cannot get trip duration. The start date for this trip has not been initialized.");
-        }
-        if (tripEndDate == null) {
-            throw new IllegalStateException("Cannot get trip duration. The end date for this trip has not been initialized.");
+        if (tripStartDate == null || tripEndDate == null) {
+            return Duration.ZERO;
         }
         return Duration.between(tripStartDate, tripEndDate.plusDays(1));
     }

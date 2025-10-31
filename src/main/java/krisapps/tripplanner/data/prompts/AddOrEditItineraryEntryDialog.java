@@ -7,13 +7,13 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import krisapps.tripplanner.PlannerApplication;
 import krisapps.tripplanner.data.trip.Itinerary;
-import krisapps.tripplanner.data.trip.Trip;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
-public class EditItineraryEntryDialog extends Dialog<Void> {
+public class AddOrEditItineraryEntryDialog extends Dialog<Itinerary.ItineraryItem> {
 
     @FXML
     private VBox rootPane;
@@ -30,13 +30,19 @@ public class EditItineraryEntryDialog extends Dialog<Void> {
     @FXML
     private TextField endField;
 
-    private final Trip t;
+    @FXML
+    private Label title;
+
     private final Itinerary.ItineraryItem item;
 
 
-    public EditItineraryEntryDialog(Trip t, Itinerary.ItineraryItem item) {
-        this.t = t;
-        this.item = item;
+    /**
+     * Creates an Itinerary Entry Edit Dialog.
+     * @param item The itinerary entry to edit, or null, if adding a new one.
+     * @param edit If <code>true</code>, the dialog will open in edit mode, otherwise a new entry will be created.
+     */
+    public AddOrEditItineraryEntryDialog(@Nullable Itinerary.ItineraryItem item, int tripDuration, boolean edit) {
+        this.item = (item == null ? new Itinerary.ItineraryItem("", -1) : item);
 
         try {
             FXMLLoader loader = new FXMLLoader(PlannerApplication.class.getResource("dialogs/edit_itinerary_entry.fxml"));
@@ -47,30 +53,31 @@ public class EditItineraryEntryDialog extends Dialog<Void> {
         }
         getDialogPane().setContent(rootPane);
         initModality(Modality.APPLICATION_MODAL);
-        setTitle("Edit itinerary item details");
+        setTitle(edit ? "Edit itinerary item details" : "Add itinerary item");
+        title.setText(edit ? "Edit itinerary item details" : "Add itinerary item");
 
         // Trickery to be able to close the dialog manually
         getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
-        getDialogPane().getButtonTypes().add(ButtonType.APPLY);
+        getDialogPane().getButtonTypes().add(new ButtonType(edit ? "Apply" : "Add", ButtonBar.ButtonData.APPLY));
 
         setResultConverter((response) -> {
             if (response.getButtonData() == ButtonBar.ButtonData.APPLY) {
                 if (!descriptionBox.getText().isEmpty()) {
-                    item.setDescription(descriptionBox.getText());
+                    this.item.setDescription(descriptionBox.getText());
                 }
-                item.setDay(dayBox.getValue() == 0 ? -1 : dayBox.getValue());
+                this.item.setDay(dayBox.getValue() == 0 ? -1 : dayBox.getValue());
                 try {
-                    item.setStartTime(new SimpleDateFormat("HH:mm").parse(startField.getText()));
+                    this.item.setStartTime(new SimpleDateFormat("HH:mm").parse(startField.getText()));
                 } catch (ParseException e) {
-                    item.setStartTime(null);
+                    this.item.setStartTime(null);
                 }
 
                 try {
-                    item.setEndTime(new SimpleDateFormat("HH:mm").parse(endField.getText()));
+                    this.item.setEndTime(new SimpleDateFormat("HH:mm").parse(endField.getText()));
                 } catch (ParseException e) {
-                    item.setEndTime(null);
+                    this.item.setEndTime(null);
                 }
-                t.getItinerary().getItems().replace(item.getId(), item);
+                return this.item;
             }
             return null;
         });
@@ -86,7 +93,7 @@ public class EditItineraryEntryDialog extends Dialog<Void> {
             endField.setStyle("-fx-text-fill: " + (endField.getText().matches("(?:0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]") ? "black" : "red"));
         });
 
-        dayBox.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(-1, (int) t.getTripDuration().toDays()));
+        dayBox.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(-1, tripDuration));
         dayBox.getValueFactory().setValue(item.getDay());
     }
 

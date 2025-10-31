@@ -20,10 +20,7 @@ import krisapps.tripplanner.data.listview.cost_list.CostListCellFactory;
 import krisapps.tripplanner.data.listview.expense_linker.ExpenseLinkerCellFactory;
 import krisapps.tripplanner.data.listview.itinerary.ItineraryCellFactory;
 import krisapps.tripplanner.data.listview.upcoming_trips.UpcomingTripsCellFactory;
-import krisapps.tripplanner.data.prompts.DebugActionsDialog;
-import krisapps.tripplanner.data.prompts.EditTripDetailsDialog;
-import krisapps.tripplanner.data.prompts.LoadingDialog;
-import krisapps.tripplanner.data.prompts.ProgramSettingsDialog;
+import krisapps.tripplanner.data.prompts.*;
 import krisapps.tripplanner.data.trip.ExpenseCategory;
 import krisapps.tripplanner.data.trip.Itinerary;
 import krisapps.tripplanner.data.trip.PlannedExpense;
@@ -891,6 +888,19 @@ public class TripPlanner {
         EditTripDetailsDialog editDialog = new EditTripDetailsDialog(currentPlan);
         editDialog.showAndWait();
         refreshViews();
+    }
+
+    public void promptAddItineraryEntry() {
+        if (currentPlan == null) return;
+        AddOrEditItineraryEntryDialog dlg = new AddOrEditItineraryEntryDialog(null, (int) currentPlan.getTripDuration().toDays(), false);
+        Optional<Itinerary.ItineraryItem> created = dlg.showAndWait();
+        created.ifPresent(itineraryItem -> {currentPlan.getItinerary().addItem(itineraryItem);});
+    }
+
+    public void promptAddExpense() {
+        AddOrEditExpenseDialog dlg = new  AddOrEditExpenseDialog(null, (int) currentPlan.getTripDuration().toDays(), false);
+        Optional<PlannedExpense> created = dlg.showAndWait();
+        created.ifPresent(expense -> {currentPlan.getExpenseData().addExpense(expense);});
     }
 
     public void promptShowSettings() {
