@@ -68,6 +68,7 @@ public class TripPlanner {
         return null;
     };
     private boolean launchedInReadOnly = false;
+    private int itineraryFilterDay = -1;
     //</editor-fold>
 
     //<editor-fold desc="Miscellaneous UI">
@@ -117,10 +118,10 @@ public class TripPlanner {
 
     //<editor-fold desc="Filter & Sort">
     @FXML
-    private ChoiceBox<String> itineraryDayFilterSelector;
+    private ChoiceBox<String> itineraryFilterSelector;
 
     @FXML
-    private ToggleButton itinerarySortDirectionToggle;
+    private ToggleButton sortDirectionToggle;
     //</editor-fold>
 
     //</editor-fold>
@@ -272,6 +273,7 @@ public class TripPlanner {
         setupListViews();
         registerListeners();
         initReminderPanel();
+        setupSorting();
 
 
         root.sceneProperty().addListener((event, oldVal, newVal) -> {
@@ -379,6 +381,36 @@ public class TripPlanner {
         expenseList.setCellFactory(new ExpenseLinkerCellFactory(true));
         upcomingTripsList.setCellFactory(new UpcomingTripsCellFactory());
         categoryBreakdownList.setCellFactory(new CostListCellFactory());
+    }
+
+    public void setupSorting() {
+        // Default sort direction: ascending
+        Platform.runLater(() -> {
+            sortDirectionToggle.selectedProperty().addListener((event, oldVal, newVal) -> {
+                sortDirectionToggle.setText(newVal ? "Ascending" : "Descending");
+                refreshItinerary();
+            });
+
+            if (currentPlan != null && currentPlan.tripDatesSupplied()) {
+                itineraryFilterSelector.getItems().clear();
+                ObservableList<String> days = itineraryFilterSelector.getItems();
+                for (int dayIndex = 1; dayIndex <= currentPlan.getTripDuration().toDays(); dayIndex++) {
+                    days.add("Day " + dayIndex);
+                }
+                days.add("All");
+                itineraryFilterSelector.getSelectionModel().select("All");
+                itineraryFilterSelector.getSelectionModel().selectedItemProperty().addListener((observable, oldVal, newVal) -> {
+                    if (newVal == null) return;
+                    if (!newVal.equals("All")) {
+                        itineraryFilterDay = Integer.parseInt(newVal.replace("Day ", ""));
+                        refreshItinerary();
+                    } else {
+                        itineraryFilterDay = -1;
+                    }
+                    refreshItinerary();
+                });
+            }
+        });
     }
 
     /**
@@ -693,6 +725,8 @@ public class TripPlanner {
         refreshTripOverview();
         refreshExpensePlanner();
         refreshUpcomingTrips();
+
+        setupSorting();
     }
 
     /**
@@ -703,18 +737,30 @@ public class TripPlanner {
         if (currentPlan == null) return;
 
         Platform.runLater(() -> {
+            boolean sortAscending = sortDirectionToggle.isSelected();
             itineraryListView.getItems().clear();
-            for (Itinerary.ItineraryItem item : currentPlan.getItinerary().getItems().values().stream().sorted(Comparator.comparingInt((i) -> {
-                if (i.getDay() == -1 || i.getDay() == 0) return Integer.MAX_VALUE;
-                else return i.getDay();
-            })).sorted(Comparator.comparingLong((i) -> getTimeInMinutes(i.getStartTime()))).toList()) {
+            Comparator<Itinerary.ItineraryItem> compareDaysThenTimes =
+                    Comparator.comparingInt(Itinerary.ItineraryItem::getDay)
+                            .thenComparing(item -> getTimeInMinutes(item.getStartTime()));
+
+            if (!sortAscending) {
+                compareDaysThenTimes = compareDaysThenTimes.reversed();
+            }
+
+            for (Itinerary.ItineraryItem item : currentPlan.getItinerary().getItems().values().stream().filter(item -> {
+                if (itineraryFilterDay != -1) {
+                    return item.getDay() == itineraryFilterDay;
+                } else {
+                    return true;
+                }
+            }).sorted(compareDaysThenTimes).toList()) {
                 itineraryListView.getItems().add(item.copy());
             }
         });
     }
 
     public void refreshExpensePlanner() {
-        // Reinitialize the spinners to apply limit changes for current trip plan (e.g. limit day picker to trip duration)
+        // Reinitialize the spinners to apply limit changes for the current trip plan (e.g., limit day picker to trip duration)
         setupSpinners();
         refreshExpenseList();
     }
@@ -811,12 +857,15 @@ public class TripPlanner {
             categorySummaries.sort(Comparator.comparingDouble(CategoryExpenseSummary::getTotalAmount).reversed());
             categoryBreakdownList.getItems().addAll(categorySummaries);
 
+            Comparator<Itinerary.ItineraryItem> compareDaysThenTimes =
+                    Comparator.comparingInt(Itinerary.ItineraryItem::getDay)
+                            .thenComparing(item -> getTimeInMinutes(item.getStartTime()));
+
             ObservableList<Itinerary.ItineraryItem> itineraryItems = summaryItinerary.getItems();
             itineraryItems.clear();
-            itineraryItems.addAll(currentPlan.getItinerary().getItems().values().stream().sorted(Comparator.comparingInt((i) -> {
-                if (i.getDay() == -1 || i.getDay() == 0) return Integer.MAX_VALUE;
-                else return i.getDay();
-            })).sorted(Comparator.comparingLong((i) -> getTimeInMinutes(i.getStartTime()))).toList());
+            itineraryItems.addAll(currentPlan.getItinerary().getItems().values().stream().sorted(compareDaysThenTimes).toList());
+
+            itineraryListView.getItems().clear();
             summaryItinerary.setItems(itineraryItems);
 
             expenseChart.getData().clear();
@@ -899,6 +948,66 @@ public class TripPlanner {
         ProgramSettingsDialog settingsDialog = new ProgramSettingsDialog(currentProgramSettings);
         Optional<ProgramSettings> changed = settingsDialog.showAndWait();
         changed.ifPresent(trips::updateProgramSettings);
+    }
+
+    public void promptClearItinerary() {
+        Optional<ButtonType> response = PopupManager.showConfirmation("Clear trip itinerary?", "Are you sure you wish to clear the trip itinerary? This will wipe the itinerary entries for this trip.\nThis cannot be undone.",
+                new ButtonType("No, cancel", ButtonBar.ButtonData.CANCEL_CLOSE),
+                new ButtonType("Yes, clear", ButtonBar.ButtonData.APPLY)
+        );
+        if (response.isPresent()) {
+            if (response.get().getButtonData() == ButtonBar.ButtonData.APPLY) {
+                currentPlan.getItinerary().getItems().clear();
+                refreshItinerary();
+            }
+        }
+    }
+
+    public void promptClearDay() {
+        String day = PopupManager.showInputDialog("Which day would you like to clear the itinerary for?", "Please enter the number of the day you wish to clear.", "Day: ", "");
+        if (day.isBlank()) return;
+        if (Integer.parseInt(day) < 0 || Integer.parseInt(day) > currentPlan.getTripDuration().toDays()) {
+            PopupManager.showPredefinedPopup(PopupManager.PopupType.INVALID_DAY);
+            return;
+        }
+        Optional<ButtonType> response = PopupManager.showConfirmation("Clear trip itinerary for day " + day + "?", "Are you sure you wish to clear all itinerary entries on day %s? This will wipe all itinerary entries assigned to this day.\nThis cannot be undone.".formatted(day),
+                new ButtonType("No, cancel", ButtonBar.ButtonData.CANCEL_CLOSE),
+                new ButtonType("Yes, clear", ButtonBar.ButtonData.APPLY)
+        );
+        if (response.isPresent()) {
+            if (response.get().getButtonData() == ButtonBar.ButtonData.APPLY) {
+                currentPlan.getItinerary().getItems().entrySet().removeIf((entry) -> entry.getValue().getDay() == Integer.parseInt(day));
+                refreshItinerary();
+            }
+        }
+    }
+
+    public void promptClearExpenses() {
+        Optional<ButtonType> response = PopupManager.showConfirmation("Clear trip expenses?", "Are you sure you wish to clear all expenses? This will wipe the expense entries for this trip.\nThis cannot be undone.",
+                new ButtonType("No, cancel", ButtonBar.ButtonData.CANCEL_CLOSE),
+                new ButtonType("Yes, clear", ButtonBar.ButtonData.APPLY)
+        );
+        if (response.isPresent()) {
+            if (response.get().getButtonData() == ButtonBar.ButtonData.APPLY) {
+                currentPlan.getExpenseData().getPlannedExpenses().clear();
+                refreshExpensePlanner();
+            }
+        }
+    }
+
+    public void promptUnlinkAllExpenses() {
+        Optional<ButtonType> response = PopupManager.showConfirmation("Unlink all expenses?", "Are you sure you wish to unlink all expenses? This will unlink all expenses from any itinerary entries.\nThis cannot be undone.",
+                new ButtonType("No, cancel", ButtonBar.ButtonData.CANCEL_CLOSE),
+                new ButtonType("Yes, clear", ButtonBar.ButtonData.APPLY)
+        );
+        if (response.isPresent()) {
+            if (response.get().getButtonData() == ButtonBar.ButtonData.APPLY) {
+                for (Itinerary.ItineraryItem item : currentPlan.getItinerary().getItems().values()) {
+                    item.getLinkedExpenses().clear();
+                }
+                refreshItinerary();
+            }
+        }
     }
 
     public void showTripSetup() {

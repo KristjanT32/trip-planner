@@ -25,7 +25,7 @@ public class PopupManager {
         CALENDAR_INTEGRATION_DISABLED,
         NO_EVENTS,
         DOCUMENT_TEMPLATE_MISSING,
-        TRIP_LOAD_FAILED_MISSING, PLAN_DATA_MISSING
+        TRIP_LOAD_FAILED_MISSING, INVALID_DAY, PLAN_DATA_MISSING
     }
 
     public static Optional<ButtonType> showPredefinedPopup(PopupType type) {
@@ -97,6 +97,11 @@ public class PopupManager {
             case TRIP_LOAD_FAILED_MISSING -> {
                 alert.setTitle("Cannot load trip");
                 alert.setContentText("The Planner couldn't load data for the trip.\nThis might have happened if the trip was deleted but the Planner was not closed properly.");
+                alert.setAlertType(Alert.AlertType.ERROR);
+            }
+            case INVALID_DAY -> {
+                alert.setTitle("Invalid day");
+                alert.setContentText("The day you entered is invalid. Please enter a valid day.");
                 alert.setAlertType(Alert.AlertType.ERROR);
             }
             case NOT_IMPLEMENTED -> {

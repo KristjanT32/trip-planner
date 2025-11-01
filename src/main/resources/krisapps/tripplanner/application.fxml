@@ -50,15 +50,15 @@
                   <Menu mnemonicParsing="false" text="Expenses">
                      <items>
                         <MenuItem mnemonicParsing="false" onAction="#promptAddExpense" text="Add expense" />
-                        <MenuItem mnemonicParsing="false" text="Clear expenses" />
-                        <MenuItem mnemonicParsing="false" text="Unlink all expenses" />
+                        <MenuItem mnemonicParsing="false" onAction="#promptClearExpenses" text="Clear expenses" />
+                        <MenuItem mnemonicParsing="false" onAction="#promptUnlinkAllExpenses" text="Unlink all expenses" />
                      </items>
                   </Menu>
                   <Menu mnemonicParsing="false" text="Itinerary">
                      <items>
                         <MenuItem mnemonicParsing="false" onAction="#promptAddItineraryEntry" text="Add itinerary item" />
-                        <MenuItem mnemonicParsing="false" text="Clear itinerary for day" />
-                        <MenuItem mnemonicParsing="false" text="Clear itinerary" />
+                        <MenuItem mnemonicParsing="false" onAction="#promptClearDay" text="Clear itinerary for day" />
+                        <MenuItem mnemonicParsing="false" onAction="#promptClearItinerary" text="Clear itinerary" />
                      </items>
                   </Menu>
                   <Menu mnemonicParsing="false" text="Calendar">
@@ -288,7 +288,7 @@
                                                             <Insets right="5.0" />
                                                          </HBox.margin>
                                                       </Label>
-                                                      <ChoiceBox fx:id="itineraryDayFilterSelector" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
+                                                      <ChoiceBox fx:id="itineraryFilterSelector" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
                                                    </children>
                                                 </HBox>
                                                 <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" HBox.hgrow="SOMETIMES">
@@ -301,7 +301,7 @@
                                                             <Insets right="5.0" />
                                                          </HBox.margin>
                                                       </Label>
-                                                      <ToggleButton fx:id="itinerarySortDirectionToggle" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="sort-direction-selector" text="ToggleButton" HBox.hgrow="ALWAYS" />
+                                                      <ToggleButton fx:id="sortDirectionToggle" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="sort-direction-selector" text="ToggleButton" HBox.hgrow="ALWAYS" />
                                                    </children>
                                                 </HBox>
                                              </children>
