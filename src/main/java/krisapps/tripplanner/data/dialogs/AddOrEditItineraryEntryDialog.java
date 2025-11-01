@@ -1,4 +1,4 @@
-package krisapps.tripplanner.data.prompts;
+package krisapps.tripplanner.data.dialogs;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -38,6 +38,7 @@ public class AddOrEditItineraryEntryDialog extends Dialog<Itinerary.ItineraryIte
 
     /**
      * Creates an Itinerary Entry Edit Dialog.
+     *
      * @param item The itinerary entry to edit, or null, if adding a new one.
      * @param edit If <code>true</code>, the dialog will open in edit mode, otherwise a new entry will be created.
      */
@@ -82,19 +83,19 @@ public class AddOrEditItineraryEntryDialog extends Dialog<Itinerary.ItineraryIte
             return null;
         });
 
-        descriptionBox.setText(item.getDescription());
-        startField.setText(item.getStartTime() != null ? new SimpleDateFormat("HH:mm").format(item.getStartTime()) : "");
+        descriptionBox.setText(this.item.getDescription());
+        startField.setText(this.item.getStartTime() != null ? new SimpleDateFormat("HH:mm").format(this.item.getStartTime()) : "");
         startField.textProperty().addListener((observable, oldValue, newValue) -> {
             startField.setStyle("-fx-text-fill: " + (startField.getText().matches("(?:0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]") ? "black" : "red"));
         });
 
-        endField.setText(item.getEndTime() != null ? new SimpleDateFormat("HH:mm").format(item.getEndTime()) : "");
+        endField.setText(this.item.getEndTime() != null ? new SimpleDateFormat("HH:mm").format(this.item.getEndTime()) : "");
         endField.textProperty().addListener((observable, oldValue, newValue) -> {
             endField.setStyle("-fx-text-fill: " + (endField.getText().matches("(?:0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]") ? "black" : "red"));
         });
 
         dayBox.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(-1, tripDuration));
-        dayBox.getValueFactory().setValue(item.getDay());
+        dayBox.getValueFactory().setValue(this.item.getDay());
     }
 
 

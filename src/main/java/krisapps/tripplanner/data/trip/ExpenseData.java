@@ -4,22 +4,22 @@ import java.util.HashMap;
 import java.util.UUID;
 
 public class ExpenseData {
-    private double budget;
+    private BudgetData budgetData;
     private HashMap<UUID, PlannedExpense> plannedExpenses;
     private boolean modified = false;
 
     public ExpenseData() {
-        this.budget = 0.0d;
         this.plannedExpenses = new HashMap<>(0);
+        this.budgetData = new BudgetData();
         this.modified = false;
     }
 
     public double getBudget() {
-        return budget;
+        return this.budgetData.getBudget();
     }
 
     public void setBudget(double budget) {
-        this.budget = budget;
+        this.budgetData.setBudget(budget);
         this.modified = true;
     }
 
@@ -50,7 +50,7 @@ public class ExpenseData {
 
     public double getTotalExpenses() {
         double total = 0.0d;
-        for (PlannedExpense e: plannedExpenses.values()) {
+        for (PlannedExpense e : plannedExpenses.values()) {
             total += e.getAmount();
         }
 
@@ -58,10 +58,21 @@ public class ExpenseData {
     }
 
     public boolean hasBeenModified() {
+        this.modified = modified || budgetData.hasBeenModified();
         return modified;
     }
 
     public void resetModifiedFlag() {
         this.modified = false;
+        this.budgetData.resetModifiedFlag();
+    }
+
+    public BudgetData getBudgetData() {
+        return budgetData;
+    }
+
+    public void setBudgetData(BudgetData budgetData) {
+        this.budgetData = budgetData;
+        this.modified = true;
     }
 }

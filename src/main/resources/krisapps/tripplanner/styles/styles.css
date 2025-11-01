@@ -92,10 +92,6 @@
     -fx-background-color: #c8c8c8;
 }
 
-.toggle-button:selected {
-    -fx-background-color: #02bd00;
-}
-
 .toggle-button {
     -fx-background-radius: 20px;
     -fx-border-radius: 20px;
@@ -106,6 +102,18 @@
     -fx-background-color: #ff2828;
 
     -fx-text-fill: white;
+}
+
+.toggle-button:selected {
+    -fx-background-color: #02bd00;
+}
+
+.toggle-button.sort-direction-selector {
+    -fx-background-color: #939393;
+}
+
+.toggle-button.sort-direction-selector:selected {
+    -fx-background-color: #424242;
 }
 
 /*<editor-fold desc="Toggle Button (Mode)">*/
@@ -249,4 +257,22 @@
     -fx-background-radius: 20px;
     -fx-border-radius: 20px;
     -fx-border-color: #787878;
+}
+
+.daily-budget-panel {
+    -fx-border-color: #ffc52e;
+    -fx-border-width: 2px;
+    -fx-background-color: #ffdb7a;
+    -fx-background-radius: 20px;
+    -fx-border-radius: 20px;
+}
+
+.daily-budget-panel.square {
+    -fx-background-radius: 5px;
+    -fx-border-radius: 5px;
+}
+
+.daily-budget-panel.exceeded {
+    -fx-border-color: #ff2e2e;
+    -fx-background-color: #ff7979;
 }

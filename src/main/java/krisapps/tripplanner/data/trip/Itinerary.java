@@ -27,6 +27,15 @@ public class Itinerary {
             this.id = UUID.randomUUID();
         }
 
+        public ItineraryItem(LinkedList<UUID> linkedExpenses, UUID id, Date endTime, Date startTime, int day, String description) {
+            this.linkedExpenses = linkedExpenses;
+            this.id = id;
+            this.endTime = endTime;
+            this.startTime = startTime;
+            this.day = day;
+            this.description = description;
+        }
+
         public String getDescription() {
             return description;
         }
@@ -87,6 +96,10 @@ public class Itinerary {
 
         public UUID getId() {
             return id;
+        }
+
+        public ItineraryItem copy() {
+            return new ItineraryItem(linkedExpenses, id, endTime, startTime, day, description);
         }
     }
 

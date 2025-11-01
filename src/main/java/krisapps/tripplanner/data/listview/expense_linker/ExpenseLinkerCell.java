@@ -9,7 +9,7 @@ import javafx.scene.layout.HBox;
 import krisapps.tripplanner.PlannerApplication;
 import krisapps.tripplanner.TripPlanner;
 import krisapps.tripplanner.data.TripManager;
-import krisapps.tripplanner.data.prompts.AddOrEditExpenseDialog;
+import krisapps.tripplanner.data.dialogs.AddOrEditExpenseDialog;
 import krisapps.tripplanner.data.trip.PlannedExpense;
 
 import java.io.IOException;

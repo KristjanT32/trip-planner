@@ -1,20 +1,25 @@
-package krisapps.tripplanner.data.prompts;
+package krisapps.tripplanner.data.dialogs;
 
+import com.google.common.collect.ImmutableList;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import krisapps.tripplanner.PlannerApplication;
 import krisapps.tripplanner.TripPlanner;
+import krisapps.tripplanner.data.ProgramSettings;
 import krisapps.tripplanner.data.TripManager;
 import krisapps.tripplanner.data.listview.expense_linker.ExpenseLinkerCellFactory;
 import krisapps.tripplanner.data.trip.Itinerary;
 import krisapps.tripplanner.data.trip.PlannedExpense;
+import krisapps.tripplanner.data.trip.Trip;
 
 import java.io.IOException;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class LinkExpensesDialog extends Dialog<Void> {
@@ -37,15 +42,39 @@ public class LinkExpensesDialog extends Dialog<Void> {
     @FXML
     private Button closeButton;
 
+    @FXML
+    private Button cancelButton;
+
+    @FXML
+    private Button addSelectedButton;
+
+    @FXML
+    private Button addAllButton;
+
+    @FXML
+    private HBox dailyBudgetPanel;
+
+    @FXML
+    private Label budgetPanelLabel;
+
+    @FXML
+    private Label budgetPanelExpenseLabel;
+
+    @FXML
+    private Label budgetPanelBudgetLabel;
+
     private Itinerary.ItineraryItem item;
     private double totalExpenses = 0.0d;
 
     private boolean initialized = false;
 
     final TripPlanner trips = TripPlanner.getInstance();
+    final ImmutableList<UUID> initialData;
 
 
     public LinkExpensesDialog(Itinerary.ItineraryItem item) {
+        this.initialData = ImmutableList.copyOf(item.copy().getLinkedExpenses());
+
         try {
             FXMLLoader loader = new FXMLLoader(PlannerApplication.class.getResource("dialogs/link_expenses.fxml"));
             loader.setController(this);
@@ -87,6 +116,13 @@ public class LinkExpensesDialog extends Dialog<Void> {
         closeButton.setOnAction(e -> {
             close();
         });
+
+        cancelButton.setOnAction(e -> {
+            TripManager.log("Rolling back all changes to linked expenses");
+            item.getLinkedExpenses().clear();
+            item.getLinkedExpenses().addAll(initialData);
+            close();
+        });
     }
 
     private void recalculateTotal() {
@@ -117,7 +153,38 @@ public class LinkExpensesDialog extends Dialog<Void> {
         );
 
         recalculateTotal();
+        refreshDailyBudgetPanel();
         expenseTotalLabel.setText(TripManager.Formatting.formatMoney(totalExpenses, TripManager.getInstance().getSettings().getCurrencySymbol(), TripManager.getInstance().getSettings().currencySymbolPrefixed()));
+    }
+
+    public void refreshDailyBudgetPanel() {
+        Trip currentPlan = trips.getOpenPlan();
+        ProgramSettings currentProgramSettings = TripManager.getInstance().getSettings();
+        dailyBudgetPanel.setVisible(trips.getOpenPlan().getExpenseData().getBudgetData().hasDailyBudgetLimit() && item.getDay() > 0);
+        dailyBudgetPanel.setManaged(trips.getOpenPlan().getExpenseData().getBudgetData().hasDailyBudgetLimit() && item.getDay() > 0);
+
+        double expensesPerSelectedDay = totalExpenses;
+        boolean exceededDailyBudget = totalExpenses > currentPlan.getExpenseData().getBudgetData().getDailyBudget();
+        addSelectedButton.setDisable(exceededDailyBudget && currentPlan.getExpenseData().getBudgetData().shouldEnforceDailyBudget());
+        addAllButton.setDisable(exceededDailyBudget && currentPlan.getExpenseData().getBudgetData().shouldEnforceDailyBudget());
+
+        if (exceededDailyBudget) {
+            budgetPanelBudgetLabel.setText(TripManager.Formatting.formatMoney(currentPlan.getExpenseData().getBudgetData().getDailyBudget(), currentProgramSettings.getCurrencySymbol(), currentProgramSettings.currencySymbolPrefixed())
+                    + " (+" + TripManager.Formatting.formatMoney(expensesPerSelectedDay - currentPlan.getExpenseData().getBudgetData().getDailyBudget(), currentProgramSettings.getCurrencySymbol(), currentProgramSettings.currencySymbolPrefixed()) + ")"
+            );
+        } else {
+            budgetPanelBudgetLabel.setText(TripManager.Formatting.formatMoney(currentPlan.getExpenseData().getBudgetData().getDailyBudget(), currentProgramSettings.getCurrencySymbol(), currentProgramSettings.currencySymbolPrefixed()));
+        }
+        budgetPanelExpenseLabel.setText(
+                TripManager.Formatting.formatMoney(expensesPerSelectedDay, currentProgramSettings.getCurrencySymbol(), currentProgramSettings.currencySymbolPrefixed())
+        );
+
+        if (exceededDailyBudget) {
+            dailyBudgetPanel.getStyleClass().add("exceeded");
+        } else {
+            dailyBudgetPanel.getStyleClass().removeAll("exceeded");
+        }
+        budgetPanelLabel.setText(exceededDailyBudget ? "Daily budget exceeded: " : "Daily budget limit: ");
     }
 
     public void linkSelectedExpense() {

@@ -25,38 +25,53 @@
 <?import javafx.scene.text.Font?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
 
-<VBox fx:id="root" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefHeight="860.0" prefWidth="1100.0" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="krisapps.tripplanner.TripPlanner">
+<VBox fx:id="root" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefHeight="860.0" prefWidth="1100.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="krisapps.tripplanner.TripPlanner">
    <children>
       <VBox alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS">
          <children>
             <MenuBar maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" useSystemMenuBar="true" VBox.vgrow="NEVER">
                <menus>
                   <Menu mnemonicParsing="false" text="Trip Planner">
-                     <items>
+                    <items>
                         <MenuItem mnemonicParsing="false" onAction="#showTripSetup" text="New trip" />
                         <MenuItem mnemonicParsing="false" onAction="#showUpcomingTrips" text="Trip list" />
+                      <MenuItem mnemonicParsing="false" onAction="#promptDiscardChanges" text="Discard all changes" />
+                        <MenuItem mnemonicParsing="false" onAction="#promptClosePlanner" text="Close planner" />
+                        <MenuItem mnemonicParsing="false" onAction="#generatePlanDocument" text="Generate plan document" />
+                        <MenuItem mnemonicParsing="false" onAction="#promptShowSettings" text="Settings" />
+                    </items>
+                  </Menu>
+                  <Menu mnemonicParsing="false" text="Details">
+                     <items>
+                        <MenuItem mnemonicParsing="false" onAction="#promptEditTripDetails" text="Change trip details" />
+                        <MenuItem mnemonicParsing="false" onAction="#promptEditBudgetSettings" text="Adjust budget settings" />
                      </items>
                   </Menu>
-                  <Menu mnemonicParsing="false" text="Planning">
-                    <items>
-                        <MenuItem mnemonicParsing="false" onAction="#promptEditTripDetails" text="Change trip details" />
-                      <MenuItem mnemonicParsing="false" onAction="#promptDiscardChanges" text="Discard all changes" />
-                        <MenuItem mnemonicParsing="false" onAction="#generatePlanDocument" text="Generate plan document" />
-                        <MenuItem mnemonicParsing="false" onAction="#promptClosePlanner" text="Close planner" />
-                    </items>
+                  <Menu mnemonicParsing="false" text="Expenses">
+                     <items>
+                        <MenuItem mnemonicParsing="false" onAction="#promptAddExpense" text="Add expense" />
+                        <MenuItem mnemonicParsing="false" text="Clear expenses" />
+                        <MenuItem mnemonicParsing="false" text="Unlink all expenses" />
+                     </items>
                   </Menu>
-                  <Menu mnemonicParsing="false" text="Special options">
-                    <items>
-                        <MenuItem mnemonicParsing="false" onAction="#refreshViews" text="Refresh views" />
-                        <MenuItem mnemonicParsing="false" onAction="#reloadData" text="Reload data" />
+                  <Menu mnemonicParsing="false" text="Itinerary">
+                     <items>
+                        <MenuItem mnemonicParsing="false" onAction="#promptAddItineraryEntry" text="Add itinerary item" />
+                        <MenuItem mnemonicParsing="false" text="Clear itinerary for day" />
+                        <MenuItem mnemonicParsing="false" text="Clear itinerary" />
+                     </items>
+                  </Menu>
+                  <Menu mnemonicParsing="false" text="Calendar">
+                     <items>
                         <MenuItem fx:id="regenerateCalendarEvents" mnemonicParsing="false" onAction="#regenerateCalendarEvents" text="Regenerate calendar events" />
                         <MenuItem mnemonicParsing="false" onAction="#deleteCalendarEvents" text="Delete calendar events" />
-                        <MenuItem fx:id="debugAction" mnemonicParsing="false" onAction="#promptDisplayDebugMenu" text="Debug action" />
-                    </items>
+                     </items>
                   </Menu>
-                  <Menu mnemonicParsing="false" text="Other">
+                  <Menu mnemonicParsing="false" text="Debug">
                      <items>
-                        <MenuItem mnemonicParsing="false" onAction="#promptShowSettings" text="Settings" />
+                        <MenuItem mnemonicParsing="false" onAction="#refreshViews" text="Refresh views" />
+                        <MenuItem mnemonicParsing="false" onAction="#reloadData" text="Reload data" />
+                        <MenuItem fx:id="debugAction" mnemonicParsing="false" onAction="#promptDisplayDebugMenu" text="Debug actions" />
                      </items>
                   </Menu>
                </menus>
@@ -238,38 +253,6 @@
                                           <Insets bottom="20.0" left="10.0" right="10.0" top="20.0" />
                                        </padding>
                                        <children>
-                                          <HBox alignment="CENTER" prefHeight="48.0" prefWidth="819.0" spacing="20.0" styleClass="options-panel" VBox.vgrow="NEVER">
-                                             <children>
-                                                <TextField fx:id="activityDescriptionBox" maxHeight="1.7976931348623157E308" promptText="Activity description" HBox.hgrow="SOMETIMES">
-                                                   <font>
-                                                      <Font name="Segoe UI Light" size="20.0" />
-                                                   </font>
-                                                </TextField>
-                                                <Label minWidth="-Infinity" text="on Day #">
-                                                   <font>
-                                                      <Font name="Segoe UI Bold" size="20.0" />
-                                                   </font>
-                                                </Label>
-                                                <Spinner fx:id="activityDayBox" editable="true" maxHeight="1.7976931348623157E308" styleClass="day-picker" HBox.hgrow="SOMETIMES" />
-                                                <Button fx:id="addActivityButton" maxHeight="1.7976931348623157E308" minWidth="-Infinity" mnemonicParsing="false" onAction="#addItineraryEntry" text="Add to itinerary" HBox.hgrow="SOMETIMES">
-                                                   <font>
-                                                      <Font name="Segoe UI Bold" size="12.0" />
-                                                   </font>
-                                                </Button>
-                                             </children>
-                                             <padding>
-                                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                                             </padding>
-                                          </HBox>
-                                          <Label text="Keep day as -1 or 0 if you do not wish to assign a specific day to this item">
-                                             <font>
-                                                <Font name="Segoe UI" size="16.0" />
-                                             </font>
-                                             <VBox.margin>
-                                                <Insets top="10.0" />
-                                             </VBox.margin>
-                                          </Label>
-                                          <Separator maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" orientation="VERTICAL" prefHeight="34.0" prefWidth="795.0" visible="false" VBox.vgrow="SOMETIMES" />
                                           <Label alignment="CENTER" prefWidth="896.0" text="Itinerary">
                                              <font>
                                                 <Font name="Segoe UI Bold" size="20.0" />
@@ -278,8 +261,55 @@
                                                 <Insets bottom="15.0" />
                                              </VBox.margin>
                                           </Label>
+                                          <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#promptAddItineraryEntry" text="Add activity">
+                                             <padding>
+                                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                             </padding>
+                                             <VBox.margin>
+                                                <Insets bottom="10.0" />
+                                             </VBox.margin>
+                                             <font>
+                                                <Font name="Segoe UI" size="14.0" />
+                                             </font>
+                                             <graphic>
+                                                <FontIcon iconLiteral="fltfmz-task-list-add-24" iconSize="16" textAlignment="CENTER" wrappingWidth="40.0" />
+                                             </graphic>
+                                          </Button>
                                           <ListView fx:id="itineraryListView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="itinerary-listview" VBox.vgrow="ALWAYS" />
-                                          <HBox alignment="CENTER_RIGHT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="SOMETIMES">
+                                          <HBox fillHeight="false" maxHeight="-Infinity">
+                                             <children>
+                                                <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" HBox.hgrow="SOMETIMES">
+                                                   <padding>
+                                                      <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                                   </padding>
+                                                   <children>
+                                                      <Label maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Filter by day: " HBox.hgrow="SOMETIMES">
+                                                         <HBox.margin>
+                                                            <Insets right="5.0" />
+                                                         </HBox.margin>
+                                                      </Label>
+                                                      <ChoiceBox fx:id="itineraryDayFilterSelector" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
+                                                   </children>
+                                                </HBox>
+                                                <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" HBox.hgrow="SOMETIMES">
+                                                   <padding>
+                                                      <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                                   </padding>
+                                                   <children>
+                                                      <Label maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Sort:" HBox.hgrow="SOMETIMES">
+                                                         <HBox.margin>
+                                                            <Insets right="5.0" />
+                                                         </HBox.margin>
+                                                      </Label>
+                                                      <ToggleButton fx:id="itinerarySortDirectionToggle" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="sort-direction-selector" text="ToggleButton" HBox.hgrow="ALWAYS" />
+                                                   </children>
+                                                </HBox>
+                                             </children>
+                                             <VBox.margin>
+                                                <Insets bottom="5.0" />
+                                             </VBox.margin>
+                                          </HBox>
+                                          <HBox alignment="CENTER_RIGHT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="NEVER">
                                              <children>
                                                 <Label fx:id="selectedItineraryEntryLabel" text="Nothing selected">
                                                    <font>
@@ -316,75 +346,6 @@
                                           <Insets bottom="20.0" left="10.0" right="10.0" top="20.0" />
                                        </padding>
                                        <children>
-                                          <VBox alignment="CENTER" maxWidth="1.7976931348623157E308" spacing="10.0" VBox.vgrow="NEVER">
-                                             <children>
-                                                <HBox alignment="CENTER" prefHeight="48.0" prefWidth="819.0" spacing="20.0" styleClass="options-panel">
-                                                   <children>
-                                                      <TextField fx:id="expenseAmountBox" maxHeight="1.7976931348623157E308" promptText="Expense" HBox.hgrow="SOMETIMES">
-                                                         <font>
-                                                            <Font name="Segoe UI Light" size="20.0" />
-                                                         </font>
-                                                      </TextField>
-                                                      <Label minWidth="-Infinity" text="for">
-                                                         <font>
-                                                            <Font name="Segoe UI Bold" size="20.0" />
-                                                         </font>
-                                                      </Label>
-                                                      <TextField fx:id="expenseNameBox" maxHeight="1.7976931348623157E308" promptText="Expense source">
-                                                         <font>
-                                                            <Font name="Segoe UI Light" size="20.0" />
-                                                         </font>
-                                                      </TextField>
-                                                      <Button fx:id="addExpenseButton" maxHeight="1.7976931348623157E308" minWidth="-Infinity" mnemonicParsing="false" onAction="#addExpenseEntry" text="Plan expense" HBox.hgrow="SOMETIMES" />
-                                                   </children>
-                                                   <padding>
-                                                      <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                                                   </padding>
-                                                </HBox>
-                                                <HBox alignment="CENTER" prefHeight="48.0" prefWidth="819.0" spacing="20.0" styleClass="options-panel">
-                                                   <children>
-                                                      <HBox alignment="CENTER_LEFT" maxWidth="-Infinity" prefHeight="44.0" prefWidth="406.0" HBox.hgrow="NEVER">
-                                                         <children>
-                                                            <Label maxHeight="1.7976931348623157E308" minWidth="-Infinity" prefHeight="24.0" text="Category:" HBox.hgrow="SOMETIMES">
-                                                               <font>
-                                                                  <Font name="Segoe UI Bold" size="20.0" />
-                                                               </font>
-                                                               <HBox.margin>
-                                                                  <Insets right="10.0" />
-                                                               </HBox.margin>
-                                                            </Label>
-                                                            <ChoiceBox fx:id="expenseTypeSelector" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="225.0" prefHeight="32.0" HBox.hgrow="SOMETIMES" />
-                                                         </children>
-                                                      </HBox>
-                                                      <HBox fx:id="expenseDayPanel" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
-                                                         <children>
-                                                            <Label maxHeight="1.7976931348623157E308" minWidth="-Infinity" prefHeight="24.0" text="Day: ">
-                                                               <font>
-                                                                  <Font name="Segoe UI Bold" size="20.0" />
-                                                               </font>
-                                                               <HBox.margin>
-                                                                  <Insets right="10.0" />
-                                                               </HBox.margin>
-                                                            </Label>
-                                                            <Spinner fx:id="expenseDayBox" editable="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="day-picker" HBox.hgrow="ALWAYS" />
-                                                         </children>
-                                                      </HBox>
-                                                   </children>
-                                                   <padding>
-                                                      <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                                                   </padding>
-                                                </HBox>
-                                                <Label text="Keep day as -1 or 0 if you do not wish to assign a specific day to this expense">
-                                                   <font>
-                                                      <Font name="Segoe UI" size="16.0" />
-                                                   </font>
-                                                   <VBox.margin>
-                                                      <Insets top="5.0" />
-                                                   </VBox.margin>
-                                                </Label>
-                                             </children>
-                                          </VBox>
-                                          <Separator maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" orientation="VERTICAL" prefHeight="50.0" visible="false" VBox.vgrow="SOMETIMES" />
                                           <Label alignment="CENTER" prefWidth="795.0" text="Planned expenses">
                                              <font>
                                                 <Font name="Segoe UI Bold" size="20.0" />
@@ -393,6 +354,20 @@
                                                 <Insets bottom="15.0" />
                                              </padding>
                                           </Label>
+                                          <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#promptAddExpense" text="Add expense">
+                                             <padding>
+                                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                             </padding>
+                                             <font>
+                                                <Font name="Segoe UI" size="14.0" />
+                                             </font>
+                                             <graphic>
+                                                <FontIcon iconLiteral="fltfal-data-bar-vertical-add-24" iconSize="16" textAlignment="CENTER" wrappingWidth="40.0" />
+                                             </graphic>
+                                             <VBox.margin>
+                                                <Insets bottom="10.0" />
+                                             </VBox.margin>
+                                          </Button>
                                           <ListView fx:id="expenseList" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="351.0" prefWidth="795.0" styleClass="expense-listview" VBox.vgrow="ALWAYS" />
                                           <HBox alignment="CENTER_RIGHT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="SOMETIMES">
                                              <children>

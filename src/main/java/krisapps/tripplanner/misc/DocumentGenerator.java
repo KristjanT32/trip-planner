@@ -6,7 +6,7 @@ import javafx.application.Platform;
 import javafx.scene.text.FontWeight;
 import krisapps.tripplanner.PlannerApplication;
 import krisapps.tripplanner.data.TripManager;
-import krisapps.tripplanner.data.prompts.LoadingDialog;
+import krisapps.tripplanner.data.dialogs.LoadingDialog;
 import krisapps.tripplanner.data.trip.ExpenseCategory;
 import krisapps.tripplanner.data.trip.Itinerary;
 import krisapps.tripplanner.data.trip.PlannedExpense;

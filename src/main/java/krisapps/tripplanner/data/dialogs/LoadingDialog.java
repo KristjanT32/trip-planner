@@ -1,4 +1,4 @@
-package krisapps.tripplanner.data.prompts;
+package krisapps.tripplanner.data.dialogs;
 
 import javafx.application.Platform;
 import javafx.concurrent.Task;

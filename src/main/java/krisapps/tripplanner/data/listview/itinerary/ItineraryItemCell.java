@@ -9,9 +9,9 @@ import javafx.scene.layout.VBox;
 import krisapps.tripplanner.PlannerApplication;
 import krisapps.tripplanner.TripPlanner;
 import krisapps.tripplanner.data.TripManager;
-import krisapps.tripplanner.data.prompts.AddOrEditItineraryEntryDialog;
-import krisapps.tripplanner.data.prompts.ItineraryEntryDetailsDialog;
-import krisapps.tripplanner.data.prompts.LinkExpensesDialog;
+import krisapps.tripplanner.data.dialogs.AddOrEditItineraryEntryDialog;
+import krisapps.tripplanner.data.dialogs.ItineraryEntryDetailsDialog;
+import krisapps.tripplanner.data.dialogs.LinkExpensesDialog;
 import krisapps.tripplanner.data.trip.Itinerary;
 
 import java.io.IOException;

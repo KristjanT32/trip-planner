@@ -25,7 +25,7 @@ public class PopupManager {
         CALENDAR_INTEGRATION_DISABLED,
         NO_EVENTS,
         DOCUMENT_TEMPLATE_MISSING,
-        PLAN_DATA_MISSING
+        TRIP_LOAD_FAILED_MISSING, PLAN_DATA_MISSING
     }
 
     public static Optional<ButtonType> showPredefinedPopup(PopupType type) {
@@ -92,6 +92,11 @@ public class PopupManager {
             case PLAN_DATA_MISSING -> {
                 alert.setTitle("Document generation failed");
                 alert.setContentText("There is not enough trip data for a planning document to be generated.");
+                alert.setAlertType(Alert.AlertType.ERROR);
+            }
+            case TRIP_LOAD_FAILED_MISSING -> {
+                alert.setTitle("Cannot load trip");
+                alert.setContentText("The Planner couldn't load data for the trip.\nThis might have happened if the trip was deleted but the Planner was not closed properly.");
                 alert.setAlertType(Alert.AlertType.ERROR);
             }
             case NOT_IMPLEMENTED -> {

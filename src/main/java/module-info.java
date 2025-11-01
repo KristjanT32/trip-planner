@@ -21,11 +21,12 @@ module krisapps.tripplanner {
     requires javafx.base;
     requires org.apache.pdfbox;
     requires openhtmltopdf.core;
+    requires guava;
 
     opens krisapps.tripplanner to javafx.fxml;
     opens krisapps.tripplanner.data.listview.itinerary to javafx.fxml;
     opens krisapps.tripplanner.data.listview.expense_linker to javafx.fxml;
-    opens krisapps.tripplanner.data.prompts to javafx.fxml;
+    opens krisapps.tripplanner.data.dialogs to javafx.fxml;
     opens krisapps.tripplanner.data.listview.upcoming_trips to javafx.fxml;
     opens krisapps.tripplanner.data.listview.cost_list to javafx.fxml;
 

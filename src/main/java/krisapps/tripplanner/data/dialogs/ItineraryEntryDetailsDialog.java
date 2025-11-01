@@ -1,4 +1,4 @@
-package krisapps.tripplanner.data.prompts;
+package krisapps.tripplanner.data.dialogs;
 
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;

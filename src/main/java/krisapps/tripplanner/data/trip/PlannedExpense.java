@@ -23,6 +23,14 @@ public class PlannedExpense {
         this.id = UUID.randomUUID();
     }
 
+    public PlannedExpense(UUID id, ExpenseCategory category, String description, double amount, int day) {
+        this.id = id;
+        this.category = category;
+        this.description = description;
+        this.amount = amount;
+        this.day = day;
+    }
+
     public void setDay(int day) {
         this.day = day;
     }
@@ -57,5 +65,13 @@ public class PlannedExpense {
 
     public UUID getId() {
         return id;
+    }
+
+    public PlannedExpense copy() {
+        return new PlannedExpense(this.id, this.category, this.description, this.amount, this.day);
+    }
+
+    public boolean isDaySet() {
+        return day > 0;
     }
 }

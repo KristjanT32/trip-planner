@@ -60,7 +60,7 @@
                   <Insets bottom="40.0" left="10.0" right="10.0" top="40.0" />
                </HBox.margin>
                <children>
-                  <Button fx:id="addExpenseButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#linkSelectedExpense" text="Add →" />
+                  <Button fx:id="addSelectedButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#linkSelectedExpense" text="Add →" />
                   <Button fx:id="removeExpenseButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#unlinkSelectedExpense" text="← Remove" />
                   <Button fx:id="addAllButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#linkAll" text="Add all →" />
                   <Button fx:id="removeAllButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#unlinkAll" text="← Remove all" />
@@ -88,19 +88,60 @@
       <Button fx:id="addMatchingButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#linkMatching" text="Add all expenses with matching day" />
       <HBox alignment="CENTER_RIGHT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="456.0" VBox.vgrow="NEVER">
          <children>
-            <Label maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Total expenses:" HBox.hgrow="NEVER">
-               <font>
-                  <Font name="Segoe UI" size="16.0" />
-               </font>
-            </Label>
-            <Label fx:id="expenseTotalLabel" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="\$0.00 " HBox.hgrow="ALWAYS">
-               <font>
-                  <Font name="Segoe UI Bold" size="16.0" />
-               </font>
+            <HBox>
+               <children>
+                  <Label maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Total expenses:">
+                     <font>
+                        <Font name="Segoe UI" size="16.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="expenseTotalLabel" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="\$0.00 ">
+                     <font>
+                        <Font name="Segoe UI Bold" size="16.0" />
+                     </font>
+                  </Label>
+               </children>
                <HBox.margin>
-                  <Insets left="5.0" />
+                  <Insets right="10.0" />
                </HBox.margin>
-            </Label>
+            </HBox>
+            <HBox fx:id="dailyBudgetPanel" alignment="CENTER_LEFT" styleClass="daily-budget-panel">
+               <children>
+                  <Label fx:id="budgetPanelLabel" maxWidth="1.7976931348623157E308" text="Daily budget limit: ">
+                     <font>
+                        <Font name="Segoe UI" size="14.0" />
+                     </font>
+                  </Label>
+                  <HBox>
+                     <children>
+                        <Label fx:id="budgetPanelExpenseLabel" maxWidth="1.7976931348623157E308" text="0.00">
+                           <font>
+                              <Font name="Segoe UI Bold" size="14.0" />
+                           </font>
+                        </Label>
+                        <Label maxWidth="1.7976931348623157E308" text="/">
+                           <font>
+                              <Font name="Segoe UI Bold" size="14.0" />
+                           </font>
+                           <HBox.margin>
+                              <Insets left="5.0" right="5.0" />
+                           </HBox.margin>
+                        </Label>
+                        <Label fx:id="budgetPanelBudgetLabel" maxWidth="1.7976931348623157E308" text="0.00">
+                           <font>
+                              <Font name="Segoe UI Bold" size="14.0" />
+                           </font>
+                        </Label>
+                     </children>
+                  </HBox>
+               </children>
+               <padding>
+                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+               </padding>
+            </HBox>
+            <Separator prefWidth="10.0" visible="false" HBox.hgrow="ALWAYS" />
+            <Button fx:id="cancelButton" maxWidth="1.7976931348623157E308" minWidth="100.0" mnemonicParsing="false" text="Cancel" />
+            <Separator prefWidth="5.0" visible="false" />
             <Button fx:id="closeButton" maxWidth="1.7976931348623157E308" minWidth="100.0" mnemonicParsing="false" text="Done" />
          </children>
          <VBox.margin>
