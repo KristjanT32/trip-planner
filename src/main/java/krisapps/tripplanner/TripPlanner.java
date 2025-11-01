@@ -390,6 +390,7 @@ public class TripPlanner {
                 sortDirectionToggle.setText(newVal ? "Ascending" : "Descending");
                 refreshItinerary();
             });
+            sortDirectionToggle.setText(sortDirectionToggle.isSelected() ? "Ascending" : "Descending");
 
             if (currentPlan != null && currentPlan.tripDatesSupplied()) {
                 itineraryFilterSelector.getItems().clear();
