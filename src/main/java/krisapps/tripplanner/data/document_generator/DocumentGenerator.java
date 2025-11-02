@@ -291,8 +291,6 @@ public class DocumentGenerator {
                     if (settings.getIncludeSections().get(PlanSection.BUDGET_OVERVIEW)) {
                         Pair<Integer, Double> cheapestDay = TripManager.getCheapestDay(trip);
                         Pair<Integer, Double> mostExpensiveDay = TripManager.getMostExpensiveDay(trip);
-                        TripManager.log("Cheapest day: " + cheapestDay.getKey() + ", " + cheapestDay.getValue());
-                        TripManager.log("Most expensive day: " + mostExpensiveDay.getKey() + ", " + mostExpensiveDay.getValue());
 
                         htmlTemplate = htmlTemplate.replace("{{budget}}", TripManager.Formatting.formatMoney(trip.getExpenseData().getBudget(), TripManager.getInstance().getSettings().getCurrencySymbol(), TripManager.getInstance().getSettings().currencySymbolPrefixed()));
                         htmlTemplate = htmlTemplate.replace("{{totalExpenses}}", TripManager.Formatting.formatMoney(Math.floor(trip.getExpenseData().getTotalExpenses()), TripManager.getInstance().getSettings().getCurrencySymbol(), TripManager.getInstance().getSettings().currencySymbolPrefixed()));
@@ -300,8 +298,8 @@ public class DocumentGenerator {
 
                         String dailyBudget = trip.getExpenseData().getBudgetData().getDailyBudget() <= 0 ? "N/A" : TripManager.Formatting.formatMoney(trip.getExpenseData().getBudgetData().getDailyBudget(), TripManager.getInstance().getSettings().getCurrencySymbol(), TripManager.getInstance().getSettings().currencySymbolPrefixed());
                         htmlTemplate = htmlTemplate.replace("{{dailyBudget}}", dailyBudget);
-                        htmlTemplate = htmlTemplate.replace("{{cheapestDay}}", TripManager.Formatting.formatMoney(Math.floor(cheapestDay.getValue()), TripManager.getInstance().getSettings().getCurrencySymbol(), TripManager.getInstance().getSettings().currencySymbolPrefixed()));
-                        htmlTemplate = htmlTemplate.replace("{{mostExpensiveDay}}", TripManager.Formatting.formatMoney(Math.floor(mostExpensiveDay.getValue()), TripManager.getInstance().getSettings().getCurrencySymbol(), TripManager.getInstance().getSettings().currencySymbolPrefixed()));
+                        htmlTemplate = htmlTemplate.replace("{{cheapestDay}}", cheapestDay.getValue() == -1 ? "N/A" : TripManager.Formatting.formatMoney(Math.floor(cheapestDay.getValue()), TripManager.getInstance().getSettings().getCurrencySymbol(), TripManager.getInstance().getSettings().currencySymbolPrefixed()));
+                        htmlTemplate = htmlTemplate.replace("{{mostExpensiveDay}}", mostExpensiveDay.getValue() == -1 ? "N/A" : TripManager.Formatting.formatMoney(Math.floor(mostExpensiveDay.getValue()), TripManager.getInstance().getSettings().getCurrencySymbol(), TripManager.getInstance().getSettings().currencySymbolPrefixed()));
 
                         htmlTemplate = htmlTemplate.replace("{{budget-summary-visible}}", "");
                     } else {

@@ -117,6 +117,12 @@
     -fx-text-fill: black;
 }
 
+.plan-section-cell .check-box .box {
+    -fx-border-color: rgba(74, 74, 74, 255);
+    -fx-background-radius: 20px;
+    -fx-border-radius: 20px;
+}
+
 .plan-layout-listview .list-cell {
     -fx-padding: 5px;
     -fx-background-color: transparent;

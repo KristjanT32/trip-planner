@@ -52,6 +52,9 @@ public class DocumentSetupDialog extends Dialog<PlanDocumentSettings> {
             } else {
                 this.settings.getIncludeSections().replace(section.getSection(), section.isIncluded());
             }
+            layoutList.getItems().forEach((item) -> {
+                item.setIncluded(this.settings.getIncludeSections().getOrDefault(item.getSection(), true));
+            });
             layoutList.refresh();
         }));
         layoutList.getItems().addAll(Arrays.stream(PlanSection.values()).map(section -> new PlanSectionState(section, this.settings.getIncludeSections().getOrDefault(section, true))).toList());

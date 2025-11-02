@@ -167,6 +167,15 @@ public class TripPlanner {
     //<editor-fold desc="Upcoming trips">
     @FXML
     private ListView<Trip> upcomingTripsList;
+
+    @FXML
+    private ListView<Trip> pastTripsList;
+
+    @FXML
+    private VBox upcomingTrips;
+
+    @FXML
+    private VBox pastTrips;
     //</editor-fold>
     //<editor-fold desc="Reminders">
     @FXML
@@ -394,8 +403,21 @@ public class TripPlanner {
         itineraryListView.setCellFactory(new ItineraryCellFactory(true));
         summaryItinerary.setCellFactory(new ItineraryCellFactory(false));
         expenseList.setCellFactory(new ExpenseLinkerCellFactory(true));
-        upcomingTripsList.setCellFactory(new UpcomingTripsCellFactory());
+        upcomingTripsList.setCellFactory(new UpcomingTripsCellFactory(this::refreshUpcomingTrips));
+        pastTripsList.setCellFactory(new UpcomingTripsCellFactory(this::refreshUpcomingTrips));
         categoryBreakdownList.setCellFactory(new CostListCellFactory());
+
+        upcomingTripsList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                pastTripsList.getSelectionModel().clearSelection();
+            }
+        });
+
+        pastTripsList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                upcomingTripsList.getSelectionModel().clearSelection();
+            }
+        });
     }
 
     public void setupSorting() {
@@ -548,6 +570,9 @@ public class TripPlanner {
         scheduler.scheduleAtFixedRate(() -> {
             if (upcomingTripsPanel.isVisible() && !upcomingTripsList.getItems().isEmpty()) {
                 upcomingTripsList.refresh();
+            }
+            if (upcomingTripsPanel.isVisible() && !pastTripsList.getItems().isEmpty()) {
+                pastTripsList.refresh();
             }
         }, 0, 1, TimeUnit.SECONDS);
     }
@@ -911,6 +936,10 @@ public class TripPlanner {
     public void refreshUpcomingTrips() {
         Platform.runLater(() -> {
             upcomingTripsList.getItems().clear();
+            pastTripsList.getItems().clear();
+            upcomingTrips.managedProperty().bind(upcomingTrips.visibleProperty());
+            pastTrips.managedProperty().bind(pastTrips.visibleProperty());
+
             for (Trip t : trips.getTrips().stream().sorted(Comparator.comparingLong(t -> {
                 if (t.getTripStartDate() != null) {
                     return Duration.between(LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault()), t.getTripStartDate()).toHours();
@@ -918,8 +947,19 @@ public class TripPlanner {
                     return -1;
                 }
             })).toList()) {
-                upcomingTripsList.getItems().add(t);
+                if (t.getTripStartDate() != null) {
+                    if (t.getTripStartDate().isAfter(LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault()))) {
+                        upcomingTripsList.getItems().add(t);
+                    } else {
+                        pastTripsList.getItems().add(t);
+                    }
+                } else {
+                    upcomingTripsList.getItems().add(t);
+                }
             }
+
+            upcomingTrips.setVisible(!upcomingTripsList.getItems().isEmpty());
+            pastTrips.setVisible(!pastTripsList.getItems().isEmpty());
         });
     }
 
@@ -1305,6 +1345,7 @@ public class TripPlanner {
         if (silent) {
             resetPlanner();
             changeProgramState(ProgramState.SHOW_DASHBOARD);
+            refreshUpcomingTrips();
             refreshMenuOptions();
         } else {
             Optional<ButtonType> response = PopupManager.showConfirmation(
@@ -1330,6 +1371,7 @@ public class TripPlanner {
                     resetPlanner();
                     changeProgramState(ProgramState.SHOW_DASHBOARD);
                     refreshMenuOptions();
+                    refreshUpcomingTrips();
                 }
             }
         }

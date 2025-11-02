@@ -125,6 +125,31 @@ public class TripManager {
         log("Updated program settings");
     }
 
+    /**
+     * Deletes the trip settings for the supplied trip.
+     *
+     * @param trip The trip whose settings are to be deleted
+     */
+    public void deleteSettings(Trip trip) {
+        Data d = getData();
+        d.setTripSettings(trip.getUniqueID(), null);
+        saveData(d);
+        log("Deleted trip settings for '" + trip.getTripName() + "' (" + trip.getUniqueID() + ")");
+    }
+
+    /**
+     * Deletes the supplied trip data.
+     * This will not delete the trip settings.
+     *
+     * @param trip The trip to delete
+     */
+    public void deleteTrip(Trip trip) {
+        Data d = getData();
+        d.getTrips().removeIf((t) -> t.getUniqueID().equals(trip.getUniqueID()));
+        saveData(d);
+        log("Deleted trip '" + trip.getTripName() + "' (" + trip.getUniqueID() + ")");
+    }
+
     public void addExpense(Trip trip, PlannedExpense expense) {
         trip.getExpenseData().addExpense(expense);
     }
