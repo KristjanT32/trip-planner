@@ -15,6 +15,7 @@
     -fx-border-color: #c8c8c8;
     -fx-border-width: 1px;
     -fx-border-style: solid;
+    -fx-text-fill: black;
 }
 
 .text-field, .text-area {
@@ -32,7 +33,22 @@
 }
 
 .button:hover, .text-area:hover, .text-field:hover {
-    -fx-background-color: #bcbcbc;
+    -fx-background-color: #939393;
+}
+
+.button.destructive {
+    -fx-background-color: #ff5959;
+    -fx-border-color: #ff5959;
+}
+
+.button.destructive:hover {
+    -fx-background-color: #b83f3f;
+    -fx-border-color: #b83f3f;
+}
+
+.button.destructive:pressed {
+    -fx-background-color: #802d2d;
+    -fx-border-color: #802d2d;
 }
 
 .button:pressed {

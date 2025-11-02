@@ -1,16 +1,18 @@
 package krisapps.tripplanner.data.listview.upcoming_trips;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
+import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import krisapps.tripplanner.PlannerApplication;
 import krisapps.tripplanner.TripPlanner;
 import krisapps.tripplanner.data.TripManager;
 import krisapps.tripplanner.data.TripSettings;
+import krisapps.tripplanner.data.dialogs.LoadingDialog;
 import krisapps.tripplanner.data.trip.Trip;
+import krisapps.tripplanner.misc.utils.GoogleCalendarIntegration;
+import krisapps.tripplanner.misc.utils.PopupManager;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 
 import java.io.IOException;
@@ -19,6 +21,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 public class UpcomingTripCell extends ListCell<Trip> {
 
@@ -44,18 +47,20 @@ public class UpcomingTripCell extends ListCell<Trip> {
     private Label destinationPrefix;
 
     @FXML
-    private Button overviewButton;
+    private Button editButton;
 
     @FXML
-    private Button editButton;
+    private Button deleteButton;
 
     @FXML
     private HBox buttonContainer;
 
     final TripManager util = TripManager.getInstance();
     final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMMM dd, yyyy");
+    final Runnable onDelete;
 
-    public UpcomingTripCell() {
+    public UpcomingTripCell(Runnable onDelete) {
+        this.onDelete = onDelete;
         loadFXML();
     }
 
@@ -76,10 +81,6 @@ public class UpcomingTripCell extends ListCell<Trip> {
         onLabel.setStyle("-fx-text-fill: black");
         destinationPrefix.setStyle("-fx-text-fill: black");
 
-        overviewButton.setOnAction((e) -> {
-            TripManager.log("Overview button pressed");
-        });
-
         buttonContainer.setVisible(false);
         buttonContainer.setManaged(false);
         selectedProperty().addListener((observable, oldValue, newValue) -> {
@@ -97,6 +98,40 @@ public class UpcomingTripCell extends ListCell<Trip> {
     protected void updateItem(Trip item, boolean empty) {
         super.updateItem(item, empty);
 
+        deleteButton.setOnAction((e) -> {
+            Optional<ButtonType> response = PopupManager.showConfirmation("Delete trip plan", "Are you entirely completely unshakably sure that you wish to erase '" + item.getTripName() + "' from existence?\nThis will wipe all trip data related to the trip, including the settings.\n\nThis cannot be undone.",
+                    new ButtonType("Yes, delete", ButtonBar.ButtonData.APPLY),
+                    new ButtonType("No, cancel", ButtonBar.ButtonData.CANCEL_CLOSE)
+            );
+            if (response.isPresent()) {
+                if (response.get().getButtonData() == ButtonBar.ButtonData.APPLY) {
+                    Optional<ButtonType> deleteEvents = PopupManager.showConfirmation("Delete calendar events?", "Would you also like to delete the calendar events for '" + item.getTripName() + "'?\nThis can also not be undone.",
+                            new ButtonType("Yes, delete", ButtonBar.ButtonData.APPLY),
+                            new ButtonType("No, keep", ButtonBar.ButtonData.CANCEL_CLOSE)
+                    );
+                    boolean shouldDeleteEvents = deleteEvents.isPresent() && deleteEvents.get().getButtonData() == ButtonBar.ButtonData.APPLY;
+
+                    LoadingDialog dlg = new LoadingDialog(LoadingDialog.LoadingOperationType.INDETERMINATE_PROGRESSBAR);
+                    dlg.setPrimaryLabel("Deleting trip data");
+                    dlg.setSecondaryLabel("Please wait...");
+                    dlg.show("Deletion in progress", () -> {
+                        if (shouldDeleteEvents) {
+                            dlg.setSecondaryLabel("Deleting calendar events...");
+                            GoogleCalendarIntegration.deleteCalendarEventsForTrip(item);
+                        }
+
+                        dlg.setSecondaryLabel("Deleting trip settings...");
+                        TripManager.getInstance().deleteSettings(item);
+
+                        dlg.setSecondaryLabel("Deleting trip...");
+                        TripManager.getInstance().deleteTrip(item);
+
+                        Platform.runLater(onDelete);
+                    });
+                }
+            }
+        });
+
         editButton.setOnAction((e) -> {
             TripManager.log("Opening '" + item.getTripName() + "' (" + item.getUniqueID() + ") in Planner");
             TripPlanner.getInstance().openExistingTrip(item, true);
@@ -113,7 +148,11 @@ public class UpcomingTripCell extends ListCell<Trip> {
                 tripDateLabel.setText(formatter.format(item.getTripStartDate()));
 
                 if (duration.isNegative() || duration.isZero()) {
-                    countdownLabel.setText("");
+                    if (item.getTripStartDate().isBefore(LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault())) && item.getTripEndDate().isAfter(LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault()))) {
+                        countdownLabel.setText("Ongoing");
+                    } else {
+                        countdownLabel.setText("");
+                    }
                 } else {
                     countdownLabel.setText(DurationFormatUtils.formatDuration(duration.toMillis(), tripSettings.getCountdownFormat().getFormat(), true));
                 }

@@ -46,6 +46,7 @@ public class Data {
 
     /**
      * Sets the supplied trip's settings to <code>settings</code>.
+     * If <code>settings</code> is null, the settings are removed.
      *
      * @param tripID   The trip whose settings to update
      * @param settings The new settings object

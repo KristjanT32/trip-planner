@@ -60,6 +60,7 @@ public class PlanSectionCell extends ListCell<PlanSectionState> {
 
             sectionNameLabel.setStyle("-fx-text-fill: black");
             sectionDescriptionLabel.setStyle("-fx-text-fill: black");
+            rootPane.setStyle("-fx-background-color: " + (item.isIncluded() ? "#73ca73" : "#cacaca"));
 
             setGraphic(rootPane);
         } else {

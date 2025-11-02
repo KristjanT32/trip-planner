@@ -153,6 +153,14 @@ public class GoogleCalendarIntegration {
      */
     public static boolean deleteCalendarEventsForTrip(Trip currentPlan) {
         String eventId = TripManager.getInstance().getSettingsForTrip(currentPlan.getUniqueID()).getCalendarEventID();
+        if (eventId == null) {
+            TripManager.log("No calendar event ID found for trip: " + currentPlan.getTripName() + " (" + currentPlan.getUniqueID() + ")");
+            return true;
+        }
+        if (eventId.isBlank()) {
+            TripManager.log("Blank calendar event ID supplied for trip, assuming no events: " + currentPlan.getTripName() + " (" + currentPlan.getUniqueID() + ")");
+            return true;
+        }
         try {
             calendarService.events().delete("primary", eventId).execute();
             return true;
