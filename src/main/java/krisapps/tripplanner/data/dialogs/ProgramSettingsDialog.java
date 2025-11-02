@@ -7,10 +7,10 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import krisapps.tripplanner.PlannerApplication;
 import krisapps.tripplanner.data.ProgramSettings;
+import krisapps.tripplanner.data.document_generator.PlanDocumentSettings;
 
 import java.io.IOException;
-import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
+import java.util.Optional;
 
 public class ProgramSettingsDialog extends Dialog<ProgramSettings> {
 
@@ -74,29 +74,18 @@ public class ProgramSettingsDialog extends Dialog<ProgramSettings> {
         });
         autoOpenLastToggle.setSelected(this.settings.shouldOpenLastTrip());
 
-        breakPageForDaysToggle.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            breakPageForDaysToggle.setText(newValue ? "Enabled" : "Disabled");
-            this.settings.setBreakPageForDays(newValue);
-        });
-        breakPageForDaysToggle.setSelected(this.settings.shouldBreakPageForEachDay());
-
         symbolField.textProperty().addListener((observable, oldValue, newValue) -> {
             if (!newValue.isEmpty()) {
                 this.settings.setCurrencySymbol(newValue);
             }
         });
         symbolField.setText(settings.getCurrencySymbol());
+    }
 
-        pathBox.setText(settings.getDocumentGeneratorOutputFolder() == null ? "" : settings.getDocumentGeneratorOutputFolder().toString());
-        pathBox.textProperty().addListener((observable, oldVal, newVal) -> {
-            try {
-                Path.of(pathBox.getText());
-                pathBox.setStyle("-fx-text-fill: black");
-                this.settings.setDocumentGeneratorOutputFolder(Path.of(pathBox.getText()));
-            } catch (InvalidPathException e) {
-                pathBox.setStyle("-fx-text-fill: red");
-            }
-        });
+    public void promptShowGeneratorSettings() {
+        DocumentSetupDialog dlg = new DocumentSetupDialog(this.settings.getDocumentGeneratorSettings().copy());
+        Optional<PlanDocumentSettings> changed = dlg.showAndWait();
+        changed.ifPresent(this.settings::setDocumentGeneratorSettings);
     }
 
 

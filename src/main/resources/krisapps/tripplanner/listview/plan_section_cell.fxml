@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.URL?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox fx:id="rootPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="77.0" prefWidth="313.0" styleClass="plan-section-cell" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="SOMETIMES">
+         <children>
+            <VBox alignment="CENTER_LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS">
+               <children>
+                  <Label fx:id="sectionNameLabel" text="Section name">
+                     <font>
+                        <Font name="Segoe UI Bold" size="14.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="sectionDescriptionLabel" alignment="TOP_LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Section Description" wrapText="true" VBox.vgrow="SOMETIMES">
+                     <font>
+                        <Font name="Segoe UI" size="14.0" />
+                     </font>
+                  </Label>
+               </children>
+            </VBox>
+            <CheckBox fx:id="sectionStateToggle" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" HBox.hgrow="NEVER">
+               <HBox.margin>
+                  <Insets left="25.0" />
+               </HBox.margin>
+            </CheckBox>
+         </children>
+      </HBox>
+   </children>
+   <padding>
+      <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+   </padding>
+   <stylesheets>
+      <URL value="@../styles/styles.css" />
+      <URL value="@../styles/listview.css" />
+   </stylesheets>
+</VBox>

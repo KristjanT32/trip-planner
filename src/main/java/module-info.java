@@ -29,6 +29,7 @@ module krisapps.tripplanner {
     opens krisapps.tripplanner.data.dialogs to javafx.fxml;
     opens krisapps.tripplanner.data.listview.upcoming_trips to javafx.fxml;
     opens krisapps.tripplanner.data.listview.cost_list to javafx.fxml;
+    opens krisapps.tripplanner.data.listview.document_sections to javafx.fxml;
 
     opens krisapps.tripplanner.data.trip to com.google.gson;
 
@@ -41,4 +42,6 @@ module krisapps.tripplanner {
     opens krisapps.tripplanner.misc to com.google.gson, javafx.fxml;
     exports krisapps.tripplanner.misc.utils;
     opens krisapps.tripplanner.misc.utils to com.google.gson, javafx.fxml;
+    exports krisapps.tripplanner.data.document_generator;
+    opens krisapps.tripplanner.data.document_generator to com.google.gson, javafx.fxml;
 }

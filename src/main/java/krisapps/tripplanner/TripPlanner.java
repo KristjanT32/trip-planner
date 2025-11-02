@@ -1,6 +1,7 @@
 package krisapps.tripplanner;
 
 import com.google.api.services.calendar.model.EventReminder;
+import com.google.common.collect.ImmutableList;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -8,7 +9,8 @@ import javafx.scene.chart.PieChart;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.MenuItem;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -16,6 +18,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import krisapps.tripplanner.data.*;
 import krisapps.tripplanner.data.dialogs.*;
+import krisapps.tripplanner.data.document_generator.DocumentGenerator;
+import krisapps.tripplanner.data.document_generator.PlanDocumentSettings;
 import krisapps.tripplanner.data.listview.cost_list.CategoryExpenseSummary;
 import krisapps.tripplanner.data.listview.cost_list.CostListCellFactory;
 import krisapps.tripplanner.data.listview.expense_linker.ExpenseLinkerCellFactory;
@@ -25,7 +29,6 @@ import krisapps.tripplanner.data.trip.BudgetData;
 import krisapps.tripplanner.data.trip.Itinerary;
 import krisapps.tripplanner.data.trip.PlannedExpense;
 import krisapps.tripplanner.data.trip.Trip;
-import krisapps.tripplanner.misc.DocumentGenerator;
 import krisapps.tripplanner.misc.PlannerError;
 import krisapps.tripplanner.misc.PlannerNotification;
 import krisapps.tripplanner.misc.utils.AnimationUtils;
@@ -54,6 +57,7 @@ public class TripPlanner {
     private static ProgramSettings currentProgramSettings;
     private static TripPlanner instance;
     private final TripManager trips = TripManager.getInstance();
+    private final ImmutableList<String> plannerOnlyMenus = ImmutableList.of("Details", "Itinerary", "Expenses", "Calendar", "Extras");
     private final UnaryOperator<TextFormatter.Change> numbersOnlyFormatter = (change) -> {
         if (change.getControlNewText().isEmpty()) {
             return change;
@@ -76,7 +80,7 @@ public class TripPlanner {
     private VBox root;
 
     @FXML
-    private MenuItem debugAction;
+    private MenuBar topMenu;
     //</editor-fold>
 
     //<editor-fold desc="Menu panels">
@@ -274,6 +278,7 @@ public class TripPlanner {
         registerListeners();
         initReminderPanel();
         setupSorting();
+        refreshMenuOptions();
 
 
         root.sceneProperty().addListener((event, oldVal, newVal) -> {
@@ -295,6 +300,16 @@ public class TripPlanner {
 
         setNotificationVisible(PlannerNotification.ALL, false);
         displayError(PlannerError.ANY, false);
+    }
+
+    public void refreshMenuOptions() {
+        Platform.runLater(() -> {
+            for (Menu m : topMenu.getMenus()) {
+                if (plannerOnlyMenus.contains(m.getText())) {
+                    m.setDisable(currentPlan == null);
+                }
+            }
+        });
     }
 
     /**
@@ -727,6 +742,7 @@ public class TripPlanner {
         refreshExpensePlanner();
         refreshUpcomingTrips();
 
+        refreshMenuOptions();
         setupSorting();
     }
 
@@ -949,6 +965,15 @@ public class TripPlanner {
         ProgramSettingsDialog settingsDialog = new ProgramSettingsDialog(currentProgramSettings);
         Optional<ProgramSettings> changed = settingsDialog.showAndWait();
         changed.ifPresent(trips::updateProgramSettings);
+    }
+
+    public void promptShowGeneratorSetup() {
+        DocumentSetupDialog dlg = new DocumentSetupDialog(currentProgramSettings.getDocumentGeneratorSettings().copy());
+        Optional<PlanDocumentSettings> changed = dlg.showAndWait();
+        changed.ifPresent(planDocumentSettings -> {
+            currentProgramSettings.setDocumentGeneratorSettings(planDocumentSettings);
+            trips.updateProgramSettings(currentProgramSettings);
+        });
     }
 
     public void promptClearItinerary() {
@@ -1254,7 +1279,7 @@ public class TripPlanner {
 
     public void generatePlanDocument() {
         if (currentPlan == null) return;
-        DocumentGenerator.generateTripPlan(currentPlan, trips.getSettings().getDocumentGeneratorOutputFolder());
+        DocumentGenerator.generateTripPlan(currentPlan, trips.getSettings().getDocumentGeneratorSettings().getOutputFolder());
     }
 
     public void promptDisplayDebugMenu() {
@@ -1280,6 +1305,7 @@ public class TripPlanner {
         if (silent) {
             resetPlanner();
             changeProgramState(ProgramState.SHOW_DASHBOARD);
+            refreshMenuOptions();
         } else {
             Optional<ButtonType> response = PopupManager.showConfirmation(
                     "Close planner",
@@ -1303,6 +1329,7 @@ public class TripPlanner {
                     }
                     resetPlanner();
                     changeProgramState(ProgramState.SHOW_DASHBOARD);
+                    refreshMenuOptions();
                 }
             }
         }
@@ -1335,6 +1362,7 @@ public class TripPlanner {
     }
 
     public void saveChanges(boolean closePlanner) {
+        if (currentPlan == null) return;
         LoadingDialog loadingDialog = new LoadingDialog(LoadingDialog.LoadingOperationType.INDETERMINATE_PROGRESSBAR);
         loadingDialog.setPrimaryLabel("Just a second!");
         loadingDialog.setSecondaryLabel("Saving changes to '" + currentPlan.getTripName() + "'");

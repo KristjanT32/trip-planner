@@ -5,22 +5,51 @@
     <link rel="stylesheet" href="trip_plan_template.css"/>
 </head>
 <body>
-<header>
+<header class="summary {{summary-visible}}">
     <h1>{{tripName}}</h1>
     <p class="destination">{{tripDestination}}</p>
     <p class="dates">{{tripStartDate}} – {{tripEndDate}}</p>
     <p class="party">Party size: {{partySize}}</p>
 </header>
 
-<section class="financial-overview">
+<section class="financial-overview {{financial-overview-visible}}">
     <h2>Financial Overview</h2>
-    <div class="financial-summary">
-        <p><strong>Budget:</strong> {{budget}}</p>
-        <p><strong>Total Planned Expenses:</strong> {{totalExpenses}}</p>
-        <p><strong>Remaining:</strong> {{remainingBudget}}</p>
+    <div class="financial-summary {{budget-summary-visible}}">
+        <div class="dashboard">
+            <div class="panel main-panel">
+                <div class="panel-title">Trip Budget</div>
+                <div class="panel-value">{{budget}}</div>
+                <table class="small-panels">
+                    <tr>
+                        <td class="panel small-panel">
+                            <div class="panel-title">Daily Budget</div>
+                            <div class="panel-value">{{dailyBudget}}</div>
+                        </td>
+                        <td class="panel small-panel">
+                            <div class="panel-title">Cheapest Day</div>
+                            <div class="panel-value"><a href="#cheapest">{{cheapestDay}}</a></div>
+                        </td>
+                        <td class="panel small-panel">
+                            <div class="panel-title">Most Expensive Day</div>
+                            <div class="panel-value"><a href="#most_expensive">{{mostExpensiveDay}}</a></div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="panel main-panel">
+                <div class="panel-title">Total Expenses</div>
+                <div class="panel-value">{{totalExpenses}}</div>
+            </div>
+
+            <div class="panel main-panel">
+                <div class="panel-title">Remaining Budget</div>
+                <div class="panel-value">{{remainingBudget}}</div>
+            </div>
+        </div>
     </div>
 
-    <table class="expense-table">
+    <table class="expense-table {{expenses-visible}}">
         <thead>
         <tr>
             <th>Description</th>
@@ -34,7 +63,7 @@
         </tbody>
     </table>
 </section>
-<section class="category-costs break">
+<section class="category-costs break-if-necessary {{cost-distribution-visible}}">
     <h2>Cost Distribution</h2>
     <table class="category-table">
         <thead>
@@ -50,7 +79,7 @@
     </table>
 </section>
 
-<section class="itinerary break">
+<section class="itinerary {{itinerary-visible}}">
     <h2>Itinerary</h2>
     {{itineraryDays}}
 </section>

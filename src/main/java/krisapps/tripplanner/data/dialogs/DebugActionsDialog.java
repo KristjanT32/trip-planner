@@ -12,10 +12,10 @@ import javafx.stage.Modality;
 import krisapps.tripplanner.PlannerApplication;
 import krisapps.tripplanner.data.ProgramSettings;
 import krisapps.tripplanner.data.TripManager;
+import krisapps.tripplanner.data.document_generator.DocumentGenerator;
 import krisapps.tripplanner.data.trip.ExpenseCategory;
 import krisapps.tripplanner.data.trip.PlannedExpense;
 import krisapps.tripplanner.data.trip.Trip;
-import krisapps.tripplanner.misc.DocumentGenerator;
 import krisapps.tripplanner.misc.utils.PopupManager;
 
 import java.io.IOException;
@@ -58,7 +58,7 @@ public class DebugActionsDialog extends Dialog<ProgramSettings> {
     public void generateTestDocument() {
         Trip test = new Trip("test", "test");
         test.getExpenseData().addExpense(new PlannedExpense(32, "test", ExpenseCategory.UNCATEGORIZED));
-        DocumentGenerator.generateTripPlan(test, TripManager.getInstance().getSettings().getDocumentGeneratorOutputFolder());
+        DocumentGenerator.generateTripPlan(test, TripManager.getInstance().getSettings().getDocumentGeneratorSettings().getOutputFolder());
     }
 
 

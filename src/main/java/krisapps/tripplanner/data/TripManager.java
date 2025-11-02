@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.ToNumberPolicy;
 import com.google.gson.stream.JsonReader;
+import javafx.util.Pair;
 import krisapps.tripplanner.data.trip.Itinerary;
 import krisapps.tripplanner.data.trip.PlannedExpense;
 import krisapps.tripplanner.data.trip.Trip;
@@ -19,9 +20,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.UUID;
+import java.util.*;
 
 public class TripManager {
 
@@ -185,6 +184,36 @@ public class TripManager {
             itineraryItem.unlinkExpense(expenseID);
             return itineraryItem;
         });
+    }
+
+    /**
+     * Returns the cheapest day in the trip.
+     *
+     * @param t The trip to check.
+     * @return A pair containing the day and the amount spent on that day.
+     */
+    public static Pair<Integer, Double> getCheapestDay(Trip t) {
+        HashMap<Integer, Double> dayExpenses = new HashMap<>();
+        for (PlannedExpense exp : t.getExpenseData().getPlannedExpenses().values()) {
+            dayExpenses.put(exp.getDay(), dayExpenses.getOrDefault(exp.getDay(), 0.0d) + exp.getAmount());
+        }
+
+        return dayExpenses.entrySet().stream().min(Comparator.comparingDouble(Map.Entry::getValue)).map(e -> new Pair<>(e.getKey(), e.getValue())).orElse(new Pair<>(-1, -1.0d));
+    }
+
+    /**
+     * Returns the most expensive day in the trip.
+     *
+     * @param t The trip to check.
+     * @return A pair containing the day and the amount spent on that day.
+     */
+    public static Pair<Integer, Double> getMostExpensiveDay(Trip t) {
+        HashMap<Integer, Double> dayExpenses = new HashMap<>();
+        for (PlannedExpense exp : t.getExpenseData().getPlannedExpenses().values()) {
+            dayExpenses.put(exp.getDay(), dayExpenses.getOrDefault(exp.getDay(), 0.0d) + exp.getAmount());
+        }
+
+        return dayExpenses.entrySet().stream().max(Comparator.comparingDouble(Map.Entry::getValue)).map(e -> new Pair<>(e.getKey(), e.getValue())).orElse(new Pair<>(-1, -1.0d));
     }
 
     public void saveData(Data data) {

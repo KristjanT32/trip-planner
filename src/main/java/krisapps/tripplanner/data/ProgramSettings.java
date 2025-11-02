@@ -1,7 +1,6 @@
 package krisapps.tripplanner.data;
 
-import java.io.File;
-import java.nio.file.Path;
+import krisapps.tripplanner.data.document_generator.PlanDocumentSettings;
 
 public class ProgramSettings {
 
@@ -9,14 +8,12 @@ public class ProgramSettings {
 
     private String currencySymbol;
     private boolean currencySymbolPrefix = false;
-    private String documentGeneratorOutputFolder;
     private boolean openLastTrip = false;
-    private boolean breakPageForDays = false;
+    private PlanDocumentSettings documentGeneratorSettings = new PlanDocumentSettings();
 
     public ProgramSettings() {
         this.modified = false;
         this.currencySymbol = "€";
-        this.documentGeneratorOutputFolder = System.getProperty("user.home") + File.separator + "Desktop";
     }
 
     public String getCurrencySymbol() {
@@ -29,10 +26,12 @@ public class ProgramSettings {
     }
 
     public void resetModifiedFlag() {
+        this.documentGeneratorSettings.resetModifiedFlag();
         this.modified = false;
     }
 
     public boolean haveBeenModified() {
+        this.modified = modified || documentGeneratorSettings.hasBeenModified();
         return modified;
     }
 
@@ -45,15 +44,6 @@ public class ProgramSettings {
         this.modified = true;
     }
 
-    public Path getDocumentGeneratorOutputFolder() {
-        return Path.of(documentGeneratorOutputFolder);
-    }
-
-    public void setDocumentGeneratorOutputFolder(Path documentGeneratorOutputFolder) {
-        this.documentGeneratorOutputFolder = documentGeneratorOutputFolder.toString();
-        this.modified = true;
-    }
-
     public boolean shouldOpenLastTrip() {
         return openLastTrip;
     }
@@ -63,12 +53,12 @@ public class ProgramSettings {
         this.modified = true;
     }
 
-    public boolean shouldBreakPageForEachDay() {
-        return breakPageForDays;
+    public PlanDocumentSettings getDocumentGeneratorSettings() {
+        return documentGeneratorSettings;
     }
 
-    public void setBreakPageForDays(boolean breakPageForDays) {
-        this.breakPageForDays = breakPageForDays;
+    public void setDocumentGeneratorSettings(PlanDocumentSettings settings) {
+        this.documentGeneratorSettings = settings;
         this.modified = true;
     }
 }

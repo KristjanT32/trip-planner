@@ -20,6 +20,7 @@
     -fx-background-radius: 20px;
     -fx-border-radius: 20px;
 }
+
 /* </editor-fold> */
 
 /* <editor-fold desc="Expense Linker"> */
@@ -53,6 +54,7 @@
     -fx-border-radius: 20px;
     -fx-text-fill: black;
 }
+
 /* </editor-fold> */
 
 /* <editor-fold desc="Expense List"> */
@@ -70,6 +72,7 @@
     -fx-border-radius: 20px;
     -fx-text-fill: black;
 }
+
 /* </editor-fold> */
 
 /* <editor-fold desc="Cost List" */
@@ -95,8 +98,34 @@
     -fx-border-radius: 20px;
     -fx-text-fill: black;
 }
+
 /* </editor-fold> */
 
+/* <editor-fold desc="Plan Section List"> */
+.plan-layout-listview {
+    -fx-padding: 10px;
+    -fx-background-color: white;
+    -fx-background-radius: 20px;
+    -fx-border-radius: 20px;
+}
+
+.plan-section-cell {
+    -fx-padding: 10px;
+    -fx-background-color: transparent;
+    -fx-background-radius: 20px;
+    -fx-border-radius: 20px;
+    -fx-text-fill: black;
+}
+
+.plan-layout-listview .list-cell {
+    -fx-padding: 5px;
+    -fx-background-color: transparent;
+    -fx-background-radius: 20px;
+    -fx-border-radius: 20px;
+    -fx-text-fill: black;
+}
+
+/* </editor-fold> */
 /* <editor-fold desc="Upcoming Trips List"> */
 .upcoming-trips-listview {
     -fx-padding: 10px;
@@ -119,6 +148,7 @@
     -fx-background-radius: 20px;
     -fx-border-radius: 20px;
 }
+
 /* </editor-fold> */
 
 /* <editor-fold desc="Shared"> */
