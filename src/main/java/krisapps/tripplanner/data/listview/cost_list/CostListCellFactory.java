@@ -3,6 +3,7 @@ package krisapps.tripplanner.data.listview.cost_list;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.util.Callback;
+import krisapps.tripplanner.data.CategoryExpenseSummary;
 
 public class CostListCellFactory implements Callback<ListView<CategoryExpenseSummary>, ListCell<CategoryExpenseSummary>> {
     @Override

@@ -1,4 +1,4 @@
-package krisapps.tripplanner.data.listview.cost_list;
+package krisapps.tripplanner.data;
 
 import krisapps.tripplanner.data.trip.ExpenseCategory;
 import krisapps.tripplanner.data.trip.PlannedExpense;
@@ -23,7 +23,7 @@ public class CategoryExpenseSummary {
 
     public double getTotalAmount() {
         totalAmount = 0.0;
-        for (PlannedExpense expense: expenses) {
+        for (PlannedExpense expense : expenses) {
             totalAmount += expense.getAmount();
         }
 
@@ -39,7 +39,9 @@ public class CategoryExpenseSummary {
     }
 
     public void addExpense(PlannedExpense expense) {
-        if (expenses.stream().anyMatch(e -> e.getId().equals(expense.getId()))) { return; }
+        if (expenses.stream().anyMatch(e -> e.getId().equals(expense.getId()))) {
+            return;
+        }
         expenses.add(expense);
     }
 

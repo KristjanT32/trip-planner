@@ -20,7 +20,6 @@ import krisapps.tripplanner.data.*;
 import krisapps.tripplanner.data.dialogs.*;
 import krisapps.tripplanner.data.document_generator.DocumentGenerator;
 import krisapps.tripplanner.data.document_generator.PlanDocumentSettings;
-import krisapps.tripplanner.data.listview.cost_list.CategoryExpenseSummary;
 import krisapps.tripplanner.data.listview.cost_list.CostListCellFactory;
 import krisapps.tripplanner.data.listview.expense_linker.ExpenseLinkerCellFactory;
 import krisapps.tripplanner.data.listview.itinerary.ItineraryCellFactory;
@@ -838,59 +837,22 @@ public class TripPlanner {
                 );
             }
             peopleInvolvedLabel.setText(String.valueOf(currentPlan.getPartySize()));
-
             destinationLabel.setText(currentPlan.getTripDestination());
 
             categoryBreakdownList.getItems().clear();
-            ArrayList<CategoryExpenseSummary> categorySummaries = new ArrayList<>();
 
-            double totalExpenses = 0.0;
-
-            // Group all expenses into summary objects
-            for (PlannedExpense e : currentPlan.getExpenseData().getPlannedExpenses().values()) {
-
-                // Get the existing summary object or create a new one for the expense category if missing.
-                CategoryExpenseSummary summary = categorySummaries.stream().filter(sum -> sum.getCategory().equals(e.getCategory())).findFirst().orElse(new CategoryExpenseSummary(e.getCategory()));
-
-                summary.addExpense(e);
-                if (categorySummaries.stream().noneMatch(sum -> sum.getCategory().equals(e.getCategory()))) {
-                    categorySummaries.add(summary);
-                }
-                totalExpenses += e.getAmount();
-            }
-
-            ArrayList<DayExpenses> dayExpenseSummaries = new ArrayList<>();
-
-            for (PlannedExpense e : currentPlan.getExpenseData().getPlannedExpenses().values()) {
-                if (e.getDay() == -1) continue;
-                DayExpenses expenses = dayExpenseSummaries.stream().filter(dayExpenses -> dayExpenses.getDayIndex() == e.getDay()).findFirst().orElse(new DayExpenses(e.getDay()));
-
-                expenses.addExpense(e);
-                if (dayExpenseSummaries.stream().noneMatch(dayExpenses -> dayExpenses.getDayIndex() == e.getDay())) {
-                    dayExpenseSummaries.add(expenses);
-                }
-            }
-
-            double minExpenses = Double.MAX_VALUE;
-            double maxExpenses = 0.0d;
-            double dailyAverage = 0.0d;
-            for (DayExpenses expenseSummary : dayExpenseSummaries) {
-                if (expenseSummary.getTotalExpenses() < minExpenses) {
-                    minExpenses = expenseSummary.getTotalExpenses();
-                }
-                if (expenseSummary.getTotalExpenses() > maxExpenses) {
-                    maxExpenses = expenseSummary.getTotalExpenses();
-                }
-                dailyAverage += expenseSummary.getTotalExpenses();
-            }
-
-            dailyAverage = dailyAverage / dayExpenseSummaries.size();
+            ArrayList<CategoryExpenseSummary> categorySummaries = TripManager.Statistics.getExpenseSummariesFor(currentPlan);
+            double totalExpenses = TripManager.Statistics.getExpenseTotalFor(currentPlan);
+            double minExpenses = Math.max(TripManager.Statistics.getCheapestDay(currentPlan).getValue(), 0);
+            double maxExpenses = Math.max(TripManager.Statistics.getMostExpensiveDay(currentPlan).getValue(), 0);
+            double dailyAverage = TripManager.Statistics.getDailyExpenseAverageFor(currentPlan);
 
             if (currentPlan.getExpenseData().getPlannedExpenses().isEmpty()) {
                 minExpenses = 0.0d;
                 maxExpenses = 0.0d;
                 dailyAverage = 0.0d;
             }
+
             totalExpensesLabel.setText(TripManager.Formatting.formatMoney(Math.floor(totalExpenses), currentProgramSettings.getCurrencySymbol(), currentProgramSettings.currencySymbolPrefixed()));
             dailyExpensesLabel.setText(TripManager.Formatting.formatMoney(Math.floor(minExpenses), currentProgramSettings.getCurrencySymbol(), currentProgramSettings.currencySymbolPrefixed()) + " - " + TripManager.Formatting.formatMoney(maxExpenses, currentProgramSettings.getCurrencySymbol(), currentProgramSettings.currencySymbolPrefixed()));
             dailyAverageLabel.setText(TripManager.Formatting.decimalFormatter.format(dailyAverage) + currentProgramSettings.getCurrencySymbol());

@@ -2,6 +2,9 @@ package krisapps.tripplanner.data.document_generator;
 
 import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
+import com.openhtmltopdf.util.Diagnostic;
+import com.openhtmltopdf.util.XRLog;
+import com.openhtmltopdf.util.XRLogger;
 import javafx.application.Platform;
 import javafx.scene.text.FontWeight;
 import javafx.util.Pair;
@@ -28,6 +31,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.logging.Level;
 
 public class DocumentGenerator {
 
@@ -92,8 +96,8 @@ public class DocumentGenerator {
         StringBuilder itineraryTableContent = new StringBuilder();
         LinkedHashMap<Integer, LinkedList<Itinerary.ItineraryItem>> daysToActivities = new LinkedHashMap<>();
 
-        Pair<Integer, Double> cheapestDay = TripManager.getCheapestDay(trip);
-        Pair<Integer, Double> mostExpensiveDay = TripManager.getMostExpensiveDay(trip);
+        Pair<Integer, Double> cheapestDay = TripManager.Statistics.getCheapestDay(trip);
+        Pair<Integer, Double> mostExpensiveDay = TripManager.Statistics.getMostExpensiveDay(trip);
 
         trip.getItinerary().getItems().forEach((uuid, itineraryItem) -> {
             LinkedList<Itinerary.ItineraryItem> itineraryItems = daysToActivities.getOrDefault(itineraryItem.getDay(), new LinkedList<>());
@@ -256,6 +260,31 @@ public class DocumentGenerator {
         TripManager.log("Omitting the following sections: " + settings.getIncludeSections().entrySet().stream().filter(e -> !e.getValue()).map(Map.Entry::getKey).toList());
         long start = System.currentTimeMillis();
 
+        XRLog.setLoggerImpl(new XRLogger() {
+            @Override
+            public void log(String s, Level level, String s1) {
+                TripManager.log(s1, level);
+            }
+
+            @Override
+            public void log(String s, Level level, String s1, Throwable throwable) {
+                TripManager.log("==[Exception thrown]=========================================");
+                TripManager.log(throwable.getMessage());
+                TripManager.log(s1, level);
+                TripManager.log("=============================================================");
+            }
+
+            @Override
+            public void setLevel(String s, Level level) {
+                // Ignored
+            }
+
+            @Override
+            public boolean isLogLevelEnabled(Diagnostic diagnostic) {
+                return diagnostic.getLevel().equals(Level.WARNING) || diagnostic.getLevel().equals(Level.SEVERE);
+            }
+        });
+
         LoadingDialog dlg = new LoadingDialog(LoadingDialog.LoadingOperationType.INDETERMINATE_PROGRESSBAR);
         dlg.setPrimaryLabel("Creating document...");
         dlg.setSecondaryLabel("Starting generation...");
@@ -289,8 +318,8 @@ public class DocumentGenerator {
                     htmlTemplate = htmlTemplate.replace("{{financial-overview-visible}}", "");
                     // Budget Overview
                     if (settings.getIncludeSections().get(PlanSection.BUDGET_OVERVIEW)) {
-                        Pair<Integer, Double> cheapestDay = TripManager.getCheapestDay(trip);
-                        Pair<Integer, Double> mostExpensiveDay = TripManager.getMostExpensiveDay(trip);
+                        Pair<Integer, Double> cheapestDay = TripManager.Statistics.getCheapestDay(trip);
+                        Pair<Integer, Double> mostExpensiveDay = TripManager.Statistics.getMostExpensiveDay(trip);
 
                         htmlTemplate = htmlTemplate.replace("{{budget}}", TripManager.Formatting.formatMoney(trip.getExpenseData().getBudget(), TripManager.getInstance().getSettings().getCurrencySymbol(), TripManager.getInstance().getSettings().currencySymbolPrefixed()));
                         htmlTemplate = htmlTemplate.replace("{{totalExpenses}}", TripManager.Formatting.formatMoney(Math.floor(trip.getExpenseData().getTotalExpenses()), TripManager.getInstance().getSettings().getCurrencySymbol(), TripManager.getInstance().getSettings().currencySymbolPrefixed()));

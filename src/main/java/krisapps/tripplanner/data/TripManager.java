@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.ToNumberPolicy;
 import com.google.gson.stream.JsonReader;
 import javafx.util.Pair;
+import krisapps.tripplanner.data.trip.ExpenseCategory;
 import krisapps.tripplanner.data.trip.Itinerary;
 import krisapps.tripplanner.data.trip.PlannedExpense;
 import krisapps.tripplanner.data.trip.Trip;
@@ -21,6 +22,7 @@ import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.logging.Level;
 
 public class TripManager {
 
@@ -49,6 +51,10 @@ public class TripManager {
         } else {
             System.out.println(String.format("[%s TripPlanner/INFO]: ", Formatting.formatDate(Date.from(Instant.now()), true)) + msg);
         }
+    }
+
+    public static void log(String msg, Level level) {
+        System.out.println(String.format("[%s TripPlanner/%s]: ", Formatting.formatDate(Date.from(Instant.now()), true), level.getName()) + msg);
     }
 
     public void init() {
@@ -83,163 +89,7 @@ public class TripManager {
         }
     }
 
-    public ArrayList<Trip> getTrips() {
-        Data d = getData();
-        return d.getTrips();
-    }
-
-    public void updateTrip(Trip trip) {
-        Data data = getData();
-        ArrayList<Trip> trips = data.getTrips();
-
-        boolean updated = trips.removeIf((t) -> t.getUniqueID().equals(trip.getUniqueID()));
-        trips.add(trip);
-
-        data.setTrips(trips);
-        saveData(data);
-
-        if (updated) {
-            log("Updated trip '" + trip.getTripName() + "' (" + trip.getUniqueID() + ")");
-        } else {
-            log("Created new trip '" + trip.getTripName() + "' (" + trip.getUniqueID() + ")");
-        }
-    }
-
-    public void updateTripSettings(Trip trip, TripSettings tripSettings) {
-        Data data = getData();
-
-        boolean updated = data.setTripSettings(trip.getUniqueID(), tripSettings);
-        saveData(data);
-
-        if (updated) {
-            log("Updated trip settings for '" + trip.getTripName() + "' (" + trip.getUniqueID() + ")");
-        } else {
-            log("Added trip settings for '" + trip.getTripName() + "' (" + trip.getUniqueID() + ")");
-        }
-    }
-
-    public void updateProgramSettings(ProgramSettings programSettings) {
-        Data data = getData();
-        data.setSettings(programSettings);
-        saveData(data);
-        log("Updated program settings");
-    }
-
-    /**
-     * Deletes the trip settings for the supplied trip.
-     *
-     * @param trip The trip whose settings are to be deleted
-     */
-    public void deleteSettings(Trip trip) {
-        Data d = getData();
-        d.setTripSettings(trip.getUniqueID(), null);
-        saveData(d);
-        log("Deleted trip settings for '" + trip.getTripName() + "' (" + trip.getUniqueID() + ")");
-    }
-
-    /**
-     * Deletes the supplied trip data.
-     * This will not delete the trip settings.
-     *
-     * @param trip The trip to delete
-     */
-    public void deleteTrip(Trip trip) {
-        Data d = getData();
-        d.getTrips().removeIf((t) -> t.getUniqueID().equals(trip.getUniqueID()));
-        saveData(d);
-        log("Deleted trip '" + trip.getTripName() + "' (" + trip.getUniqueID() + ")");
-    }
-
-    public void addExpense(Trip trip, PlannedExpense expense) {
-        trip.getExpenseData().addExpense(expense);
-    }
-
-    public void removeExpense(Trip trip, UUID expenseID) {
-        // Unlink expense from all itinerary items before deletion
-        if (isExpenseLinked(trip, expenseID)) {
-            log("Found itinerary items with expense marked for deletion. Purging.");
-            for (Itinerary.ItineraryItem item : trip.getItinerary().getItems().values()) {
-                if (item.getLinkedExpenses().contains(expenseID)) {
-                    item.unlinkExpense(expenseID);
-                    log("Removed '" + expenseID + "' from '" + item.getDescription() + "'");
-                }
-            }
-        }
-
-        trip.getExpenseData().removeExpense(expenseID);
-    }
-
-    public Itinerary.ItineraryItem getItineraryItemByID(Trip t, UUID id) {
-        return t.getItinerary().getItems().getOrDefault(id, null);
-    }
-
-    public PlannedExpense getExpenseByID(Trip t, UUID id) {
-        return t.getExpenseData().getPlannedExpenses().getOrDefault(id, null);
-    }
-
-    public TripSettings getTripSettings(UUID tripID) {
-        Data data = getData();
-        return data.getTripSettings(tripID);
-    }
-
-    public TripSettings getSettingsForTrip(UUID tripID) {
-        return getTripSettings(tripID);
-    }
-
-    /**
-     * Checks whether the supplied expense is linked to any itinerary entries.
-     *
-     * @param t         The trip whose expense is supplied
-     * @param expenseID The unique ID of the expense to check
-     * @return <code>true</code> if the expense is linked, <code>false</code> otherwise
-     */
-    public boolean isExpenseLinked(Trip t, UUID expenseID) {
-        return t.getItinerary().getItems().values().stream().anyMatch(item -> item.getLinkedExpenses().contains(expenseID));
-    }
-
-    public void linkExpense(Trip trip, UUID expenseID, UUID itineraryItemID) {
-        trip.getItinerary().getItems().computeIfPresent(itineraryItemID, (id, itineraryItem) -> {
-            itineraryItem.linkExpense(expenseID);
-            return itineraryItem;
-        });
-    }
-
-    public void unlinkExpense(Trip trip, UUID expenseID, UUID itineraryItemID) {
-        trip.getItinerary().getItems().computeIfPresent(itineraryItemID, (id, itineraryItem) -> {
-            itineraryItem.unlinkExpense(expenseID);
-            return itineraryItem;
-        });
-    }
-
-    /**
-     * Returns the cheapest day in the trip.
-     *
-     * @param t The trip to check.
-     * @return A pair containing the day and the amount spent on that day.
-     */
-    public static Pair<Integer, Double> getCheapestDay(Trip t) {
-        HashMap<Integer, Double> dayExpenses = new HashMap<>();
-        for (PlannedExpense exp : t.getExpenseData().getPlannedExpenses().values()) {
-            dayExpenses.put(exp.getDay(), dayExpenses.getOrDefault(exp.getDay(), 0.0d) + exp.getAmount());
-        }
-
-        return dayExpenses.entrySet().stream().min(Comparator.comparingDouble(Map.Entry::getValue)).map(e -> new Pair<>(e.getKey(), e.getValue())).orElse(new Pair<>(-1, -1.0d));
-    }
-
-    /**
-     * Returns the most expensive day in the trip.
-     *
-     * @param t The trip to check.
-     * @return A pair containing the day and the amount spent on that day.
-     */
-    public static Pair<Integer, Double> getMostExpensiveDay(Trip t) {
-        HashMap<Integer, Double> dayExpenses = new HashMap<>();
-        for (PlannedExpense exp : t.getExpenseData().getPlannedExpenses().values()) {
-            dayExpenses.put(exp.getDay(), dayExpenses.getOrDefault(exp.getDay(), 0.0d) + exp.getAmount());
-        }
-
-        return dayExpenses.entrySet().stream().max(Comparator.comparingDouble(Map.Entry::getValue)).map(e -> new Pair<>(e.getKey(), e.getValue())).orElse(new Pair<>(-1, -1.0d));
-    }
+    // <editor-fold desc="Data access">
 
     public void saveData(Data data) {
 
@@ -338,6 +188,218 @@ public class TripManager {
         return getData().getSettings();
     }
 
+    public ArrayList<Trip> getTrips() {
+        Data d = getData();
+        return d.getTrips();
+    }
+
+    public Trip getTripByID(UUID id) {
+        return getTrips().stream().filter(t -> t.getUniqueID().equals(id)).findFirst().orElse(null);
+    }
+
+    public void updateTrip(Trip trip) {
+        Data data = getData();
+        ArrayList<Trip> trips = data.getTrips();
+
+        boolean updated = trips.removeIf((t) -> t.getUniqueID().equals(trip.getUniqueID()));
+        trips.add(trip);
+
+        data.setTrips(trips);
+        saveData(data);
+
+        if (updated) {
+            log("Updated trip '" + trip.getTripName() + "' (" + trip.getUniqueID() + ")");
+        } else {
+            log("Created new trip '" + trip.getTripName() + "' (" + trip.getUniqueID() + ")");
+        }
+    }
+
+    public void updateTripSettings(Trip trip, TripSettings tripSettings) {
+        Data data = getData();
+
+        boolean updated = data.setTripSettings(trip.getUniqueID(), tripSettings);
+        saveData(data);
+
+        if (updated) {
+            log("Updated trip settings for '" + trip.getTripName() + "' (" + trip.getUniqueID() + ")");
+        } else {
+            log("Added trip settings for '" + trip.getTripName() + "' (" + trip.getUniqueID() + ")");
+        }
+    }
+
+    public void updateProgramSettings(ProgramSettings programSettings) {
+        Data data = getData();
+        data.setSettings(programSettings);
+        saveData(data);
+        log("Updated program settings");
+    }
+
+    /**
+     * Deletes the trip settings for the supplied trip.
+     *
+     * @param trip The trip whose settings are to be deleted
+     */
+    public void deleteSettings(Trip trip) {
+        Data d = getData();
+        d.setTripSettings(trip.getUniqueID(), null);
+        saveData(d);
+        log("Deleted trip settings for '" + trip.getTripName() + "' (" + trip.getUniqueID() + ")");
+    }
+
+    /**
+     * Deletes the supplied trip data.
+     * This will not delete the trip settings.
+     *
+     * @param trip The trip to delete
+     */
+    public void deleteTrip(Trip trip) {
+        Data d = getData();
+        d.getTrips().removeIf((t) -> t.getUniqueID().equals(trip.getUniqueID()));
+        saveData(d);
+        log("Deleted trip '" + trip.getTripName() + "' (" + trip.getUniqueID() + ")");
+    }
+
+    public PlannedExpense getExpenseByID(Trip t, UUID id) {
+        return t.getExpenseData().getPlannedExpenses().getOrDefault(id, null);
+    }
+
+    public TripSettings getTripSettings(UUID tripID) {
+        Data data = getData();
+        return data.getTripSettings(tripID);
+    }
+
+    public TripSettings getSettingsForTrip(UUID tripID) {
+        return getTripSettings(tripID);
+    }
+
+    /**
+     * Checks whether the supplied expense is linked to any itinerary entries.
+     *
+     * @param t         The trip whose expense is supplied
+     * @param expenseID The unique ID of the expense to check
+     * @return <code>true</code> if the expense is linked, <code>false</code> otherwise
+     */
+    public boolean isExpenseLinked(Trip t, UUID expenseID) {
+        return t.getItinerary().getItems().values().stream().anyMatch(item -> item.getLinkedExpenses().contains(expenseID));
+    }
+
+    public void linkExpense(Trip trip, UUID expenseID, UUID itineraryItemID) {
+        trip.getItinerary().getItems().computeIfPresent(itineraryItemID, (id, itineraryItem) -> {
+            itineraryItem.linkExpense(expenseID);
+            return itineraryItem;
+        });
+    }
+
+    public void unlinkExpense(Trip trip, UUID expenseID, UUID itineraryItemID) {
+        trip.getItinerary().getItems().computeIfPresent(itineraryItemID, (id, itineraryItem) -> {
+            itineraryItem.unlinkExpense(expenseID);
+            return itineraryItem;
+        });
+    }
+
+    // </editor-fold>
+
+    /**
+     * Contains various methods for querying statistics data about a trip.
+     */
+    public static class Statistics {
+        /**
+         * Returns the cheapest day in the trip.
+         * If no such day can be found, a Pair<-1, -1.0d> will be returned.
+         *
+         * @param t The trip to check.
+         * @return A pair containing the day and the amount spent on that day.
+         */
+        public static Pair<Integer, Double> getCheapestDay(Trip t) {
+            HashMap<Integer, Double> dayExpenses = new HashMap<>();
+            for (PlannedExpense exp : t.getExpenseData().getPlannedExpenses().values()) {
+                if (exp.getDay() <= 0) continue;
+                dayExpenses.put(exp.getDay(), dayExpenses.getOrDefault(exp.getDay(), 0.0d) + exp.getAmount());
+            }
+
+            return dayExpenses.entrySet().stream().min(Comparator.comparingDouble(Map.Entry::getValue)).map(e -> new Pair<>(e.getKey(), e.getValue())).orElse(new Pair<>(-1, -1.0d));
+        }
+
+        /**
+         * Returns the most expensive day in the trip.
+         * If no such day can be found, a Pair<-1, -1.0d> will be returned.
+         *
+         * @param t The trip to check.
+         * @return A pair containing the day and the amount spent on that day.
+         */
+        public static Pair<Integer, Double> getMostExpensiveDay(Trip t) {
+            HashMap<Integer, Double> dayExpenses = new HashMap<>();
+            for (PlannedExpense exp : t.getExpenseData().getPlannedExpenses().values()) {
+                if (exp.getDay() <= 0) continue;
+                dayExpenses.put(exp.getDay(), dayExpenses.getOrDefault(exp.getDay(), 0.0d) + exp.getAmount());
+            }
+
+            return dayExpenses.entrySet().stream().max(Comparator.comparingDouble(Map.Entry::getValue)).map(e -> new Pair<>(e.getKey(), e.getValue())).orElse(new Pair<>(-1, -1.0d));
+        }
+
+        /**
+         * Returns a summary object with data about expenses of the supplied category.
+         *
+         * @param category The expense category to summarize.
+         * @param t        The trip whose expenses are to be summarized.
+         * @return A {@link CategoryExpenseSummary} object containing the summary data.
+         */
+        public static CategoryExpenseSummary getExpensesFor(ExpenseCategory category, Trip t) {
+            CategoryExpenseSummary summary = new CategoryExpenseSummary(category);
+            for (PlannedExpense e : t.getExpenseData().getPlannedExpenses().values()) {
+                if (e.getCategory() == category) {
+                    summary.addExpense(e);
+                }
+            }
+            return summary;
+        }
+
+        /**
+         * Returns a list of summaries for all expense categories in the supplied trip.
+         *
+         * @param t The trip whose expenses are to be summarized.
+         * @return A list of {@link CategoryExpenseSummary} objects containing the summary data.
+         */
+        public static ArrayList<CategoryExpenseSummary> getExpenseSummariesFor(Trip t) {
+            ArrayList<CategoryExpenseSummary> summaries = new ArrayList<>();
+            for (ExpenseCategory category : ExpenseCategory.values()) {
+                if (t.getExpenseData().getPlannedExpenses().values().stream().anyMatch(expense -> expense.getCategory() == category)) {
+                    summaries.add(getExpensesFor(category, t));
+                }
+            }
+            return summaries;
+        }
+
+        /**
+         * Returns the expense total for the supplied trip.
+         *
+         * @param t The trip to get the expense total for.
+         * @return The sum of all expenses for the trip.
+         */
+        public static double getExpenseTotalFor(Trip t) {
+            return t.getExpenseData().getPlannedExpenses().values().stream().mapToDouble(PlannedExpense::getAmount).sum();
+        }
+
+        /**
+         * Returns the daily expense average for the supplied trip.
+         *
+         * @param t The trip to get the daily expense average for.
+         * @return The average daily expenses for the trip.
+         */
+        public static double getDailyExpenseAverageFor(Trip t) {
+            HashMap<Integer, Double> dayExpenses = new HashMap<>();
+            for (PlannedExpense exp : t.getExpenseData().getPlannedExpenses().values()) {
+                if (exp.getDay() <= 0) continue;
+                dayExpenses.put(exp.getDay(), dayExpenses.getOrDefault(exp.getDay(), 0.0d) + exp.getAmount());
+            }
+            double total = dayExpenses.values().stream().mapToDouble(Double::doubleValue).sum();
+            return Double.isNaN(total / dayExpenses.size()) ? 0.0d : total / dayExpenses.size();
+        }
+    }
+
+    /**
+     * Contains various methods for formatting data.
+     */
     public static class Formatting {
 
         public static DecimalFormat decimalFormatter = new DecimalFormat("#.##");

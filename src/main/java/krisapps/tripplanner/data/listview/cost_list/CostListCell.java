@@ -6,6 +6,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.layout.VBox;
 import krisapps.tripplanner.PlannerApplication;
+import krisapps.tripplanner.data.CategoryExpenseSummary;
 import krisapps.tripplanner.data.TripManager;
 
 import java.io.IOException;
