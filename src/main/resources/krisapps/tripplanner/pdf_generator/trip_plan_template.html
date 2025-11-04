@@ -40,6 +40,18 @@
             <div class="panel main-panel">
                 <div class="panel-title">Total Expenses</div>
                 <div class="panel-value">{{totalExpenses}}</div>
+                <table class="cost-splitting {{cost-splitting-visible}}">
+                    <tr>
+                        <td class="panel small-panel">
+                            <div class="panel-title">Split between</div>
+                            <div class="panel-value">{{splitBetween}}</div>
+                        </td>
+                        <td class="panel small-panel">
+                            <div class="panel-title">Cost per person</div>
+                            <div class="panel-value">{{splitCost}}</div>
+                        </td>
+                    </tr>
+                </table>
             </div>
 
             <div class="panel main-panel">

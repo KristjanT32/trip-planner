@@ -395,6 +395,14 @@ public class TripManager {
             double total = dayExpenses.values().stream().mapToDouble(Double::doubleValue).sum();
             return Double.isNaN(total / dayExpenses.size()) ? 0.0d : total / dayExpenses.size();
         }
+
+        public static double getSplitCost(Trip trip) {
+            if (trip.getExpenseData().getBudgetData().shouldSplitCosts()) {
+                return Math.floor(trip.getExpenseData().getTotalExpenses() / trip.getExpenseData().getBudgetData().getSplitCostsBetween());
+            } else {
+                return trip.getExpenseData().getTotalExpenses();
+            }
+        }
     }
 
     /**

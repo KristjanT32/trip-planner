@@ -121,7 +121,7 @@ public class TripPlanner {
 
     //<editor-fold desc="Filter & Sort">
     @FXML
-    private ChoiceBox<String> itineraryFilterSelector;
+    private ComboBox<String> itineraryFilterSelector;
 
     @FXML
     private ToggleButton sortDirectionToggle;
@@ -153,6 +153,12 @@ public class TripPlanner {
     private ListView<CategoryExpenseSummary> categoryBreakdownList;
     @FXML
     private PieChart expenseChart;
+    @FXML
+    private VBox costSplittingPanel;
+    @FXML
+    private Label costSplitBetween;
+    @FXML
+    private Label costPerPerson;
     //</editor-fold>
     //<editor-fold desc="Expense planner">
     @FXML
@@ -195,11 +201,11 @@ public class TripPlanner {
     @FXML
     private TextField reminderOffsetBox;
     @FXML
-    private ChoiceBox<TimeUnit> reminderOffsetUnitSelector;
+    private ComboBox<TimeUnit> reminderOffsetUnitSelector;
 
 
     @FXML
-    private ChoiceBox<String> countdownFormatSelector;
+    private ComboBox<String> countdownFormatSelector;
 
     @FXML
     private ToggleButton countdownToggle;
@@ -299,6 +305,15 @@ public class TripPlanner {
                                 return;
                             }
                             saveChanges(false);
+                        }
+                    }
+                    if (ev.getCode() == KeyCode.ESCAPE) {
+                        if (tripSetupPanel.isVisible()) {
+                            changeProgramState(ProgramState.SHOW_DASHBOARD);
+                        } else {
+                            if (tripWizard.isVisible()) {
+                                promptClosePlanner();
+                            }
                         }
                     }
                 });
@@ -853,6 +868,13 @@ public class TripPlanner {
                 dailyAverage = 0.0d;
             }
 
+            costSplittingPanel.setVisible(currentPlan.getExpenseData().getBudgetData().shouldSplitCosts());
+            costSplittingPanel.setManaged(costSplittingPanel.isVisible());
+            if (costSplittingPanel.isVisible()) {
+                costPerPerson.setText(TripManager.Formatting.formatMoney(Math.floor(currentPlan.getExpenseData().getBudgetData().getBudget() / currentPlan.getExpenseData().getBudgetData().getSplitCostsBetween()), currentProgramSettings.getCurrencySymbol(), currentProgramSettings.currencySymbolPrefixed()));
+                costSplitBetween.setText(currentPlan.getExpenseData().getBudgetData().getSplitCostsBetween() + (currentPlan.getExpenseData().getBudgetData().getSplitCostsBetween() == 1 ? " person" : " people"));
+            }
+
             totalExpensesLabel.setText(TripManager.Formatting.formatMoney(Math.floor(totalExpenses), currentProgramSettings.getCurrencySymbol(), currentProgramSettings.currencySymbolPrefixed()));
             dailyExpensesLabel.setText(TripManager.Formatting.formatMoney(Math.floor(minExpenses), currentProgramSettings.getCurrencySymbol(), currentProgramSettings.currencySymbolPrefixed()) + " - " + TripManager.Formatting.formatMoney(maxExpenses, currentProgramSettings.getCurrencySymbol(), currentProgramSettings.currencySymbolPrefixed()));
             dailyAverageLabel.setText(TripManager.Formatting.decimalFormatter.format(dailyAverage) + currentProgramSettings.getCurrencySymbol());
@@ -993,7 +1015,7 @@ public class TripPlanner {
 
     public void promptClearDay() {
         String day = PopupManager.showInputDialog("Which day would you like to clear the itinerary for?", "Please enter the number of the day you wish to clear.", "Day: ", "");
-        if (day.isBlank()) return;
+        if (day == null || day.isBlank()) return;
         if (Integer.parseInt(day) < 0 || Integer.parseInt(day) > currentPlan.getTripDuration().toDays()) {
             PopupManager.showPredefinedPopup(PopupManager.PopupType.INVALID_DAY);
             return;
@@ -1293,7 +1315,7 @@ public class TripPlanner {
         if (currentPlan == null) {
             return;
         }
-        closePlanner(false);
+        closePlanner(!currentPlan.hasBeenModified());
     }
 
     public void promptDiscardChanges() {

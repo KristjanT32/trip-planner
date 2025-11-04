@@ -139,6 +139,12 @@ h2 {
 
 /* </editor-fold> */
 
+.cost-splitting {
+    padding: 1em;
+    margin: 0 auto;
+    border-spacing: 10px;
+}
+
 .expense-table {
     width: 100%;
     border-collapse: collapse;

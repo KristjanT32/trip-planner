@@ -330,6 +330,15 @@ public class DocumentGenerator {
                         htmlTemplate = htmlTemplate.replace("{{cheapestDay}}", cheapestDay.getValue() == -1 ? "N/A" : TripManager.Formatting.formatMoney(Math.floor(cheapestDay.getValue()), TripManager.getInstance().getSettings().getCurrencySymbol(), TripManager.getInstance().getSettings().currencySymbolPrefixed()));
                         htmlTemplate = htmlTemplate.replace("{{mostExpensiveDay}}", mostExpensiveDay.getValue() == -1 ? "N/A" : TripManager.Formatting.formatMoney(Math.floor(mostExpensiveDay.getValue()), TripManager.getInstance().getSettings().getCurrencySymbol(), TripManager.getInstance().getSettings().currencySymbolPrefixed()));
 
+                        if (trip.getExpenseData().getBudgetData().shouldSplitCosts()) {
+                            htmlTemplate = htmlTemplate.replace("{{splitBetween}}", trip.getExpenseData().getBudgetData().getSplitCostsBetween() + (trip.getExpenseData().getBudgetData().getSplitCostsBetween() == 1 ? " person" : " people"));
+                            htmlTemplate = htmlTemplate.replace("{{splitCost}}", TripManager.Formatting.formatMoney(TripManager.Statistics.getSplitCost(trip), TripManager.getInstance().getSettings().getCurrencySymbol(), TripManager.getInstance().getSettings().currencySymbolPrefixed()));
+
+                            htmlTemplate = htmlTemplate.replace("{{cost-splitting-visible}}", "");
+                        } else {
+                            htmlTemplate = htmlTemplate.replace("{{cost-splitting-visible}}", "hidden");
+                        }
+
                         htmlTemplate = htmlTemplate.replace("{{budget-summary-visible}}", "");
                     } else {
                         htmlTemplate = htmlTemplate.replace("{{budget-summary-visible}}", "hidden");

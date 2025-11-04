@@ -7,16 +7,7 @@
     -fx-background-color: #a5a5a5;
 }
 
-.button {
-    -fx-background-color: #c8c8c8;
-    -fx-background-radius: 20px;
-
-    -fx-border-radius: 20px;
-    -fx-border-color: #c8c8c8;
-    -fx-border-width: 1px;
-    -fx-border-style: solid;
-    -fx-text-fill: black;
-}
+/* <editor-fold desc="Text Field and Text Area"> */
 
 .text-field, .text-area {
     -fx-background-color: #c8c8c8;
@@ -32,7 +23,26 @@
     -fx-prompt-text-fill: #3a3a3a;
 }
 
-.button:hover, .text-area:hover, .text-field:hover {
+.text-area:hover, .text-field:hover {
+    -fx-background-color: #939393;
+}
+
+/* </editor-fold> */
+
+/* <editor-fold desc="Button"> */
+
+.button {
+    -fx-background-color: #c8c8c8;
+    -fx-background-radius: 20px;
+
+    -fx-border-radius: 20px;
+    -fx-border-color: #c8c8c8;
+    -fx-border-width: 1px;
+    -fx-border-style: solid;
+    -fx-text-fill: black;
+}
+
+.button:hover {
     -fx-background-color: #939393;
 }
 
@@ -54,6 +64,46 @@
 .button:pressed {
     -fx-background-color: #787878;
 }
+
+/* </editor-fold> */
+
+/* <editor-fold desc="Inline Text Field and Text Area"> */
+.text-field.inline, .text-area.inline {
+    -fx-background-color: transparent;
+
+    -fx-border-color: #c8c8c8;
+    -fx-border-width: 0 0 2px 0;
+    -fx-border-radius: 0px;
+    -fx-border-style: solid;
+
+    -fx-prompt-text-fill: #3a3a3a;
+}
+
+.text-field.inline:hover, .text-area.inline:hover {
+    -fx-border-color: black;
+}
+
+/* </editor-fold> */
+
+/* <editor-fold desc="Inline Combo Box"> */
+.combo-box.inline {
+    -fx-background-color: transparent;
+    -fx-border-width: 0 0 2px 0;
+    -fx-border-radius: 0px;
+    -fx-border-style: solid;
+    -fx-border-color: #c8c8c8;
+}
+
+.combo-box.inline:hover {
+    -fx-border-color: black;
+}
+
+.combo-box.inline .list-cell {
+    -fx-background-color: transparent !important;
+    -fx-border-width: 0 !important;
+}
+
+/* </editor-fold> */
 
 /*<editor-fold desc="Date Picker and Spinner">*/
 .date-picker > .text-field, .spinner > .text-field {
@@ -104,9 +154,43 @@
     -fx-border-radius: 20px;
 }
 
-.choice-box {
+/* <editor-fold desc="Combo Box"> */
+
+.combo-box {
     -fx-background-color: #c8c8c8;
+    -fx-border-radius: 20px;
+    -fx-background-radius: 20px;
 }
+
+.combo-box .list-cell {
+    -fx-border-width: 1px;
+    -fx-border-color: #c8c8c8;
+    -fx-border-radius: 20px;
+    -fx-background-radius: 20px;
+}
+
+.combo-box-popup .list-view {
+    -fx-background-color: #c8c8c8;
+    -fx-border-color: black;
+    -fx-border-radius: 10px;
+    -fx-background-radius: 10px;
+}
+
+.combo-box-popup .list-view .list-cell {
+!important;
+    -fx-background-color: #c8c8c8;
+    -fx-border-radius: 10px;
+    -fx-background-radius: 10px;
+}
+
+.combo-box-popup .list-view .list-cell:focused, .combo-box-popup .list-view .list-cell:hover {
+    -fx-background-color: #393939 !important;
+}
+
+
+/* </editor-fold> */
+
+/*<editor-fold desc="Toggle Button">*/
 
 .toggle-button {
     -fx-background-radius: 20px;
@@ -124,6 +208,10 @@
     -fx-background-color: #02bd00;
 }
 
+/*</editor-fold>*/
+
+/*<editor-fold desc="Toggle Button (Sort Direction)">*/
+
 .toggle-button.sort-direction-selector {
     -fx-background-color: #939393;
 }
@@ -131,6 +219,8 @@
 .toggle-button.sort-direction-selector:selected {
     -fx-background-color: #424242;
 }
+
+/*</editor-fold>*/
 
 /*<editor-fold desc="Toggle Button (Mode)">*/
 .toggle-button.mode:selected {
@@ -151,7 +241,7 @@
 
 /*</editor-fold>*/
 
-/*<editor-fold desc=Tab Pane>*/
+/*<editor-fold desc="Tab Pane">*/
 .tab-pane .tab {
     -fx-background-color: #c8c8c8;
     -fx-focus-color: transparent;
@@ -206,6 +296,7 @@
     -fx-border-radius: 20px;
 }
 
+/* <editor-fold desc="Unsaved Changes Notification"> */
 
 .unsaved-changes-panel {
     -fx-background-color: #ffe979;
@@ -223,6 +314,10 @@
     -fx-background-color: #a59a69;
 }
 
+/* </editor-fold> */
+
+/* <editor-fold desc="Return to Planner Notification"> */
+
 .return-to-planner-panel {
     -fx-background-color: #86f189;
     -fx-border-radius: 10px;
@@ -239,6 +334,10 @@
     -fx-background-color: #80ae81;
 }
 
+/* </editor-fold> */
+
+/* <editor-fold desc="Read-only Mode Notification"> */
+
 .readonly-panel {
     -fx-background-color: #ff7979;
     -fx-border-radius: 10px;
@@ -254,6 +353,8 @@
 .readonly-panel > .button:hover {
     -fx-background-color: #9c6363;
 }
+
+/* </editor-fold> */
 
 .error-panel {
     -fx-background-color: #f65f5f;
