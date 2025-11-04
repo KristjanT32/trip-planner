@@ -5,7 +5,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Dialog;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
@@ -26,7 +26,7 @@ public class DebugActionsDialog extends Dialog<ProgramSettings> {
     private VBox rootPane;
 
     @FXML
-    private ChoiceBox<PopupManager.PopupType> popupSelector;
+    private ComboBox<PopupManager.PopupType> popupSelector;
 
     public DebugActionsDialog() {
         try {

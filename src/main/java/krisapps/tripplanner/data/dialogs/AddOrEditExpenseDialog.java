@@ -50,7 +50,7 @@ public class AddOrEditExpenseDialog extends Dialog<PlannedExpense> {
     private Spinner<Integer> dayBox;
 
     @FXML
-    private ChoiceBox<String> categoryBox;
+    private ComboBox<String> categoryBox;
 
     @FXML
     private Label title;
