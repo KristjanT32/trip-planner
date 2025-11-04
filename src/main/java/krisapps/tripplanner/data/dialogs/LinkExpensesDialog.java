@@ -40,12 +40,6 @@ public class LinkExpensesDialog extends Dialog<Itinerary.ItineraryItem> {
     private ListView<PlannedExpense> linkedExpenseList;
 
     @FXML
-    private Button closeButton;
-
-    @FXML
-    private Button cancelButton;
-
-    @FXML
     private Button addSelectedButton;
 
     @FXML
