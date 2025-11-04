@@ -1,9 +1,6 @@
 package krisapps.tripplanner.data.trip;
 
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.UUID;
+import java.util.*;
 
 public class Itinerary {
 
@@ -18,6 +15,7 @@ public class Itinerary {
         private Date endTime;
         private final LinkedList<UUID> linkedExpenses;
         private final UUID id;
+        private boolean modified = false;
 
         public ItineraryItem(String description, int day) {
             this.description = description;
@@ -25,6 +23,7 @@ public class Itinerary {
             this.startTime = null;
             this.linkedExpenses = new LinkedList<>();
             this.id = UUID.randomUUID();
+            this.modified = false;
         }
 
         public ItineraryItem(LinkedList<UUID> linkedExpenses, UUID id, Date endTime, Date startTime, int day, String description) {
@@ -34,6 +33,7 @@ public class Itinerary {
             this.startTime = startTime;
             this.day = day;
             this.description = description;
+            this.modified = false;
         }
 
         public String getDescription() {
@@ -50,14 +50,17 @@ public class Itinerary {
 
         public void setDescription(String description) {
             this.description = description;
+            this.modified = true;
         }
 
         public void setDay(int day) {
             this.day = day;
+            this.modified = true;
         }
 
         public void setStartTime(Date startTime) {
             this.startTime = startTime;
+            this.modified = true;
         }
 
         public Date getStartTime() {
@@ -70,16 +73,25 @@ public class Itinerary {
 
         public void setEndTime(Date endTime) {
             this.endTime = endTime;
+            this.modified = true;
         }
 
         public void linkExpense(PlannedExpense expense) {
             if (linkedExpenses.contains(expense.getId())) return;
             linkedExpenses.addLast(expense.getId());
+            this.modified = true;
         }
 
         public void linkExpense(UUID expenseID) {
             if (linkedExpenses.contains(expenseID)) return;
             linkedExpenses.addLast(expenseID);
+            this.modified = true;
+        }
+
+        public void setLinkedExpenses(List<UUID> linkedExpenses) {
+            this.linkedExpenses.clear();
+            this.linkedExpenses.addAll(linkedExpenses);
+            this.modified = true;
         }
 
         public double getExpenseTotal(Trip trip) {
@@ -91,11 +103,25 @@ public class Itinerary {
         }
 
         public void unlinkExpense(UUID expenseID) {
-            linkedExpenses.removeIf(p -> p.equals(expenseID));
+            boolean edited = linkedExpenses.removeIf(p -> p.equals(expenseID));
+            this.modified = this.modified || edited;
+        }
+
+        public void unlinkAllExpenses() {
+            this.linkedExpenses.clear();
+            this.modified = true;
         }
 
         public UUID getId() {
             return id;
+        }
+
+        public boolean hasBeenModified() {
+            return this.modified;
+        }
+
+        public void resetModifiedFlag() {
+            this.modified = false;
         }
 
         public ItineraryItem copy() {
@@ -131,11 +157,23 @@ public class Itinerary {
         this.modified = true;
     }
 
+    /**
+     * Checks whether the Itinerary or its ItineraryItems have been modified.
+     *
+     * @return <code>true</code> if the Itinerary or its ItineraryItems have been modified, <code>false</code> otherwise.
+     */
     public boolean hasBeenModified() {
+        this.modified = this.modified || this.items.values().stream().anyMatch(ItineraryItem::hasBeenModified);
         return modified;
     }
 
+    /**
+     * Resets the 'modified' flag of the Itinerary, as well as its ItineraryItems
+     */
     public void resetModifiedFlag() {
         this.modified = false;
+        for (ItineraryItem item : this.items.values()) {
+            item.resetModifiedFlag();
+        }
     }
 }

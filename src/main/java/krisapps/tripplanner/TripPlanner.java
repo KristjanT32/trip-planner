@@ -261,6 +261,11 @@ public class TripPlanner {
      * <br><b>Runs on the FX Application Thread.</b>
      */
     public void updateUIForCurrentPlan() {
+        itineraryListView.setCellFactory(new ItineraryCellFactory(currentPlan, true, (item) -> {
+            currentPlan.getItinerary().updateItem(item.getId(), item);
+            refreshItinerary();
+        }));
+        summaryItinerary.setCellFactory(new ItineraryCellFactory(currentPlan, false, null));
         Platform.runLater(() -> {
             if (currentPlan.getTripStartDate() != null) {
                 tripStartBox.setValue(currentPlan.getTripStartDate().toLocalDate());
@@ -414,8 +419,6 @@ public class TripPlanner {
     }
 
     public void setupListViews() {
-        itineraryListView.setCellFactory(new ItineraryCellFactory(true));
-        summaryItinerary.setCellFactory(new ItineraryCellFactory(false));
         expenseList.setCellFactory(new ExpenseLinkerCellFactory(true));
         upcomingTripsList.setCellFactory(new UpcomingTripsCellFactory(this::refreshUpcomingTrips));
         pastTripsList.setCellFactory(new UpcomingTripsCellFactory(this::refreshUpcomingTrips));
@@ -871,7 +874,7 @@ public class TripPlanner {
             costSplittingPanel.setVisible(currentPlan.getExpenseData().getBudgetData().shouldSplitCosts());
             costSplittingPanel.setManaged(costSplittingPanel.isVisible());
             if (costSplittingPanel.isVisible()) {
-                costPerPerson.setText(TripManager.Formatting.formatMoney(Math.floor(currentPlan.getExpenseData().getBudgetData().getBudget() / currentPlan.getExpenseData().getBudgetData().getSplitCostsBetween()), currentProgramSettings.getCurrencySymbol(), currentProgramSettings.currencySymbolPrefixed()));
+                costPerPerson.setText(TripManager.Formatting.formatMoney(Math.floor(currentPlan.getExpenseData().getTotalExpenses() / currentPlan.getExpenseData().getBudgetData().getSplitCostsBetween()), currentProgramSettings.getCurrencySymbol(), currentProgramSettings.currencySymbolPrefixed()));
                 costSplitBetween.setText(currentPlan.getExpenseData().getBudgetData().getSplitCostsBetween() + (currentPlan.getExpenseData().getBudgetData().getSplitCostsBetween() == 1 ? " person" : " people"));
             }
 

@@ -104,7 +104,7 @@ public class Trip {
     }
 
     public boolean hasBeenModified() {
-        this.modified = itinerary.hasBeenModified() | expenses.hasBeenModified() | modified;
+        this.modified = itinerary.hasBeenModified() || expenses.hasBeenModified() || modified;
         return modified;
     }
 

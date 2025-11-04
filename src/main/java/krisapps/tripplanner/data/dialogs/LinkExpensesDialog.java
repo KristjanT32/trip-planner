@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class LinkExpensesDialog extends Dialog<Void> {
+public class LinkExpensesDialog extends Dialog<Itinerary.ItineraryItem> {
 
     @FXML
     private VBox rootPane;
@@ -71,9 +71,8 @@ public class LinkExpensesDialog extends Dialog<Void> {
     final TripPlanner trips = TripPlanner.getInstance();
     final ImmutableList<UUID> initialData;
 
-
-    public LinkExpensesDialog(Itinerary.ItineraryItem item) {
-        this.initialData = ImmutableList.copyOf(item.copy().getLinkedExpenses());
+    public LinkExpensesDialog(Itinerary.ItineraryItem item, Trip parent) {
+        this.initialData = ImmutableList.copyOf(item.getLinkedExpenses());
 
         try {
             FXMLLoader loader = new FXMLLoader(PlannerApplication.class.getResource("dialogs/link_expenses.fxml"));
@@ -85,6 +84,11 @@ public class LinkExpensesDialog extends Dialog<Void> {
         }
         getDialogPane().setContent(rootPane);
         initModality(Modality.APPLICATION_MODAL);
+
+        getDialogPane().getButtonTypes().addAll(
+                new ButtonType("Apply", ButtonBar.ButtonData.APPLY),
+                new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE)
+        );
 
         this.item = item;
 
@@ -103,6 +107,16 @@ public class LinkExpensesDialog extends Dialog<Void> {
             }
         });
 
+        setResultConverter((response -> {
+            if (response.getButtonData() == ButtonBar.ButtonData.APPLY) {
+                return item;
+            } else {
+                TripManager.log("Rolling back all changes to linked expenses");
+                item.setLinkedExpenses(initialData);
+                return null;
+            }
+        }));
+
         refreshUI();
 
         // Trickery to be able to close the dialog manually
@@ -113,16 +127,6 @@ public class LinkExpensesDialog extends Dialog<Void> {
 
         setTitle(trips.isReadOnlyEnabled() ? "Link expenses (preview; read-only mode active)" : "Link expenses");
         activityNameLabel.setText(item.getDescription() + (item.getDay() != -1 ? " (Day #" + item.getDay() + ")" : ""));
-        closeButton.setOnAction(e -> {
-            close();
-        });
-
-        cancelButton.setOnAction(e -> {
-            TripManager.log("Rolling back all changes to linked expenses");
-            item.getLinkedExpenses().clear();
-            item.getLinkedExpenses().addAll(initialData);
-            close();
-        });
     }
 
     private void recalculateTotal() {
@@ -215,7 +219,7 @@ public class LinkExpensesDialog extends Dialog<Void> {
     }
 
     public void unlinkAll() {
-        item.getLinkedExpenses().clear();
+        item.unlinkAllExpenses();
         refreshUI();
     }
 

@@ -199,7 +199,16 @@ public class DocumentGenerator {
 
     private static StringBuilder buildExpenseList(Trip trip) {
         StringBuilder expenseTableContent = new StringBuilder();
-        for (Map.Entry<UUID, PlannedExpense> entry : trip.getExpenseData().getPlannedExpenses().entrySet()) {
+        List<Map.Entry<UUID, PlannedExpense>> sortedExpenses = trip.getExpenseData().getPlannedExpenses().entrySet().stream().sorted(Comparator.comparingInt(entry -> {
+            if (entry.getValue().getDay() > 0) {
+                return entry.getValue().getDay();
+            } else {
+                return Integer.MAX_VALUE;
+            }
+        })).toList();
+
+
+        for (Map.Entry<UUID, PlannedExpense> entry : sortedExpenses) {
             expenseTableContent.append(
                     EXPENSE_ROW_TEMPLATE
                             .replace("{{description}}", entry.getValue().getDescription())

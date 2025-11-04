@@ -61,19 +61,22 @@
         </div>
     </div>
 
-    <table class="expense-table {{expenses-visible}}">
-        <thead>
-        <tr>
-            <th>Description</th>
-            <th>Category</th>
-            <th>Amount ({{currencySymbol}})</th>
-            <th>Day</th>
-        </tr>
-        </thead>
-        <tbody>
-        {{plannedExpenses}}
-        </tbody>
-    </table>
+    <section class="expense-table-section {{expenses-visible}}">
+        <h2>Planned expenses</h2>
+        <table class="expense-table {{expenses-visible}}">
+            <thead>
+            <tr>
+                <th>Description</th>
+                <th>Category</th>
+                <th>Amount ({{currencySymbol}})</th>
+                <th>Day</th>
+            </tr>
+            </thead>
+            <tbody>
+            {{plannedExpenses}}
+            </tbody>
+        </table>
+    </section>
 </section>
 <section class="category-costs break-if-necessary {{cost-distribution-visible}}">
     <h2>Cost Distribution</h2>

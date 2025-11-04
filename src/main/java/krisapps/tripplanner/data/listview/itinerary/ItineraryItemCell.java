@@ -13,11 +13,13 @@ import krisapps.tripplanner.data.dialogs.AddOrEditItineraryEntryDialog;
 import krisapps.tripplanner.data.dialogs.ItineraryEntryDetailsDialog;
 import krisapps.tripplanner.data.dialogs.LinkExpensesDialog;
 import krisapps.tripplanner.data.trip.Itinerary;
+import krisapps.tripplanner.data.trip.Trip;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 public class ItineraryItemCell extends ListCell<Itinerary.ItineraryItem> {
 
@@ -47,9 +49,13 @@ public class ItineraryItemCell extends ListCell<Itinerary.ItineraryItem> {
 
     final TripManager util = TripManager.getInstance();
     private final boolean editable;
+    private final Consumer<Itinerary.ItineraryItem> onItemUpdated;
+    private final Trip parent;
 
-    public ItineraryItemCell(boolean editable) {
+    public ItineraryItemCell(boolean editable, Consumer<Itinerary.ItineraryItem> onItemUpdated, Trip trip) {
         this.editable = editable;
+        this.onItemUpdated = onItemUpdated;
+        this.parent = trip;
         loadFXML();
     }
 
@@ -104,15 +110,16 @@ public class ItineraryItemCell extends ListCell<Itinerary.ItineraryItem> {
             editActivityButton.setVisible(isSelected() && editable);
 
             linkExpensesButton.setOnAction((_event) -> {
-                LinkExpensesDialog dlg = new LinkExpensesDialog(item);
-                dlg.showAndWait();
+                LinkExpensesDialog dlg = new LinkExpensesDialog(item.copy(), parent);
+                Optional<Itinerary.ItineraryItem> updated = dlg.showAndWait();
+                updated.ifPresent(onItemUpdated);
                 this.updateItem(item, false);
             });
 
             editActivityButton.setOnAction((event -> {
-                AddOrEditItineraryEntryDialog editDialog = new AddOrEditItineraryEntryDialog(item, (int) TripPlanner.getInstance().getOpenPlan().getTripDuration().toDays(), true);
+                AddOrEditItineraryEntryDialog editDialog = new AddOrEditItineraryEntryDialog(item, (int) parent.getTripDuration().toDays(), true);
                 Optional<Itinerary.ItineraryItem> updated = editDialog.showAndWait();
-                updated.ifPresent(itineraryItem -> TripPlanner.getInstance().getOpenPlan().getItinerary().updateItem(item.getId(), itineraryItem));
+                updated.ifPresent(onItemUpdated);
 
                 this.updateItem(item, false);
             }));
@@ -124,7 +131,7 @@ public class ItineraryItemCell extends ListCell<Itinerary.ItineraryItem> {
 
             double totalExpenses = 0.0d;
             for (UUID expenseID : item.getLinkedExpenses()) {
-                totalExpenses += TripPlanner.getInstance().getOpenPlan().getExpenseData().getPlannedExpenses().get(expenseID).getAmount();
+                totalExpenses += parent.getExpenseData().getPlannedExpenses().get(expenseID).getAmount();
             }
 
             expenseSummaryLabel.setText(TripManager.Formatting.formatMoney(totalExpenses, TripManager.getInstance().getSettings().getCurrencySymbol(), TripManager.getInstance().getSettings().currencySymbolPrefixed()));
