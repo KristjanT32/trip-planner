@@ -190,6 +190,44 @@
 
 /* </editor-fold> */
 
+/* <editor-fold desc="Context menus"> */
+.menu-bar {
+    -fx-background-color: #c8c8c8;
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-padding: 2px;
+}
+
+.menu-bar .menu {
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-padding: 5px;
+}
+
+.menu-bar .menu:focused, .menu-bar .menu:hover, .menu-bar .menu:showing {
+    -fx-background-color: #393939;
+}
+
+.context-menu {
+    -fx-background-color: #c8c8c8;
+    -fx-border-color: black;
+    -fx-border-radius: 10px;
+    -fx-background-radius: 10px;
+    -fx-padding: 2px;
+}
+
+.context-menu .menu-item {
+!important;
+    -fx-background-color: #c8c8c8;
+    -fx-border-radius: 10px;
+    -fx-background-radius: 10px;
+}
+
+.context-menu .menu-item:focused, .context-menu .menu-item:hover {
+    -fx-background-color: #393939 !important;
+}
+/* </editor-fold> */
+
 /*<editor-fold desc="Toggle Button">*/
 
 .toggle-button {
