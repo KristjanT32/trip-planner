@@ -880,7 +880,7 @@ public class TripPlanner {
 
             totalExpensesLabel.setText(TripManager.Formatting.formatMoney(Math.floor(totalExpenses), currentProgramSettings.getCurrencySymbol(), currentProgramSettings.currencySymbolPrefixed()));
             dailyExpensesLabel.setText(TripManager.Formatting.formatMoney(Math.floor(minExpenses), currentProgramSettings.getCurrencySymbol(), currentProgramSettings.currencySymbolPrefixed()) + " - " + TripManager.Formatting.formatMoney(maxExpenses, currentProgramSettings.getCurrencySymbol(), currentProgramSettings.currencySymbolPrefixed()));
-            dailyAverageLabel.setText(TripManager.Formatting.decimalFormatter.format(dailyAverage) + currentProgramSettings.getCurrencySymbol());
+            dailyAverageLabel.setText(TripManager.Formatting.formatMoney(dailyAverage, currentProgramSettings.getCurrencySymbol(), currentProgramSettings.currencySymbolPrefixed()));
 
             // Sort by total amount, descending
             categorySummaries.sort(Comparator.comparingDouble(CategoryExpenseSummary::getTotalAmount).reversed());
