@@ -117,7 +117,7 @@ public class DocumentGenerator {
 
         int index = 0;
 
-        for (Map.Entry<Integer, LinkedList<Itinerary.ItineraryItem>> item : daysToActivities.sequencedEntrySet()) {
+        for (Map.Entry<Integer, LinkedList<Itinerary.ItineraryItem>> item : daysToActivities.sequencedEntrySet().stream().sorted(Comparator.comparingInt(Map.Entry::getKey)).toList()) {
             StringBuilder dayActivities = new StringBuilder();
             for (Itinerary.ItineraryItem itineraryItem : item.getValue()) {
                 // Build linked expense list

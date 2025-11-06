@@ -39,6 +39,10 @@ div.hidden {
     display: none;
 }
 
+table.hidden {
+    display: none;
+}
+
 header.hidden {
     display: none;
 }
