@@ -192,9 +192,9 @@
 
 /* <editor-fold desc="Context menus"> */
 .menu-bar {
-    -fx-background-color: #c8c8c8;
-    -fx-background-radius: 10px;
-    -fx-border-radius: 10px;
+    -fx-border-width: 0 0 1px 0;
+    -fx-border-color: black;
+    -fx-background-color: white;
     -fx-padding: 2px;
 }
 
@@ -226,6 +226,7 @@
 .context-menu .menu-item:focused, .context-menu .menu-item:hover {
     -fx-background-color: #393939 !important;
 }
+
 /* </editor-fold> */
 
 /*<editor-fold desc="Toggle Button">*/

@@ -103,7 +103,11 @@ public class LinkExpensesDialog extends Dialog<Itinerary.ItineraryItem> {
 
         setResultConverter((response -> {
             if (response.getButtonData() == ButtonBar.ButtonData.APPLY) {
-                return item;
+                if (item.hasBeenModified()) {
+                    return item;
+                } else {
+                    return null;
+                }
             } else {
                 TripManager.log("Rolling back all changes to linked expenses");
                 item.setLinkedExpenses(initialData);

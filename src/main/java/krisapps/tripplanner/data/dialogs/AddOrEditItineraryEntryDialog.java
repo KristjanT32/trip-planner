@@ -7,6 +7,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import krisapps.tripplanner.PlannerApplication;
 import krisapps.tripplanner.data.trip.Itinerary;
+import krisapps.tripplanner.misc.utils.PopupManager;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -34,6 +35,7 @@ public class AddOrEditItineraryEntryDialog extends Dialog<Itinerary.ItineraryIte
     private Label title;
 
     private final Itinerary.ItineraryItem item;
+    private boolean invalid = false;
 
 
     /**
@@ -61,10 +63,21 @@ public class AddOrEditItineraryEntryDialog extends Dialog<Itinerary.ItineraryIte
         getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
         getDialogPane().getButtonTypes().add(new ButtonType(edit ? "Apply" : "Add", ButtonBar.ButtonData.APPLY));
 
+        setOnCloseRequest(event -> {
+            if (descriptionBox.getText().isEmpty() && invalid) {
+                event.consume();
+                invalid = false;
+            }
+        });
+
         setResultConverter((response) -> {
             if (response.getButtonData() == ButtonBar.ButtonData.APPLY) {
                 if (!descriptionBox.getText().isEmpty()) {
                     this.item.setDescription(descriptionBox.getText());
+                } else {
+                    PopupManager.showPredefinedPopup(PopupManager.PopupType.ENTRY_DESCRIPTION_MISSING);
+                    invalid = true;
+                    return null;
                 }
                 this.item.setDay(dayBox.getValue() == 0 ? -1 : dayBox.getValue());
                 try {

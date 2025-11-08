@@ -13,8 +13,6 @@ import java.util.Optional;
 public class PopupManager {
 
     public enum PopupType {
-        EXPENSE_NAME_MISSING,
-        EXPENSE_AMOUNT_MISSING,
         NOT_IMPLEMENTED,
         NEW_TRIP_WIZARD_EMPTY,
         NO_OPEN_PLAN,
@@ -25,23 +23,13 @@ public class PopupManager {
         CALENDAR_INTEGRATION_DISABLED,
         NO_EVENTS,
         DOCUMENT_TEMPLATE_MISSING,
-        TRIP_LOAD_FAILED_MISSING, INVALID_DAY, PLAN_DATA_MISSING
+        TRIP_LOAD_FAILED_MISSING, INVALID_DAY, ENTRY_DESCRIPTION_MISSING, EXPENSE_DESCRIPTION_MISSING, PLAN_DATA_MISSING, EXPENSE_VALUE_MISSING
     }
 
     public static Optional<ButtonType> showPredefinedPopup(PopupType type) {
         Alert alert = new Alert(null);
         alert.getDialogPane().getStylesheets().add(PlannerApplication.class.getResource("styles/styles.css").toExternalForm());
         switch (type) {
-            case EXPENSE_NAME_MISSING -> {
-                alert.setTitle("Cannot add expense entry");
-                alert.setContentText("Please fill in the name of your expense and try again.");
-                alert.setAlertType(Alert.AlertType.ERROR);
-            }
-            case EXPENSE_AMOUNT_MISSING -> {
-                alert.setTitle("Cannot add expense entry");
-                alert.setContentText("Please fill in the value of your expense and try again.");
-                alert.setAlertType(Alert.AlertType.ERROR);
-            }
             case PLANNING_IN_PROGRESS -> {
                 alert.setTitle("Trip planning in progress!");
                 alert.setContentText("A trip is currently open in Trip Planner. Do you want to discard this open plan, and start a new one?");
@@ -102,6 +90,21 @@ public class PopupManager {
             case INVALID_DAY -> {
                 alert.setTitle("Invalid day");
                 alert.setContentText("The day you entered is invalid. Please enter a valid day.");
+                alert.setAlertType(Alert.AlertType.ERROR);
+            }
+            case ENTRY_DESCRIPTION_MISSING -> {
+                alert.setTitle("Cannot add empty entry!");
+                alert.setContentText("Please fill in the description of your itinerary entry and try again.");
+                alert.setAlertType(Alert.AlertType.ERROR);
+            }
+            case EXPENSE_DESCRIPTION_MISSING -> {
+                alert.setTitle("Cannot add empty expense!");
+                alert.setContentText("Please fill in the description of your expense and try again.");
+                alert.setAlertType(Alert.AlertType.ERROR);
+            }
+            case EXPENSE_VALUE_MISSING -> {
+                alert.setTitle("Cannot expense with no value!");
+                alert.setContentText("Please fill in the value of your expense and try again.");
                 alert.setAlertType(Alert.AlertType.ERROR);
             }
             case NOT_IMPLEMENTED -> {

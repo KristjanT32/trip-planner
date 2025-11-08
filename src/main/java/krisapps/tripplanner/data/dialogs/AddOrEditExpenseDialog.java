@@ -14,6 +14,7 @@ import krisapps.tripplanner.data.TripManager;
 import krisapps.tripplanner.data.trip.ExpenseCategory;
 import krisapps.tripplanner.data.trip.PlannedExpense;
 import krisapps.tripplanner.data.trip.Trip;
+import krisapps.tripplanner.misc.utils.PopupManager;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -55,7 +56,7 @@ public class AddOrEditExpenseDialog extends Dialog<PlannedExpense> {
     @FXML
     private Label title;
 
-    //<editor-fold desc="Daily Budget Limit Panel>
+    //<editor-fold desc="Daily Budget Limit Panel">
     @FXML
     private VBox dailyBudgetPanel;
 
@@ -70,6 +71,8 @@ public class AddOrEditExpenseDialog extends Dialog<PlannedExpense> {
     //</editor-fold>
 
     final Node applyButton;
+
+    private boolean invalid = false;
 
 
     /**
@@ -94,7 +97,6 @@ public class AddOrEditExpenseDialog extends Dialog<PlannedExpense> {
         setTitle(edit ? "Edit expense details" : "Add expense");
         title.setText(edit ? "Edit expense details" : "Add expense");
 
-        // Trickery to be able to close the dialog manually
         getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
 
         ButtonType applyButtonType = new ButtonType(edit ? "Apply" : "Add", ButtonBar.ButtonData.APPLY);
@@ -106,16 +108,29 @@ public class AddOrEditExpenseDialog extends Dialog<PlannedExpense> {
             getDialogPane().getScene().getWindow().sizeToScene();
         });
 
+        setOnCloseRequest(event -> {
+            if ((valueBox.getText().isEmpty() || descriptionBox.getText().isEmpty()) && invalid) {
+                event.consume();
+                invalid = false;
+            }
+        });
+
         setResultConverter((response) -> {
             if (response.getButtonData() == ButtonBar.ButtonData.APPLY) {
                 if (valueBox.getText().isEmpty()) {
-                    valueBox.setText("0");
+                    PopupManager.showPredefinedPopup(PopupManager.PopupType.EXPENSE_VALUE_MISSING);
+                    invalid = true;
+                    return null;
                 }
 
                 // Apply all data changes
                 this.expense.setAmount(Double.parseDouble(valueBox.getText()));
                 if (!descriptionBox.getText().isEmpty()) {
                     this.expense.setDescription(descriptionBox.getText());
+                } else {
+                    PopupManager.showPredefinedPopup(PopupManager.PopupType.EXPENSE_DESCRIPTION_MISSING);
+                    invalid = true;
+                    return null;
                 }
                 this.expense.setCategory(ExpenseCategory.valueOf(categoryBox.getSelectionModel().getSelectedItem()));
                 this.expense.setDay(dayBox.getValue());
