@@ -26,6 +26,7 @@ public class PopupManager {
         TRIP_LOAD_FAILED_MISSING, INVALID_DAY, ENTRY_DESCRIPTION_MISSING, EXPENSE_DESCRIPTION_MISSING, PLAN_DATA_MISSING, EXPENSE_VALUE_MISSING
     }
 
+    @SuppressWarnings("ConstantConditions")
     public static Optional<ButtonType> showPredefinedPopup(PopupType type) {
         Alert alert = new Alert(null);
         alert.getDialogPane().getStylesheets().add(PlannerApplication.class.getResource("styles/styles.css").toExternalForm());
@@ -103,7 +104,7 @@ public class PopupManager {
                 alert.setAlertType(Alert.AlertType.ERROR);
             }
             case EXPENSE_VALUE_MISSING -> {
-                alert.setTitle("Cannot expense with no value!");
+                alert.setTitle("Cannot add expense with no value!");
                 alert.setContentText("Please fill in the value of your expense and try again.");
                 alert.setAlertType(Alert.AlertType.ERROR);
             }
