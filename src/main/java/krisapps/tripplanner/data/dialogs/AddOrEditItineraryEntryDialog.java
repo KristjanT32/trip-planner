@@ -6,6 +6,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import krisapps.tripplanner.PlannerApplication;
+import krisapps.tripplanner.data.TripManager;
 import krisapps.tripplanner.data.trip.Itinerary;
 import krisapps.tripplanner.misc.utils.PopupManager;
 import org.jetbrains.annotations.Nullable;
@@ -81,13 +82,13 @@ public class AddOrEditItineraryEntryDialog extends Dialog<Itinerary.ItineraryIte
                 }
                 this.item.setDay(dayBox.getValue() == 0 ? -1 : dayBox.getValue());
                 try {
-                    this.item.setStartTime(new SimpleDateFormat("HH:mm").parse(startField.getText()));
+                    this.item.setStartTime(new SimpleDateFormat("HH:mm").parse(toHHMM(startField.getText())));
                 } catch (ParseException e) {
                     this.item.setStartTime(null);
                 }
 
                 try {
-                    this.item.setEndTime(new SimpleDateFormat("HH:mm").parse(endField.getText()));
+                    this.item.setEndTime(new SimpleDateFormat("HH:mm").parse(toHHMM(endField.getText())));
                 } catch (ParseException e) {
                     this.item.setEndTime(null);
                 }
@@ -99,16 +100,43 @@ public class AddOrEditItineraryEntryDialog extends Dialog<Itinerary.ItineraryIte
         descriptionBox.setText(this.item.getDescription());
         startField.setText(this.item.getStartTime() != null ? new SimpleDateFormat("HH:mm").format(this.item.getStartTime()) : "");
         startField.textProperty().addListener((observable, oldValue, newValue) -> {
-            startField.setStyle("-fx-text-fill: " + (startField.getText().matches("(?:0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]") ? "black" : "red"));
+            startField.setStyle("-fx-text-fill: " + (startField.getText().matches("(?:0?[0-9]|1[0-9]|2[0-3]):[0-5][0-9]|(?:0?[0-9]|1[0-9]|2[0-3])") ? "black" : "red"));
         });
 
         endField.setText(this.item.getEndTime() != null ? new SimpleDateFormat("HH:mm").format(this.item.getEndTime()) : "");
         endField.textProperty().addListener((observable, oldValue, newValue) -> {
-            endField.setStyle("-fx-text-fill: " + (endField.getText().matches("(?:0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]") ? "black" : "red"));
+            endField.setStyle("-fx-text-fill: " + (endField.getText().matches("(?:0?[0-9]|1[0-9]|2[0-3]):[0-5][0-9]|(?:0?[0-9]|1[0-9]|2[0-3])") ? "black" : "red"));
         });
 
         dayBox.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(-1, tripDuration));
         dayBox.getValueFactory().setValue(this.item.getDay());
+    }
+
+    private String toHHMM(String timeString) throws ParseException {
+        // If the input is partially HH:mm, for example, 9:00 or 3:02
+        if (timeString.contains(":")) {
+            if (timeString.split(":").length == 2) {
+                String hour =  timeString.split(":")[0];
+                String minute = timeString.split(":")[1];
+                if (hour.isEmpty()) {
+                    throw new ParseException("Input '" + timeString + "' is not a valid time string.", 0);
+                }
+                return "%s:%s".formatted(TripManager.Formatting.formatTimeUnit(Integer.parseInt(hour)), TripManager.Formatting.formatTimeUnit(Integer.parseInt(minute)));
+            }
+        } else {
+            // Input is assumed to contain the hour
+            try {
+                Integer.parseInt(timeString);
+            } catch (NumberFormatException e) {
+                throw new ParseException("Input '" + timeString + "' is not a valid time string.", 0);
+            }
+            return "%s:00".formatted(TripManager.Formatting.formatTimeUnit(Integer.parseInt(timeString)));
+        }
+        if (timeString.matches("(?:0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]")) {
+            return timeString;
+        } else {
+            return "00:00";
+        }
     }
 
 
